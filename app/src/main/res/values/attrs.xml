@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="ItemLayout">
+        <attr name="itemContent" format="string"/>
+        <attr name="itemTitle" format="string"/>
+    </declare-styleable>
+
+</resources>

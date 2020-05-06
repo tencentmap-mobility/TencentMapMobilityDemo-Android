@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:background="#fff">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        >
+
+        <TextView
+            android:id="@+id/tv_sync_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="司乘同显-顺风车"
+            android:layout_marginTop="24dp"
+            android:layout_marginLeft="12dp"
+            />
+
+        <com.tencent.mobility.ui.ItemLayout
+            android:id="@+id/hitch_hike_dri_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:itemTitle="司机端"
+            app:itemContent="HitchHikeDriver"
+            android:onClick="OnHitchHikeDri"
+            />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#a8a1a1"
+            />
+
+        <com.tencent.mobility.ui.ItemLayout
+            android:id="@+id/hitch_hike_psg_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:itemTitle="乘客端"
+            app:itemContent="PsgActivity"
+            android:onClick="OnHitchHikePsg"
+            />
+
+        <TextView
+            android:id="@+id/tv_fast_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="司乘同显-快车"
+            android:layout_marginTop="24dp"
+            android:layout_marginLeft="12dp"
+            />
+
+        <com.tencent.mobility.ui.ItemLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:itemTitle="司机端"
+            app:itemContent="FastDriver"
+            android:onClick="onFastDri"
+            />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#a8a1a1"
+            />
+
+        <com.tencent.mobility.ui.ItemLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:itemTitle="乘客端"
+            app:itemContent="PsgActivity"
+            android:onClick="onFastPsg"
+            />
+
+        <TextView
+            android:id="@+id/tv_mobility_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="移动出行"
+            android:layout_marginTop="24dp"
+            android:layout_marginLeft="12dp"
+            />
+
+        <com.tencent.mobility.ui.ItemLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:itemTitle="周边车辆展示"
+            app:itemContent="NearbyCarUi"
+            android:onClick="onNearbyCar"
+            />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#a8a1a1"
+            />
+
+        <com.tencent.mobility.ui.ItemLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:itemTitle="推荐上车点展示"
+            app:itemContent="SpotList"
+            android:onClick="onCarPoi"
+            />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#a8a1a1"
+            />
+
+        <com.tencent.mobility.ui.ItemLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:itemTitle="出行检索"
+            app:itemContent="SearchActivity"
+            android:onClick="onSearch"
+            />
+
+    </LinearLayout>
+
+</ScrollView>
