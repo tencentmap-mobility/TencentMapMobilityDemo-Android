@@ -22,6 +22,7 @@ import com.tencent.mobility.location.TencentLocaiton;
 import com.tencent.mobility.location.bean.MapLocation;
 import com.tencent.mobility.synchro_v2.helper.ConvertHelper;
 import com.tencent.mobility.util.ToastUtils;
+import com.tencent.navi.surport.utils.DeviceUtils;
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
 import com.tencent.tencentmap.mapsdk.maps.model.Marker;
 
@@ -31,22 +32,17 @@ public abstract class PsgLsActivity extends PsgBaseMapActivity {
 
     static final String LOG_TAG = "navi1234";
 
+    String orderId = "test_driver_order_000011"; // 司机订单id
+    String psgId = "test_passenger_000001"; // 乘客id
+    String pOrderId = "test_passenger_order_000011"; // 乘客子订单id
+    int curOrderType = TLSBOrderType.TLSDOrderTypeNormal; // 订单类型
+    int curOrderState = TLSBOrderStatus.TLSDOrderStatusNone; // 送驾状态
+    int curDriverState = TLSDDrvierStatus.TLSDDrvierStatusStopped; // 司机状态
+
     TSLPassengerManager tlspManager;// 司乘管理类
     TencentLocaiton locationManager;// 定位管理类
 
     Marker psgMarker;
-
-    /**
-     * 默认选择订单A
-     */
-    String orderId = "test_driver_order_000011";// 顺风车司机订单id
-    String psgId = "test_passenger_000001";// 顺风车乘客id
-    String pOrderId = "test_passenger_order_000011";// 乘客子订单id
-    int curOrderType = TLSBOrderType.TLSDOrderTypeHitchRide;
-    int curOrderState = TLSBOrderStatus.TLSDOrderStatusNone;
-    int curDriverState = TLSDDrvierStatus.TLSDDrvierStatusStopped;
-
-    String deviceId;// 设备id
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -56,7 +52,8 @@ public abstract class PsgLsActivity extends PsgBaseMapActivity {
 
         tlspManager = TSLPassengerManager.getInstance();// 初始化司乘
         tlspManager.init(getApplicationContext(), TLSConfigPreference.create()
-                .setAccountId(psgId).setDeviceId(deviceId));
+                .setAccountId(psgId)
+                .setDeviceId(DeviceUtils.getImei(getApplicationContext())));
         tlspManager.addTLSPassengerListener(new MyPullDriverInfo());// 司乘回调
 
         locationManager = new TencentLocaiton(getApplicationContext()); // 初始化定位
@@ -120,7 +117,7 @@ public abstract class PsgLsActivity extends PsgBaseMapActivity {
     }
 
     /**
-     * 模拟进入快车单
+     * 模拟进入快车单C
      * @param view
      */
     public void sendHighOrder(View view) {
@@ -130,6 +127,25 @@ public abstract class PsgLsActivity extends PsgBaseMapActivity {
         curOrderState = TLSBOrderStatus.TLSDOrderStatusPickUp;// 接驾
         curDriverState = TLSDDrvierStatus.TLSDDrvierStatusServing;
         tlspManager.getTLSPOrder().setpOrderId(pOrderId)// pOrderId == ""
+                .setOrderId(orderId)
+                .setOrderStatus(curOrderState)
+                .setDrvierStatus(curDriverState)
+                .setOrderType(curOrderType);
+        if(!tlspManager.isRuning())
+            tlspManager.start();
+    }
+
+    /**
+     * 进入拼车单A
+     * @param view
+     */
+    public void sendCarpoolingOrder(View view) {
+        if(tlspManager == null)
+            return;
+        curOrderType = TLSBOrderType.TLSBOrderTypeRidesharing;
+        curOrderState = TLSBOrderStatus.TLSDOrderStatusTrip;// 拼车单都是送驾状态，根顺风车一样
+        curDriverState = TLSDDrvierStatus.TLSDDrvierStatusServing;
+        tlspManager.getTLSPOrder().setpOrderId(pOrderId)
                 .setOrderId(orderId)
                 .setOrderStatus(curOrderState)
                 .setDrvierStatus(curDriverState)

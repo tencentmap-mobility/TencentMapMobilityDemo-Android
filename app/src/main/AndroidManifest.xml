@@ -56,6 +56,8 @@
 
         <activity android:name=".search.SearchActivity"/>
 
+        <activity android:name=".sychro.driver.CarpoolingDriver"/>
+
     </application>
 
 </manifest>

@@ -22,7 +22,7 @@ import com.tencent.map.navi.data.NaviPoi;
 import com.tencent.map.navi.data.RouteData;
 import com.tencent.map.navi.tlocation.ITNKLocationCallBack;
 import com.tencent.mobility.R;
-import com.tencent.mobility.sychro.driver.helper.ConvertHelper;
+import com.tencent.mobility.synchro_v2.helper.ConvertHelper;
 import com.tencent.mobility.util.ToastUtils;
 
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ import java.util.ArrayList;
 /**
  * 顺风车司机端
  */
-public class HitchHikeDriver extends ExtendDriverBase implements RadioGroup.OnCheckedChangeListener {
+public class HitchHikeDriver extends DriverBase implements RadioGroup.OnCheckedChangeListener {
 
     String driverId = "test_driver_000001";// 顺风车司机id
     String orderId = "test_driver_order_000011";// 顺风车id
@@ -52,7 +52,7 @@ public class HitchHikeDriver extends ExtendDriverBase implements RadioGroup.OnCh
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        setContentView(R.layout.ls_driver_layout);
+        setContentView(R.layout.ls_hitchhike_driver_layout);
         super.onCreate(savedInstanceState);
 
         locListener = new MyLocListener();

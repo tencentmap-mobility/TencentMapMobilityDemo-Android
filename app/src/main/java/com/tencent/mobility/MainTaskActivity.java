@@ -6,6 +6,7 @@ import android.view.View;
 import com.tencent.mobility.nearbycar.NearbyCarUi;
 import com.tencent.mobility.search.SearchActivity;
 import com.tencent.mobility.spot.SpotList;
+import com.tencent.mobility.sychro.driver.CarpoolingDriver;
 import com.tencent.mobility.sychro.driver.FastDriver;
 import com.tencent.mobility.sychro.driver.HitchHikeDriver;
 import com.tencent.mobility.synchro_v2.psg.PsgActivity;
@@ -44,6 +45,20 @@ public class MainTaskActivity extends BaseActivity {
      * 快车-乘客端
      */
     public void onFastPsg(View view) {
+        CommonUtils.toIntent(this, PsgActivity.class);
+    }
+
+    /**
+     * 拼车-司机端
+     */
+    public void OnCarpoolingDri(View view) {
+        CommonUtils.toIntent(this, CarpoolingDriver.class);
+    }
+
+    /**
+     * 拼车-客户端
+     */
+    public void OnCarpoolingPsg(View view) {
         CommonUtils.toIntent(this, PsgActivity.class);
     }
 

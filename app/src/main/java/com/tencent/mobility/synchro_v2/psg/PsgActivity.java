@@ -62,6 +62,18 @@ public class PsgActivity extends PsgLsActivity implements RadioGroup.OnCheckedCh
 
     RadioGroup radioGroup;// cur account
 
+    /**
+     * 初始化状态，不一是最终的上传状态
+     *
+     * @param group 选项卡
+     * @param checkedId 选项卡每项详情
+     *                  <ul>
+     *                  <li>顺风单A
+     *                  <li>顺风单B
+     *                  <li>快车单
+     *                  <li>拼车单
+     *                  </ul>
+     */
     @Override
     public void onCheckedChanged(RadioGroup group, int checkedId) {
         switch (checkedId) {
@@ -89,13 +101,24 @@ public class PsgActivity extends PsgLsActivity implements RadioGroup.OnCheckedCh
                 curOrderState = TLSBOrderStatus.TLSDOrderStatusNone;
                 curDriverState = TLSDDrvierStatus.TLSDDrvierStatusStopped;
                 break;
+            case R.id.carpooling_a:// 拼车单
+                orderId = "test_driver_order_000011";// 拼车订单id
+                psgId = "test_passenger_000001";// 拼车乘客id
+                pOrderId = "test_passenger_order_000011";// 拼车乘客子订单id
+                curOrderType = TLSBOrderType.TLSBOrderTypeRidesharing;
+                curOrderState = TLSBOrderStatus.TLSDOrderStatusNone;
+                curDriverState = TLSDDrvierStatus.TLSDDrvierStatusStopped;
+                break;
         }
     }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        setContentView(R.layout.sychro_v2_psg_layout);
+        setContentView(R.layout.ls_passenger_layout);
         super.onCreate(savedInstanceState);
+
+        // 默认顺风单A
+        radioGroup.check(R.id.hh_a);
     }
 
     @Override

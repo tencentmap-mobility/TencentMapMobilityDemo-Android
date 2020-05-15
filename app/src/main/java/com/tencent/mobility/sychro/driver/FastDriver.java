@@ -20,7 +20,7 @@ import com.tencent.map.navi.data.NaviPoi;
 import com.tencent.map.navi.data.RouteData;
 import com.tencent.map.navi.tlocation.ITNKLocationCallBack;
 import com.tencent.mobility.R;
-import com.tencent.mobility.sychro.driver.helper.ConvertHelper;
+import com.tencent.mobility.synchro_v2.helper.ConvertHelper;
 import com.tencent.mobility.util.ToastUtils;
 
 import java.util.ArrayList;
@@ -28,7 +28,7 @@ import java.util.ArrayList;
 /**
  * 快车司机端
  */
-public class FastDriver extends ExtendDriverBase {
+public class FastDriver extends DriverBase {
 
     String driverId = "OD_xc_10001";// 快车司机id
     String orderId = "xc_1112";

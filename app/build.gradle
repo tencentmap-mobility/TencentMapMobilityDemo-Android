@@ -10,7 +10,12 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        ndk {
+            abiFilters 'armeabi'
+        }
     }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -20,7 +25,7 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+//    implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     testImplementation 'junit:junit:4.12'
@@ -45,10 +50,10 @@ dependencies {
     implementation 'com.tencent.map:tencent-map-nav-surport:1.0.2.4'
 
     // 司乘SDK，需与司乘基础库
-    implementation files('libs/lsdriver_v2.0.1_04.03.aar') // 司乘SDK司机端
-    implementation files('libs/lspassenger_v2.0.1_04.03.aar') // 司乘SDK乘客端
+    implementation files('libs/lsdriver-release_v2.1.0.aar') // 司乘SDK司机端
+    implementation files('libs/lspassenger-release_v2.1.0.aar') // 司乘SDK乘客端
     // 司乘基础库SDK，注：与基础库不同
-    implementation files('libs/lssupport_v2.0.1_04.03.aar')
+    implementation files('libs/lssupport-release_v2.1.0.aar')
 
     // 推荐上车点SDK，需依赖 检索SDK 和 基础库SDK
     implementation files('libs/pickupspot_v1.0.4_map_4.3.3.3.aar')

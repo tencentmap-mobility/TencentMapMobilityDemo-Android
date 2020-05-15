@@ -13,12 +13,47 @@
         >
 
         <TextView
+            android:id="@+id/tv_fast_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="司乘同显-快车"
+            android:layout_marginTop="24dp"
+            android:layout_marginLeft="12dp"
+            android:textColor="#0090FF"
+            />
+
+        <com.tencent.mobility.ui.ItemLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:itemTitle="司机端"
+            app:itemContent="FastDriver"
+            android:onClick="onFastDri"
+            />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="#787878"
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="12dp"
+            />
+
+        <com.tencent.mobility.ui.ItemLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:itemTitle="乘客端"
+            app:itemContent="PsgActivity"
+            android:onClick="onFastPsg"
+            />
+
+        <TextView
             android:id="@+id/tv_sync_txt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="司乘同显-顺风车"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="12dp"
             android:layout_marginLeft="12dp"
+            android:textColor="#0090FF"
             />
 
         <com.tencent.mobility.ui.ItemLayout
@@ -32,8 +67,10 @@
 
         <View
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#a8a1a1"
+            android:layout_height="0.5dp"
+            android:background="#787878"
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="12dp"
             />
 
         <com.tencent.mobility.ui.ItemLayout
@@ -46,34 +83,39 @@
             />
 
         <TextView
-            android:id="@+id/tv_fast_txt"
+            android:id="@+id/tv_carpooling_txt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="司乘同显-快车"
-            android:layout_marginTop="24dp"
+            android:text="司乘同显-拼车"
+            android:layout_marginTop="12dp"
             android:layout_marginLeft="12dp"
+            android:textColor="#0090FF"
             />
 
         <com.tencent.mobility.ui.ItemLayout
+            android:id="@+id/carpooling_dri_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:itemTitle="司机端"
-            app:itemContent="FastDriver"
-            android:onClick="onFastDri"
+            app:itemContent="CarpoolingDriver"
+            android:onClick="OnCarpoolingDri"
             />
 
         <View
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#a8a1a1"
+            android:layout_height="0.5dp"
+            android:background="#787878"
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="12dp"
             />
 
         <com.tencent.mobility.ui.ItemLayout
+            android:id="@+id/carpooling_psg_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:itemTitle="乘客端"
             app:itemContent="PsgActivity"
-            android:onClick="onFastPsg"
+            android:onClick="OnCarpoolingPsg"
             />
 
         <TextView
@@ -81,8 +123,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="移动出行"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="12dp"
             android:layout_marginLeft="12dp"
+            android:textColor="#0090FF"
             />
 
         <com.tencent.mobility.ui.ItemLayout
@@ -95,8 +138,10 @@
 
         <View
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#a8a1a1"
+            android:layout_height="0.5dp"
+            android:background="#787878"
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="12dp"
             />
 
         <com.tencent.mobility.ui.ItemLayout
@@ -109,8 +154,10 @@
 
         <View
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#a8a1a1"
+            android:layout_height="0.5dp"
+            android:background="#787878"
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="12dp"
             />
 
         <com.tencent.mobility.ui.ItemLayout

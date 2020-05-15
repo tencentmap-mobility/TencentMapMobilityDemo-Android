@@ -54,12 +54,12 @@ public class DriverNaviActivity extends BaseActivity {
         lsManager.addTLSDriverListener(new MyDriverListener());// 数据callback
         lsManager.addRemoveWayPointCallBack(new DriDataListener.IRemoveWayByUserCallBack() {
             @Override
-            public void onRemoveWayPoint(ArrayList< TLSDWayPointInfo > wayPoints) {
+            public void onRemoveWayPoint(ArrayList<TLSDWayPointInfo> wayPoints) {
                 // 剔除途经点的回调
                 Log.e(LOG_TAG, ">>>onRemoveWayPoint !!");
                 // app->停止导航，重新算路，开始导航
                 mNaviManager.stopNavi();
-                // from:当前司机起点,注意这里测试参数就都写死了
+                // from:当前司机起点,这里测试就写死了
                 // 开始算路
                 lsManager.searchCarRoutes(from, to, wayPoints
                         , CarRouteSearchOptions.create(), new MyDropWayListener());
