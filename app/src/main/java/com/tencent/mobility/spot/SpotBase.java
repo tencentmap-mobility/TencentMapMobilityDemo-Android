@@ -143,6 +143,7 @@ public abstract class SpotBase extends MapBase implements IPasView {
 
         spotManager = new TMMRecommendedBoardManager(tencentMap);
         TMMRecommendedBoardManager.mContext = getApplicationContext();
+        spotManager.setWebServiceKey("sn key");
 
         TMMRBDataManager.initSearchKey("检索key", "检索snKey");
 
