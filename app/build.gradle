@@ -22,6 +22,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
 }
 
 dependencies {
@@ -54,7 +55,7 @@ dependencies {
     implementation files('libs/lssupport-release_v2.1.0.aar')
 
     // 推荐上车点SDK，需依赖 检索SDK 和 基础库SDK
-    implementation files('libs/pickupspot_v1.0.4.aar')
+    implementation files('libs/pickupspot_v1.0.5.aar')
 
     // 周边车辆SDK，需依赖 基础库SDK
     implementation files('libs/tencentcarpreview_v1.0.3.aar')

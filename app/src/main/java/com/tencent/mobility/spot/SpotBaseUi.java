@@ -5,9 +5,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 
+import com.tencent.map.navi.agent.regeo.beans.RegeoRsp;
 import com.tencent.mobility.R;
 import com.tencent.recommendspot.TMMRBDataManager;
 import com.tencent.recommendspot.TMMRecommendedBoardManager;
+import com.tencent.recommendspot.recospot.bean.RecommendSpotInfo;
 import com.tencent.recommendspot.recospot.bean.TMMTraHubBean;
 import com.tencent.recommendspot.ui.PointMarkerView;
 import com.tencent.tencentmap.mapsdk.maps.MapView;
@@ -111,6 +113,34 @@ public class SpotBaseUi extends SpotBase {
             public void onFail(int errcode, String errMsg) {
                 Log.e(LOG_TAG, "errorCode : " + errcode + ",errMsg : " + errMsg);
             }
+        });
+
+        /**
+         * 吸附状态回调
+         */
+        spotManager.setOnAttachRecommendSpotListener(new TMMRBDataManager.TMMAttachRecommendSpotListener() {
+            @Override
+            public void onAttachRecommendSpot(RecommendSpotInfo info) {
+                if(info.getLatLng() != null){
+                    Log.e(LOG_TAG, "吸附状态回调：title:" + info.getTitle()
+                            +", latlng" + info.getLatLng().latitude + "--" + info.getLatLng().getLongitude()
+                            + ", isAttach :" + info.isAttach());
+                }else{
+                    Log.e(LOG_TAG, "吸附状态回调：title:" + info.getTitle()
+                            +", latlng  null "
+                            + ", isAttach :" + info.isAttach());
+                }
+
+            }
+
+            @Override
+            public void attachedRecommendSpotFailed(RegeoRsp addressBean) {
+                if(addressBean != null)
+                    Log.e(LOG_TAG, "返地理 AddressBean: "+ addressBean.getMessage());
+                else
+                    Log.e(LOG_TAG, "返地理编码失败");
+            }
+
         });
     }
 }
