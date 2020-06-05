@@ -1,16 +1,15 @@
 package com.tencent.mobility.search;
 
-import com.tencent.map.navi.agent.LocationBean;
-import com.tencent.map.navi.agent.TencentDataManager;
-import com.tencent.map.navi.agent.address.AddressOptions;
-import com.tencent.map.navi.agent.address.interfaces.OnAddressListener;
-import com.tencent.map.navi.agent.routes.RoutesDrivingOptions;
-import com.tencent.map.navi.agent.routes.RoutesWalkingOptions;
-import com.tencent.map.navi.agent.routes.interfaces.NaviPOI;
-import com.tencent.map.navi.agent.routes.interfaces.OnRouteWalkListener;
-import com.tencent.map.navi.agent.routes.interfaces.OnRoutesListener;
+import com.tencent.map.navi.agent.TencentSearchManager;
+import com.tencent.map.navi.agent.data.SearchLatLng;
+import com.tencent.map.navi.agent.regeo.RegeoOptions;
+import com.tencent.map.navi.agent.regeo.interfaces.RegeoListener;
+import com.tencent.map.navi.agent.routes.DrivingOptions;
+import com.tencent.map.navi.agent.routes.WalkingOptions;
+import com.tencent.map.navi.agent.routes.interfaces.DrivingRouteListener;
+import com.tencent.map.navi.agent.routes.interfaces.WalkingRouteListener;
 import com.tencent.map.navi.agent.sug.SugOptions;
-import com.tencent.map.navi.agent.sug.interfaces.OnSugListener;
+import com.tencent.map.navi.agent.sug.interfaces.SugListener;
 
 public class SearchModel implements IModel {
 
@@ -26,7 +25,7 @@ public class SearchModel implements IModel {
 
     @Override
     public void init() {
-        TencentDataManager.init(mView.getAppContext()
+        TencentSearchManager.init(mView.getAppContext()
                 , "key"
                 , "secretKey");
         // 在这里设置标志位的目的，是提醒用户设置key
@@ -35,22 +34,20 @@ public class SearchModel implements IModel {
 
     /**
      * sug请求
-     *
-     * @param onSugListener
      */
     @Override
-    public void sugRequest(OnSugListener onSugListener) {
+    public void sugRequest(SugListener sugListener) {
         if(!isHasKey) {
-            onSugListener.onError(-1, "no key");
+            sugListener.onError(-1, "no key");
             return;
         }
 
         //创建对象
-        TencentDataManager dataManager = new TencentDataManager(mView.getAppContext());
-        dataManager.setSugListener(onSugListener);
+        TencentSearchManager dataManager = new TencentSearchManager(mView.getAppContext());
+        dataManager.setSugListener(sugListener);
         //请求参数的封装（关键词、根据名称限制区域范围等）
         SugOptions sugOptions = new SugOptions();
-        LocationBean locationBean = new LocationBean();
+        SearchLatLng locationBean = new SearchLatLng();
         locationBean.setLat(40.034852);// demo就写死了
         locationBean.setLng(116.319820);
         sugOptions.setPolicy("1")
@@ -63,45 +60,45 @@ public class SearchModel implements IModel {
     /**
      * 逆地理编码
      *
-     * @param onAddressListener
+     * @param regeoListener
      */
     @Override
-    public void reGeocoding(OnAddressListener onAddressListener) {
+    public void regeoRequest(RegeoListener regeoListener) {
         if(!isHasKey) {
-            onAddressListener.onError(-1, "no key");
+            regeoListener.onError(-1, "no key");
             return;
         }
 
-        TencentDataManager dataManager = new TencentDataManager(mView.getAppContext());
-        dataManager.setOnAddressListener(onAddressListener);
-        AddressOptions addressOptions = new AddressOptions();
-        LocationBean locationBean = new LocationBean();
+        TencentSearchManager dataManager = new TencentSearchManager(mView.getAppContext());
+        dataManager.setRegeoListener(regeoListener);
+        RegeoOptions addressOptions = new RegeoOptions();
+        SearchLatLng locationBean = new SearchLatLng();
         locationBean.setLat(40.034852);
         locationBean.setLng(116.319820);
-        addressOptions.setLocationBean(locationBean);
-        dataManager.getAddress(addressOptions);
+        addressOptions.setSearchLatLng(locationBean);
+        dataManager.getRegeo(addressOptions);
     }
 
     /**
      * 驾车路线
      *
-     * @param onDrivingListener
+     * @param drivingListener
      */
     @Override
-    public void routeOfDriving(OnRoutesListener onDrivingListener) {
+    public void drivingRequest(DrivingRouteListener drivingListener) {
         if(!isHasKey) {
-            onDrivingListener.onError(-1, "no key");
+            drivingListener.onError(-1, "no key");
             return;
         }
 
-        TencentDataManager dataManager = new TencentDataManager(mView.getAppContext());
-        dataManager.setOnRoutesListener(onDrivingListener);
-        RoutesDrivingOptions drivingOptions = new RoutesDrivingOptions();
-        NaviPOI from = new NaviPOI();
+        TencentSearchManager dataManager = new TencentSearchManager(mView.getAppContext());
+        dataManager.setDrivingRouteListener(drivingListener);
+        DrivingOptions drivingOptions = new DrivingOptions();
+        SearchLatLng from = new SearchLatLng();
         from.setLat(40.034852);
         from.setLng(116.319820);
         drivingOptions.setFrom(from);
-        NaviPOI to = new NaviPOI();
+        SearchLatLng to = new SearchLatLng();
         to.setLat(40.034852);
         to.setLng(117.319820);
         drivingOptions.setTo(to);
@@ -111,26 +108,22 @@ public class SearchModel implements IModel {
     /**
      * 步行路线
      *
-     * @param onWalkListeer
+     * @param walkingRouteListener
      */
     @Override
-    public void routeOfWalking(OnRouteWalkListener onWalkListeer) {
+    public void walkingRequest(WalkingRouteListener walkingRouteListener) {
         if(!isHasKey) {
-            onWalkListeer.onError(-1, "no key");
+            walkingRouteListener.onError(-1, "no key");
             return;
         }
 
-        TencentDataManager dataManager = new TencentDataManager(mView.getAppContext());
-        dataManager.setOnRouteWalkListener(onWalkListeer);
-        RoutesWalkingOptions walkingOptions = new RoutesWalkingOptions();
-        LocationBean from = new LocationBean();
-        from.setLat(40.034852);
-        from.setLng(116.319820);
-        walkingOptions.setFromLocation(from);
-        LocationBean to = new LocationBean();
-        to.setLat(40.034852);
-        to.setLng(117.319820);
-        walkingOptions.setToLocation(to);
+        TencentSearchManager dataManager = new TencentSearchManager(mView.getAppContext());
+        dataManager.setWalkingRouteListener(walkingRouteListener);
+        WalkingOptions walkingOptions = new WalkingOptions();
+        SearchLatLng from = new SearchLatLng(40.034852, 116.319820);
+        walkingOptions.setFrom(from);
+        SearchLatLng to = new SearchLatLng(40.034852, 117.319820);
+        walkingOptions.setTo(to);
         dataManager.getWalking(walkingOptions);
     }
 

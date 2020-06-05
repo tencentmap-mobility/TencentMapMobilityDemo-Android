@@ -7,14 +7,14 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
-import com.tencent.map.navi.agent.address.beans.AddressBean;
-import com.tencent.map.navi.agent.address.interfaces.OnAddressListener;
-import com.tencent.map.navi.agent.routes.beans.DrivingNaviResponse;
-import com.tencent.map.navi.agent.routes.beans.WalkingNaviResponse;
-import com.tencent.map.navi.agent.routes.interfaces.OnRouteWalkListener;
-import com.tencent.map.navi.agent.routes.interfaces.OnRoutesListener;
-import com.tencent.map.navi.agent.sug.beans.SugBean;
-import com.tencent.map.navi.agent.sug.interfaces.OnSugListener;
+import com.tencent.map.navi.agent.regeo.beans.RegeoRsp;
+import com.tencent.map.navi.agent.regeo.interfaces.RegeoListener;
+import com.tencent.map.navi.agent.routes.beans.DrivingRouteRsp;
+import com.tencent.map.navi.agent.routes.beans.WalkingRouteRsp;
+import com.tencent.map.navi.agent.routes.interfaces.DrivingRouteListener;
+import com.tencent.map.navi.agent.routes.interfaces.WalkingRouteListener;
+import com.tencent.map.navi.agent.sug.beans.SugRsp;
+import com.tencent.map.navi.agent.sug.interfaces.SugListener;
 import com.tencent.mobility.BaseActivity;
 import com.tencent.mobility.R;
 
@@ -43,9 +43,9 @@ public class SearchActivity extends BaseActivity implements IView {
 
     public void sugSearch(View view) {
         if(model != null)
-            model.sugRequest(new OnSugListener() {
+            model.sugRequest(new SugListener() {
                 @Override
-                public void onSuccess(SugBean sugBean) {
+                public void onSuccess(SugRsp sugRsp) {
                     Log.e(LOG_TAG, "sug suc !!");
                 }
 
@@ -54,14 +54,13 @@ public class SearchActivity extends BaseActivity implements IView {
                     Log.e(LOG_TAG, "sug err : " + s + " !!");
                 }
             });
-
     }
 
     public void reGroSearch(View view) {
         if(model != null)
-            model.reGeocoding(new OnAddressListener() {
+            model.regeoRequest(new RegeoListener() {
                 @Override
-                public void onSuccess(AddressBean addressBean) {
+                public void onSuccess(RegeoRsp regeoRsp) {
                     Log.e(LOG_TAG, "re geo suc !!");
                 }
 
@@ -74,9 +73,9 @@ public class SearchActivity extends BaseActivity implements IView {
 
     public void routeDriSearch(View view) {
         if(model != null)
-            model.routeOfDriving(new OnRoutesListener() {
+            model.drivingRequest(new DrivingRouteListener() {
                 @Override
-                public void onSuccess(DrivingNaviResponse drivingNaviResponse) {
+                public void onSuccess(DrivingRouteRsp drivingRouteRsp) {
                     Log.e(LOG_TAG, "route drive suc !!");
                 }
 
@@ -89,9 +88,9 @@ public class SearchActivity extends BaseActivity implements IView {
 
     public void routeWalkSearch(View view) {
         if(model != null)
-            model.routeOfWalking(new OnRouteWalkListener() {
+            model.walkingRequest(new WalkingRouteListener() {
                 @Override
-                public void onSuccess(WalkingNaviResponse walkingNaviResponse) {
+                public void onSuccess(WalkingRouteRsp walkingRouteRsp) {
                     Log.e(LOG_TAG, "route walk suc !!");
                 }
 

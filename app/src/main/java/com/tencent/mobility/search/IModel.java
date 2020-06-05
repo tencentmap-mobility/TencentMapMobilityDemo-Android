@@ -1,39 +1,35 @@
 package com.tencent.mobility.search;
 
-import com.tencent.map.navi.agent.address.interfaces.OnAddressListener;
-import com.tencent.map.navi.agent.routes.interfaces.OnRouteWalkListener;
-import com.tencent.map.navi.agent.routes.interfaces.OnRoutesListener;
-import com.tencent.map.navi.agent.sug.interfaces.OnSugListener;
+import com.tencent.map.navi.agent.regeo.interfaces.RegeoListener;
+import com.tencent.map.navi.agent.routes.interfaces.DrivingRouteListener;
+import com.tencent.map.navi.agent.routes.interfaces.WalkingRouteListener;
+import com.tencent.map.navi.agent.sug.interfaces.SugListener;
 
 public interface IModel {
 
     /**
-     * 检索初始化
+     * 检索SDK初始化工作。
      */
     void init();
 
     /**
-     * sug请求
-     * @param onSugListener
+     * sug请求。
      */
-    void sugRequest(OnSugListener onSugListener);
+    void sugRequest(SugListener sugListener);
 
     /**
-     * 逆地理编码
-     * @param onAddressListener
+     * 逆地理编码请求。
      */
-    void reGeocoding(OnAddressListener onAddressListener);
+    void regeoRequest(RegeoListener regeoListener);
 
     /**
-     * 驾车路线
-     * @param onDrivingListener
+     * 驾车路线规划请求。
      */
-    void routeOfDriving(OnRoutesListener onDrivingListener);
+    void drivingRequest(DrivingRouteListener drivingListener);
 
     /**
-     * 步行路线
-     * @param onWalkListeer
+     * 步行路线规划请求。
      */
-    void routeOfWalking(OnRouteWalkListener onWalkListeer);
+    void walkingRequest(WalkingRouteListener walkingListeer);
 
 }

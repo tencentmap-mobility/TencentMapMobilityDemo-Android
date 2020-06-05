@@ -60,6 +60,6 @@ dependencies {
     implementation files('libs/tencentcarpreview_v1.0.3.aar')
 
     // 检索SDK
-    implementation files('libs/naviservice_v1.2.0.aar')
+    implementation files('libs/navisearch_v1.2.1.aar')
 
 }
