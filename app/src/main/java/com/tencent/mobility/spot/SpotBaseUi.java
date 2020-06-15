@@ -10,6 +10,7 @@ import com.tencent.mobility.R;
 import com.tencent.recommendspot.TMMRBDataManager;
 import com.tencent.recommendspot.TMMRecommendedBoardManager;
 import com.tencent.recommendspot.recospot.bean.RecommendSpotInfo;
+import com.tencent.recommendspot.recospot.bean.TMMRecommendSpotBean;
 import com.tencent.recommendspot.recospot.bean.TMMTraHubBean;
 import com.tencent.recommendspot.ui.PointMarkerView;
 import com.tencent.tencentmap.mapsdk.maps.MapView;
@@ -22,8 +23,6 @@ import java.util.List;
  * @author mjzuo
  */
 public class SpotBaseUi extends SpotBase {
-
-    static String LOG_TAG = ">>tag1234";
 
     View spotView;
 
@@ -75,72 +74,6 @@ public class SpotBaseUi extends SpotBase {
                     return dotPoint.transactionAnimWithMarker();
                 return null;
             }
-        });
-
-        /**
-         * 是否命中大型枢纽请求监听
-         */
-        spotManager.registerTraHubListener(new TMMRBDataManager.TMMTransportationHubListener() {
-            @Override
-            public void onSubTraHub(List<TMMTraHubBean.TraObjBean.DetailBean.TraHubBean.SubFenceBean> subFenceBeans
-                    , List<TMMTraHubBean.TraObjBean.DetailBean.TraHubBean.HitSubFenceBean> hitSubFenceBeans
-                    , List<List<TMMTraHubBean.TraObjBean.DetailBean.TraHubBean.HitSubFenceBean.HitTraHubBean>> subBpModels) {
-                if(subFenceBeans == null){
-                    Log.e(LOG_TAG, "subFenceBeans null");
-                    return;
-                }
-
-                for(TMMTraHubBean.TraObjBean.DetailBean.TraHubBean.SubFenceBean subBp : subFenceBeans){
-                    Log.e(LOG_TAG, "所有2级枢纽信息呢：title:" + subBp.getName() + "，id:" + subBp.getId());
-                }
-                for(TMMTraHubBean.TraObjBean.DetailBean.TraHubBean.HitSubFenceBean hitSubBp : hitSubFenceBeans){
-                    Log.e(LOG_TAG, "所有命中的2级枢纽信息：title:" + hitSubBp.getName()
-                            + "，id:" + hitSubBp.getId());
-                }
-                int index = 0;
-                for(List<TMMTraHubBean.TraObjBean.DetailBean.TraHubBean.HitSubFenceBean.HitTraHubBean> hitTraHubs : subBpModels){
-                    for(TMMTraHubBean.TraObjBean.DetailBean.TraHubBean.HitSubFenceBean.HitTraHubBean htb :hitTraHubs){
-                        Log.e(LOG_TAG, "所有命中的2级枢纽上车点：" + index + "， title:" + htb.getTitle()
-                                + ";\nid:"+htb.getId()+";\nlantlng:lat  " + htb.getLocation().getLat()
-                                + ",lng  " + htb.getLocation().getLng()
-                                + ";\ndistance:" + htb.getDistance());
-                    }
-                    index ++;
-                }
-            }
-
-            @Override
-            public void onFail(int errcode, String errMsg) {
-                Log.e(LOG_TAG, "errorCode : " + errcode + ",errMsg : " + errMsg);
-            }
-        });
-
-        /**
-         * 吸附状态回调
-         */
-        spotManager.setOnAttachRecommendSpotListener(new TMMRBDataManager.TMMAttachRecommendSpotListener() {
-            @Override
-            public void onAttachRecommendSpot(RecommendSpotInfo info) {
-                if(info.getLatLng() != null){
-                    Log.e(LOG_TAG, "吸附状态回调：title:" + info.getTitle()
-                            +", latlng" + info.getLatLng().latitude + "--" + info.getLatLng().getLongitude()
-                            + ", isAttach :" + info.isAttach());
-                }else{
-                    Log.e(LOG_TAG, "吸附状态回调：title:" + info.getTitle()
-                            +", latlng  null "
-                            + ", isAttach :" + info.isAttach());
-                }
-
-            }
-
-            @Override
-            public void attachedRecommendSpotFailed(RegeoRsp addressBean) {
-                if(addressBean != null)
-                    Log.e(LOG_TAG, "返地理 AddressBean: "+ addressBean.getMessage());
-                else
-                    Log.e(LOG_TAG, "返地理编码失败");
-            }
-
         });
     }
 }
