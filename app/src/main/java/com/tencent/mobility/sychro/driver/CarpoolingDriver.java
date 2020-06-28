@@ -156,15 +156,15 @@ public class CarpoolingDriver extends DriverBase {
         naviManager.addNaviView(carNaviView); // 关联view
         naviManager.setInternalTtsEnabled(true); // 开启播报
         // 使用导航默认UI
-        CarNaviInfoPanel carNaviInfoPanel = carNaviView.showNaviInfoPanle();
+        CarNaviInfoPanel carNaviInfoPanel = carNaviView.showNaviInfoPanel();
         carNaviInfoPanel.setOnNaviInfoListener(new CarNaviInfoPanel.OnNaviInfoListener() {
             @Override
             public void onBackClick() {
                 stopNavi(findViewById(R.id.stop_navi));
             }
         });
-        CarNaviInfoPanel.NaviInfoPanleConfig naviInfoPanleConfig = new CarNaviInfoPanel.NaviInfoPanleConfig();
-        carNaviInfoPanel.setNaviInfoPanleConfig(naviInfoPanleConfig);
+        CarNaviInfoPanel.NaviInfoPanelConfig naviInfoPanleConfig = new CarNaviInfoPanel.NaviInfoPanelConfig();
+        carNaviInfoPanel.setNaviInfoPanelConfig(naviInfoPanleConfig);
         // 拼车需要将终点icon隐藏掉
 //        carNaviView.configEndPointMarkerpresentation(null, null);
         // 设置途经点图标
@@ -202,7 +202,7 @@ public class CarpoolingDriver extends DriverBase {
     public void stopNavi(View view) {
         isNaving = false;
         naviManager.stopSimulateNavi();
-        carNaviView.hideNaviInfoPanle();
+        carNaviView.hideNaviInfoPanel();
         carNaviView.setNaviPanelEnabled(false);
         carNaviView.clearAllRouteUI();
     }

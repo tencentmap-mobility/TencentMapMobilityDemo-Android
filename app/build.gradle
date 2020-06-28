@@ -43,19 +43,19 @@ dependencies {
     implementation 'com.gyf.immersionbar:immersionbar:2.3.1'
 
     // 定位SDK，具体的版本使用情况可沟通客服
-    implementation files('libs/TencentLocationSDK_v8.4.14_ra0311232_20200103_125837_release.aar')
+    implementation files('libs/TencentLocationSDK_v8.7.5.1.aar')
 
     // 腾讯地图SDK
     implementation 'com.tencent.map:tencent-map-vector-sdk:4.3.3.5'
 
     // 导航SDK，注：导航版本需与地图版本对应，具体使用可沟通客服
     // 导航SDK 在v5.1.9.11+ 版本剔除掉了内部检索模块
-    implementation 'com.tencent.map:tencent-map-nav-sdk:5.1.9.12'
+    implementation 'com.tencent.map:tencent-map-nav-sdk:5.2.1.2'
     // 基础库SDK
     implementation 'com.tencent.map:tencent-map-nav-surport:1.0.2.4'
 
     // 司乘SDK，需与司乘基础库
-    implementation files('libs/lsdriver-release_v2.1.0.aar') // 司乘SDK司机端
+    implementation files('libs/lsdriver-release_v2.1.1.aar') // 司乘SDK司机端
     implementation files('libs/lspassenger-release_v2.1.0.aar') // 司乘SDK乘客端
     // 司乘基础库SDK，注：与基础库不同
     implementation files('libs/lssupport-release_v2.1.0.aar')

@@ -51,6 +51,7 @@ public class DriverNaviActivity extends BaseActivity {
         carNaviView.configWayPointMarkerpresentation(getWayMarker());
         mNaviManager.addNaviView(carNaviView);
         lsManager = TSLDExtendManager.getInstance();
+        // lsManager.setNaviManager(mNaviManager); // demo ls是单例，在"听单页"已经被set
         lsManager.addTLSDriverListener(new MyDriverListener());// 数据callback
         lsManager.addRemoveWayPointCallBack(new DriDataListener.IRemoveWayByUserCallBack() {
             @Override
@@ -67,7 +68,7 @@ public class DriverNaviActivity extends BaseActivity {
         });
 
         mNaviManager.setInternalTtsEnabled(true);
-        CarNaviInfoPanel carNaviInfoPanel = carNaviView.showNaviInfoPanle();// 默认ui
+        CarNaviInfoPanel carNaviInfoPanel = carNaviView.showNaviInfoPanel();// 默认ui
         carNaviInfoPanel.setOnNaviInfoListener(new CarNaviInfoPanel.OnNaviInfoListener() {
             @Override
             public void onBackClick() {

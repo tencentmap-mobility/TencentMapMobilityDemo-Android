@@ -292,6 +292,16 @@ public class HitchHikeDriver extends DriverBase implements RadioGroup.OnCheckedC
         return w2;
     }
 
+    /**
+     * {@link com.tencent.map.navi.tlocation.TNKLocationManager}
+     * 是导航SDK内部对于腾讯定位SDK的一个封装
+     * 用户可以通过{@code TNKLocationManager}非常方便的获取定位信息
+     *
+     * <p>注册监听后，如果定位还未启动，则会启动定位
+     *
+     * <p>司机在⾮导航态，需要⽤户管理定位点的上报⼯作。
+     * ⽤户可通过定位SDK获取定位信息，随后将定位点通过司乘SDK的上报接口进行上报。
+     */
     class MyLocListener implements ITNKLocationCallBack {
         @Override
         public void requestLocationUpdatesResult(int i) {
