@@ -17,6 +17,12 @@ import com.tencent.map.navi.agent.sug.beans.SugRsp;
 import com.tencent.map.navi.agent.sug.interfaces.SugListener;
 import com.tencent.mobility.BaseActivity;
 import com.tencent.mobility.R;
+import com.tencent.tencentmap.mapsdk.maps.MapView;
+import com.tencent.tencentmap.mapsdk.maps.TencentMap;
+import com.tencent.tencentmap.mapsdk.maps.model.Polyline;
+import com.tencent.tencentmap.mapsdk.maps.model.PolylineOptions;
+
+import java.util.ArrayList;
 
 /**
  * 检索sdk
@@ -28,11 +34,18 @@ public class SearchActivity extends BaseActivity implements IView {
     private static final String LOG_TAG = "search1234";
 
     IModel model;
+    ArrayList<Polyline> polylines = new ArrayList<>();
+
+    MapView mapView;
+    TencentMap tencentMap;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.search_layout);
+        mapView = findViewById(R.id.tencent_map);
+
+        tencentMap = mapView.getMap();
         new SearchModel(this);
     }
 
@@ -77,6 +90,7 @@ public class SearchActivity extends BaseActivity implements IView {
                 @Override
                 public void onSuccess(DrivingRouteRsp drivingRouteRsp) {
                     Log.e(LOG_TAG, "route drive suc !!");
+                    drawRouteLine(drivingRouteRsp);
                 }
 
                 @Override
@@ -92,6 +106,7 @@ public class SearchActivity extends BaseActivity implements IView {
                 @Override
                 public void onSuccess(WalkingRouteRsp walkingRouteRsp) {
                     Log.e(LOG_TAG, "route walk suc !!");
+                    drawRouteLine(walkingRouteRsp);
                 }
 
                 @Override
@@ -105,4 +120,89 @@ public class SearchActivity extends BaseActivity implements IView {
     public Context getAppContext() {
         return getApplicationContext();
     }
+
+    /**
+     * 绘制驾车路线。
+     */
+    private void drawRouteLine(DrivingRouteRsp drivingRouteRsp) {
+        int selectedIndex = 0; // 默认选择第0条路线
+        ArrayList<PolylineOptions> handleRouteData = model.handleRouteData
+                (drivingRouteRsp, selectedIndex);
+
+        if (polylines.size() != 0) {
+            for (Polyline polyline : polylines) {
+                polyline.remove();
+            }
+        }
+        for (PolylineOptions option : handleRouteData) {
+            polylines.add(tencentMap.addPolyline(option));
+        }
+    }
+
+    /**
+     * 绘制步行路线。
+     */
+    private void drawRouteLine(WalkingRouteRsp walkRouteRsp) {
+        int selectedIndex = 0; // 默认选择第0条路线
+        ArrayList<PolylineOptions> handleRouteData = model.handleRouteData
+                (walkRouteRsp, selectedIndex);
+
+        if (polylines.size() != 0) {
+            for (Polyline polyline : polylines) {
+                polyline.remove();
+            }
+        }
+        for (PolylineOptions option : handleRouteData) {
+            polylines.add(tencentMap.addPolyline(option));
+        }
+    }
+
+    @Override
+    public void onStart() {
+        if (mapView != null) {
+            mapView.onStart();
+        }
+        super.onStart();
+    }
+
+    @Override
+    public void onRestart() {
+        if (mapView != null) {
+            mapView.onRestart();
+        }
+        super.onRestart();
+    }
+
+    @Override
+    public void onResume() {
+        if (mapView != null) {
+            mapView.onResume();
+        }
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        if (mapView != null) {
+            mapView.onPause();
+        }
+        super.onPause();
+    }
+
+    @Override
+    public void onStop() {
+        if (mapView != null) {
+            mapView.onStop();
+        }
+        super.onStop();
+    }
+
+    @Override
+    public void onDestroy() {
+        if (mapView != null) {
+            mapView.onDestroy();
+        }
+        super.onDestroy();
+    }
+
 }

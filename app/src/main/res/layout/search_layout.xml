@@ -3,6 +3,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <com.tencent.tencentmap.mapsdk.maps.MapView
+        android:id="@+id/tencent_map"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
     <Button
         android:id="@+id/sug_btn"
         android:layout_width="wrap_content"

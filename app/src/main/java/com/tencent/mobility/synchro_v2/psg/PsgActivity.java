@@ -216,21 +216,22 @@ public class PsgActivity extends PsgLsActivity implements RadioGroup.OnCheckedCh
      * @param points
      */
     private void translateAnima(LatLng[] points) {
-        if(points == null || points.length <= 0)
+        if (points == null || points.length <= 0)
             return;
         // 当司机没有新数据上传，防止拉取回上个点串的最后一个点
-        if(points.length == 2 && SHelper.equalOfLatlng(points[0], points[1]))
+        if (points.length == 2 && SHelper.equalOfLatlng(points[0], points[1]))
             return;
-        if(carMarker != null)
-            carMarker.remove();
-        carMarker = mapView.getMap().addMarker(
-                new MarkerOptions(points[0])
-                        .anchor(0.5f, 0.5f)
-                        .icon(BitmapDescriptorFactory.fromResource(R.mipmap.map_icon_driver))
-                        //设置此属性 marker 会跟随地图旋转
-                        .flat(true)
-                        //marker 逆时针方向旋转
-                        .clockwise(false));
+        // 平滑动画只需要使用一个marker即可
+        if (carMarker == null)
+            carMarker = mapView.getMap().addMarker(
+                    new MarkerOptions(points[0])
+                            .anchor(0.5f, 0.5f)
+                            .icon(BitmapDescriptorFactory.fromResource(R.mipmap.map_icon_driver))
+                            //设置此属性 marker 会跟随地图旋转
+                            .flat(true)
+                            //marker 逆时针方向旋转
+                            .clockwise(false));
+
         Log.e("tag1234", ">>>>>startAnimation()");
         MarkerTranslateAnimator mTranslateAnimator = new MarkerTranslateAnimator(
                 //执行此平移动画的 marker
@@ -242,7 +243,8 @@ public class PsgActivity extends PsgLsActivity implements RadioGroup.OnCheckedCh
                 //marker 是否会根据传入的点串计算并执行旋转动画, marker 方向将与移动方向保持一致
                 true);
         mTranslateAnimator.startAnimation();
-        mTranslateAnimator.setFloatValuesListener(new MarkerTranslateAnimator.IAnimaFloatValuesListener() {
+        mTranslateAnimator.setFloatValuesListener(
+                new MarkerTranslateAnimator.IAnimaFloatValuesListener() {
             @Override
             public void floatValues(LatLng latLng) {
                 eraseRoute(latLng);
