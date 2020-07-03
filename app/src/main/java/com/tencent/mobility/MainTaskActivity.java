@@ -6,9 +6,9 @@ import android.view.View;
 import com.tencent.mobility.nearbycar.NearbyCarActivity;
 import com.tencent.mobility.search.SearchActivity;
 import com.tencent.mobility.spot.SpotActivity;
-import com.tencent.mobility.sychro.driver.CarpoolingDriver;
-import com.tencent.mobility.sychro.driver.FastDriver;
-import com.tencent.mobility.sychro.driver.HitchHikeDriver;
+import com.tencent.mobility.synchro_v2.driver.CarpoolingDriver;
+import com.tencent.mobility.synchro_v2.driver.FastDriver;
+import com.tencent.mobility.synchro_v2.driver.HitchHikeDriver;
 import com.tencent.mobility.synchro_v2.psg.PsgActivity;
 import com.tencent.mobility.util.CommonUtils;
 

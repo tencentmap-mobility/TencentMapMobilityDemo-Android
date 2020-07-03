@@ -40,17 +40,17 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".sychro.driver.HitchHikeDriver"/>
+        <activity android:name=".synchro_v2.driver.HitchHikeDriver"/>
 
-        <activity android:name=".sychro.driver.FastDriver"/>
+        <activity android:name=".synchro_v2.driver.FastDriver"/>
 
-        <activity android:name=".sychro.driver.DriverNaviActivity"/>
+        <activity android:name=".synchro_v2.driver.DriverNaviActivity"/>
 
         <activity android:name=".synchro_v2.psg.PsgActivity"/>
 
         <activity android:name=".search.SearchActivity"/>
 
-        <activity android:name=".sychro.driver.CarpoolingDriver"/>
+        <activity android:name=".synchro_v2.driver.CarpoolingDriver"/>
 
         <activity android:name=".spot.SpotActivity"/>
 
