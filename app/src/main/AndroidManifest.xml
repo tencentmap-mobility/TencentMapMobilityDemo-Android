@@ -48,15 +48,15 @@
 
         <activity android:name=".synchro_v2.psg.PsgActivity"/>
 
-        <activity android:name=".nearbycar.NearbyCarUi"/>
-
-        <activity android:name=".spot.SpotList"/>
-
-        <activity android:name=".spot.SpotBaseUi"/>
-
         <activity android:name=".search.SearchActivity"/>
 
         <activity android:name=".sychro.driver.CarpoolingDriver"/>
+
+        <activity android:name=".spot.SpotActivity"/>
+
+        <activity android:name=".spot.PoiSearchActivity"/>
+
+        <activity android:name=".nearbycar.NearbyCarActivity"/>
 
     </application>
 

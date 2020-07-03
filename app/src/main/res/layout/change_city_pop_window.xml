@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#fff"
+    android:orientation="horizontal"
+    >
+
+    <RelativeLayout
+        android:layout_width="0dp"
+        android:layout_weight="4"
+        android:layout_height="64dp"
+        android:gravity="center"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="24dp"
+        >
+        <EditText
+            android:id="@+id/et_city"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:hint="切换城市"
+            android:layout_centerInParent="true"
+            android:background="@drawable/search_edit_text_bg"
+            />
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/tv_save"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="12dp"
+        android:padding="4dp"
+        android:textSize="16sp"
+        android:textColor="#333"
+        android:gravity="center"
+        android:text="保存"
+        android:layout_gravity="center_vertical"
+        />
+
+</LinearLayout>

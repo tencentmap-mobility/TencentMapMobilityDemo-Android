@@ -39,7 +39,7 @@ public class SearchModel implements IModel {
     public void init() {
         TencentSearchManager.init(mView.getAppContext()
                 , "key"
-                , "sn");
+                , "sn key");
     }
 
     /**
@@ -149,6 +149,9 @@ public class SearchModel implements IModel {
         ArrayList<DrivingRouteData> routes = RouteRsp.getRoutes();
         ArrayList<PolylineOptions> options = new ArrayList<>();
 
+        if (routes == null || options == null)
+            return null;
+
         int width = (int) (10 * context.getResources().getDisplayMetrics().density + 0.5);
         for (int i = 0; i < routes.size(); i++) {
             DrivingRouteData routeData = routes.get(i);
@@ -215,6 +218,9 @@ public class SearchModel implements IModel {
 
         ArrayList<WalkingRouteData> routes = routeRsp.getRoutes();
         ArrayList<PolylineOptions> options = new ArrayList<>();
+
+        if (routes == null || options == null)
+            return null;
 
         for (int i = 0; i < routes.size(); i++) {
             WalkingRouteData route = routes.get(i);

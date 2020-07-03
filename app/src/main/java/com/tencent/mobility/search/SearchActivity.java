@@ -134,6 +134,10 @@ public class SearchActivity extends BaseActivity implements IView {
                 polyline.remove();
             }
         }
+
+        if (handleRouteData == null)
+            return;
+
         for (PolylineOptions option : handleRouteData) {
             polylines.add(tencentMap.addPolyline(option));
         }
@@ -152,6 +156,10 @@ public class SearchActivity extends BaseActivity implements IView {
                 polyline.remove();
             }
         }
+
+        if (handleRouteData == null)
+            return;
+
         for (PolylineOptions option : handleRouteData) {
             polylines.add(tencentMap.addPolyline(option));
         }

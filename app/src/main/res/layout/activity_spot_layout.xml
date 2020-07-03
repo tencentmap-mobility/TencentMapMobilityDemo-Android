@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:marker="http://schemas.android.com/apk/res-auto"
+    tools:context=".MainActivity">
+
+    <com.tencent.tencentmap.mapsdk.maps.MapView
+        android:id="@+id/spot_map"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        />
+
+    <TextView
+        android:id="@+id/search_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dip"
+        android:layout_marginLeft="12dp"
+        android:text=""
+        android:gravity="center_vertical"
+        android:textColor="#d96b63"
+        />
+
+    <Button
+        android:id="@+id/change_city"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100dip"
+        android:layout_marginLeft="12dp"
+        android:onClick="changeCity"
+        android:text="切换城市"
+        android:textColor="#333"
+        />
+
+    <Button
+        android:id="@+id/search_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="150dip"
+        android:layout_marginLeft="12dp"
+        android:onClick="sugSearch"
+        android:text="sug检索"
+        android:textColor="#333"
+        />
+
+    <com.tencent.recommendspot.ui.PointMarkerLayout
+        android:id="@+id/tmm_point_marker_kayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        marker:marker_id="@+id/tmm_point_marker"
+        marker:ratioX="0.5"
+        marker:ratioY="0.25"
+        >
+        <com.tencent.recommendspot.ui.PointMarkerView
+            android:id="@+id/tmm_point_marker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            />
+    </com.tencent.recommendspot.ui.PointMarkerLayout>
+
+</RelativeLayout>

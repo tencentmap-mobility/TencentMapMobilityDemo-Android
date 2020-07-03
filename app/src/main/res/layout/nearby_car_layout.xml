@@ -1,13 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.tencent.tencentmap.mapsdk.maps.MapView
-        android:id="@+id/spot_map"
+    <com.tencent.map.carpreview.ui.TencentCarsMap
+        android:id="@+id/cars_map"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        />
+        app:map_top_ratio="0.5" />
+
+    <Button
+        android:id="@+id/location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dip"
+        android:onClick="location"
+        android:layout_marginLeft="12dp"
+        android:textColor="#333"
+        android:text="当前位置" />
 
     <com.tencent.recommendspot.ui.PointMarkerView
         android:id="@+id/point_marker"
@@ -15,4 +26,5 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         />
+
 </RelativeLayout>

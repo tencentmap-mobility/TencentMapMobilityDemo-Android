@@ -48,9 +48,8 @@ dependencies {
     // 腾讯地图SDK
     implementation 'com.tencent.map:tencent-map-vector-sdk:4.3.3.5'
 
-    // 导航SDK，注：导航版本需与地图版本对应，具体使用可沟通客服
-    // 导航SDK 在v5.1.9.11+ 版本剔除掉了内部检索模块
-    implementation 'com.tencent.map:tencent-map-nav-sdk:5.2.1.2'
+    // 导航SDK，注：导航版本需与地图版本对应
+    implementation 'com.tencent.map:tencent-map-nav-sdk:5.2.0.2'
     // 基础库SDK
     implementation 'com.tencent.map:tencent-map-nav-surport:1.0.2.4'
 
@@ -61,12 +60,12 @@ dependencies {
     implementation files('libs/lssupport-release_v2.1.0.aar')
 
     // 推荐上车点SDK，需依赖 检索SDK 和 基础库SDK
-    implementation files('libs/pickupspot_v1.1.0.aar')
+    implementation files('libs/pickupspot_1.1.1.aar')
 
     // 周边车辆SDK，需依赖 基础库SDK
-    implementation files('libs/tencentcarpreview_v1.0.3.aar')
+    implementation files('libs/tencentcarpreview_1.0.4.aar')
 
     // 检索SDK
-    implementation files('libs/navisearch_v1.2.1.aar')
+    implementation files('libs/navi_search_1.2.2.aar')
 
 }
