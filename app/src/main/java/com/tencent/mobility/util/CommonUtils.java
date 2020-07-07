@@ -6,14 +6,14 @@ import android.content.Intent;
 
 public class CommonUtils {
 
-    public static float dp2px(Context context, float dp) {
+    public static int dp2px(Context context, float dp) {
         final float scale = context.getResources().getDisplayMetrics().density;
-        return dp * scale + 0.5f;
+        return (int)(dp * scale + 0.5f);
     }
 
-    public static float px2dp(Context context, float px) {
+    public static int px2dp(Context context, float px) {
         final float scale = context.getResources().getDisplayMetrics().density;
-        return px / scale + 0.5f;
+        return (int)(px / scale + 0.5f);
     }
 
     public static void toIntent(Activity a, Class c) {

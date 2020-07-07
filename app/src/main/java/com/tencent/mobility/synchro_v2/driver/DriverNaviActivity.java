@@ -12,15 +12,22 @@ import com.tencent.map.lsdriver.TSLDExtendManager;
 import com.tencent.map.lsdriver.lsd.listener.DriDataListener;
 import com.tencent.map.lssupport.bean.TLSBPosition;
 import com.tencent.map.lssupport.bean.TLSDWayPointInfo;
+import com.tencent.map.navi.TencentNaviCallback;
 import com.tencent.map.navi.car.CarNaviView;
 import com.tencent.map.navi.car.CarRouteSearchOptions;
 import com.tencent.map.navi.car.TencentCarNaviManager;
+import com.tencent.map.navi.data.AttachedLocation;
 import com.tencent.map.navi.data.NaviPoi;
+import com.tencent.map.navi.data.NaviTts;
 import com.tencent.map.navi.data.RouteData;
 import com.tencent.map.navi.ui.car.CarNaviInfoPanel;
 import com.tencent.mobility.BaseActivity;
 import com.tencent.mobility.R;
 import com.tencent.mobility.synchro_v2.helper.SingleHelper;
+import com.tencent.tencentmap.mapsdk.maps.model.BitmapDescriptorFactory;
+import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
+import com.tencent.tencentmap.mapsdk.maps.model.Marker;
+import com.tencent.tencentmap.mapsdk.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 
@@ -35,6 +42,8 @@ public class DriverNaviActivity extends BaseActivity {
     TSLDExtendManager lsManager;// 司乘管理类
     TencentCarNaviManager mNaviManager;// 导航
     CarNaviView carNaviView;
+
+    Marker psgMarker;
 
     int curRouteIndex = 0;
 
@@ -51,7 +60,7 @@ public class DriverNaviActivity extends BaseActivity {
         carNaviView.configWayPointMarkerpresentation(getWayMarker());
         mNaviManager.addNaviView(carNaviView);
         lsManager = TSLDExtendManager.getInstance();
-        // lsManager.setNaviManager(mNaviManager); // demo ls是单例，在"听单页"已经被set
+        lsManager.setNaviManager(mNaviManager);
         lsManager.addTLSDriverListener(new MyDriverListener());// 数据callback
         lsManager.addRemoveWayPointCallBack(new DriDataListener.IRemoveWayByUserCallBack() {
             @Override
@@ -67,6 +76,9 @@ public class DriverNaviActivity extends BaseActivity {
             }
         });
 
+        // 拉取乘客位置
+        lsManager.fetchPassengerPositionsEnabled(true);
+
         mNaviManager.setInternalTtsEnabled(true);
         CarNaviInfoPanel carNaviInfoPanel = carNaviView.showNaviInfoPanel();// 默认ui
         carNaviInfoPanel.setOnNaviInfoListener(new CarNaviInfoPanel.OnNaviInfoListener() {
@@ -76,6 +88,9 @@ public class DriverNaviActivity extends BaseActivity {
                 finish();
             }
         });
+
+        // 添加导航数据回调
+        mNaviManager.addTencentNaviCallback(mNaviCallback);
 
         startSimulateNavi();
     }
@@ -155,6 +170,9 @@ public class DriverNaviActivity extends BaseActivity {
         if (carNaviView != null) {
             carNaviView.onDestroy();
         }
+        if (mNaviManager != null) {
+            mNaviManager.removeTencentNaviCallback(mNaviCallback);
+        }
         super.onDestroy();
     }
 
@@ -170,6 +188,100 @@ public class DriverNaviActivity extends BaseActivity {
         return bps;
     }
 
+    /**
+     * 显示乘客位置
+     */
+    private void showPsgMarker(TLSBPosition position) {
+        if(psgMarker == null)
+            psgMarker = addMarker(new LatLng
+                            (position.getLatitude(), position.getLongitude())
+                    , R.mipmap.passenger
+                    , 0);
+        else
+            psgMarker.setPosition(new LatLng
+                    (position.getLatitude(), position.getLongitude()));
+    }
+
+    public Marker addMarker(LatLng latLng, int markerId, float rotation) {
+        return carNaviView.getMap().addMarker(new MarkerOptions(latLng)
+                .icon(BitmapDescriptorFactory.fromResource(markerId))
+                .rotation(rotation)
+                .anchor(0.5f, 1f));
+    }
+
+    /**
+     * 导航SDK事件监听
+     */
+    private TencentNaviCallback mNaviCallback = new TencentNaviCallback() {
+        @Override
+        public void onStartNavi() {
+            Log.e(LOG_TAG, "onStartNavi()");
+        }
+
+        @Override
+        public void onStopNavi() {
+            Log.e(LOG_TAG, "onStopNavi()");
+        }
+
+        @Override
+        public void onOffRoute() {
+
+        }
+
+        @Override
+        public void onRecalculateRouteSuccess(int i, ArrayList<RouteData> arrayList) {
+
+        }
+
+        @Override
+        public void onRecalculateRouteFailure(int i, int i1, String s) {
+
+        }
+
+        @Override
+        public void onRecalculateRouteStarted(int i) {
+
+        }
+
+        @Override
+        public void onRecalculateRouteCanceled() {
+
+        }
+
+        @Override
+        public int onVoiceBroadcast(NaviTts naviTts) {
+            return 0;
+        }
+
+        @Override
+        public void onArrivedDestination() {
+
+        }
+
+        @Override
+        public void onPassedWayPoint(int i) {
+
+        }
+
+        @Override
+        public void onUpdateRoadType(int i) {
+
+        }
+
+        @Override
+        public void onUpdateAttachedLocation(AttachedLocation attachedLocation) {
+            Log.e(LOG_TAG, "attachedLocation : " + attachedLocation.isValid());
+        }
+
+        @Override
+        public void onFollowRouteClick(String s, ArrayList<LatLng> arrayList) {
+
+        }
+    };
+
+    /**
+     * 剔除途经点回调
+     */
     class MyDropWayListener implements DriDataListener.ISearchCallBack {
         @Override
         public void onParamsInvalid(int errCode, String errMsg) {
@@ -215,6 +327,11 @@ public class DriverNaviActivity extends BaseActivity {
         @Override
         public void onPullLsInfoSuc(ArrayList<TLSBPosition> los) {
             Log.e(LOG_TAG, "navigation onPullLsInfoSuc()");
+
+            // 显示乘客位置，注意：适用于快车
+            if (los != null && los.size() != 0) {
+                showPsgMarker(los.get(los.size() - 1));
+            }
         }
 
         @Override

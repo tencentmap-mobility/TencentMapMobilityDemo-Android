@@ -54,8 +54,8 @@ dependencies {
     implementation 'com.tencent.map:tencent-map-nav-surport:1.0.2.4'
 
     // 司乘SDK，需与司乘基础库
-    implementation files('libs/lsdriver-release_v2.1.1.aar') // 司乘SDK司机端
-    implementation files('libs/lspassenger-release_v2.1.0.aar') // 司乘SDK乘客端
+    implementation files('libs/lsdriver_v2.1.2.aar') // 司乘SDK司机端
+    implementation files('libs/lspassenger_v2.1.1.aar') // 司乘SDK乘客端
     // 司乘基础库SDK，注：与基础库不同
     implementation files('libs/lssupport-release_v2.1.0.aar')
 

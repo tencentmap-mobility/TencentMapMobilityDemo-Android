@@ -41,12 +41,12 @@ public class TencentLocaiton implements ILocation {
             Log.e(LOG_TAG,"tencent location sdk mLocationManger null");
             return;
         }
-        mLocationManager.setCoordinateType(TencentLocationManager.COORDINATE_TYPE_GCJ02);
         // 定位监听
         locationListener = new TencentLocaiton.MyLocationListener();
         // 开始定位
         TencentLocationRequest request = TencentLocationRequest.create();
         request.setInterval(1000);
+        request.setRequestLevel(TencentLocationRequest.REQUEST_LEVEL_ADMIN_AREA);
         int error = mLocationManager.requestLocationUpdates(request, locationListener);
         Log.d(LOG_TAG, "tencent location sdk request:" + error);
     }

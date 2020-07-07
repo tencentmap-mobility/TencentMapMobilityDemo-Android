@@ -6,7 +6,9 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+import android.view.View;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
@@ -23,6 +25,7 @@ import com.tencent.mobility.R;
 import com.tencent.mobility.synchro_v2.helper.ConvertHelper;
 import com.tencent.mobility.synchro_v2.helper.SHelper;
 import com.tencent.mobility.util.CommonUtils;
+import com.tencent.tencentmap.mapsdk.maps.TencentMap;
 import com.tencent.tencentmap.mapsdk.maps.model.BitmapDescriptorFactory;
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
 import com.tencent.tencentmap.mapsdk.maps.model.Marker;
@@ -62,6 +65,8 @@ public class PsgActivity extends PsgLsActivity implements RadioGroup.OnCheckedCh
 
     RadioGroup radioGroup;// cur account
 
+    private MyInfoWindowAdapter infoAdapter;
+
     /**
      * 初始化状态，不一是最终的上传状态
      *
@@ -78,12 +83,13 @@ public class PsgActivity extends PsgLsActivity implements RadioGroup.OnCheckedCh
     public void onCheckedChanged(RadioGroup group, int checkedId) {
         switch (checkedId) {
             case R.id.hh_a:// 顺风单A
-                orderId = "test_driver_order_000011";// 顺风车司机订单id
+                orderId = "test_driver_order_a_000001";// 顺风车司机订单id
                 psgId = "test_passenger_000001";// 顺风车乘客id
-                pOrderId = "test_passenger_order_000011";// 乘客子订单id
+                pOrderId = "test_passenger_order_a_000001";// 乘客子订单id
                 curOrderType = TLSBOrderType.TLSDOrderTypeHitchRide;
                 curOrderState = TLSBOrderStatus.TLSDOrderStatusNone;
                 curDriverState = TLSDDrvierStatus.TLSDDrvierStatusStopped;
+                currCarType = PSG_HITCH_HIKE;
                 break;
             case R.id.hh_b:// 顺风单B
                 orderId = "test_driver_order_000011";// 顺风车司机订单id
@@ -92,6 +98,7 @@ public class PsgActivity extends PsgLsActivity implements RadioGroup.OnCheckedCh
                 curOrderType = TLSBOrderType.TLSDOrderTypeHitchRide;
                 curOrderState = TLSBOrderStatus.TLSDOrderStatusNone;
                 curDriverState = TLSDDrvierStatus.TLSDDrvierStatusStopped;
+                currCarType = PSG_HITCH_HIKE;
                 break;
             case R.id.fast_c:// 快车单
                 orderId = "xc_1112";// 快车订单id
@@ -100,14 +107,16 @@ public class PsgActivity extends PsgLsActivity implements RadioGroup.OnCheckedCh
                 curOrderType = TLSBOrderType.TLSDOrderTypeNormal;
                 curOrderState = TLSBOrderStatus.TLSDOrderStatusNone;
                 curDriverState = TLSDDrvierStatus.TLSDDrvierStatusStopped;
+                currCarType = PSG_FAST;
                 break;
             case R.id.carpooling_a:// 拼车单
-                orderId = "test_driver_order_000011";// 拼车订单id
+                orderId = "test_driver_order_a_000001";// 拼车订单id
                 psgId = "test_passenger_000001";// 拼车乘客id
-                pOrderId = "test_passenger_order_000011";// 拼车乘客子订单id
+                pOrderId = "test_passenger_order_a_000001";// 拼车乘客子订单id
                 curOrderType = TLSBOrderType.TLSBOrderTypeRidesharing;
                 curOrderState = TLSBOrderStatus.TLSDOrderStatusNone;
                 curDriverState = TLSDDrvierStatus.TLSDDrvierStatusStopped;
+                currCarType = PSG_CARPOOLING;
                 break;
         }
     }
@@ -149,6 +158,19 @@ public class PsgActivity extends PsgLsActivity implements RadioGroup.OnCheckedCh
         startMarker = null;
         endMarker = null;
         carMarker = null;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (infoAdapter != null)
+            infoAdapter = null;
+        if (eraseThread != null)
+            eraseThread = null;
+        if (eraseHandler != null) {
+            eraseHandler.removeMessages(ERASE_MSG);
+            eraseHandler = null;
+        }
     }
 
     @Override
@@ -209,6 +231,9 @@ public class PsgActivity extends PsgLsActivity implements RadioGroup.OnCheckedCh
             lastPoint = ls.length > 0 ? ls[ls.length - 1] : null;
         }
 
+        // 气泡-剩余里程和剩余时间
+        addMarkerPopWindow(route);
+
     }
 
     /**
@@ -216,10 +241,10 @@ public class PsgActivity extends PsgLsActivity implements RadioGroup.OnCheckedCh
      * @param points
      */
     private void translateAnima(LatLng[] points) {
-        if (points == null || points.length <= 0)
+        if(points == null || points.length <= 0)
             return;
         // 当司机没有新数据上传，防止拉取回上个点串的最后一个点
-        if (points.length == 2 && SHelper.equalOfLatlng(points[0], points[1]))
+        if(points.length == 2 && SHelper.equalOfLatlng(points[0], points[1]))
             return;
         // 平滑动画只需要使用一个marker即可
         if (carMarker == null)
@@ -243,13 +268,69 @@ public class PsgActivity extends PsgLsActivity implements RadioGroup.OnCheckedCh
                 //marker 是否会根据传入的点串计算并执行旋转动画, marker 方向将与移动方向保持一致
                 true);
         mTranslateAnimator.startAnimation();
-        mTranslateAnimator.setFloatValuesListener(
-                new MarkerTranslateAnimator.IAnimaFloatValuesListener() {
+        mTranslateAnimator.setFloatValuesListener(new MarkerTranslateAnimator.IAnimaFloatValuesListener() {
             @Override
             public void floatValues(LatLng latLng) {
                 eraseRoute(latLng);
             }
         });
+    }
+
+    /**
+     * TLSBRoute 内的remainingTime和remainingDistance
+     * 代表司机当前距离司机终点的剩余时间和剩余里程，
+     * 在快车场景下，乘客端使用这个剩余时间和剩余里程。
+     *
+     * <p>ArrayList<TLSBWayPoint> wayPoints SDK将
+     * 所有途经点的信息都给乘客返回了，
+     * 乘客的剩余时间和剩余里程需要取这里的数据。
+     * 在顺风车和拼车场景下，乘客需要先匹配
+     * 需要的TLSBWayPoint，再选择TLSBWayPoint内的剩余时间和剩余里程。
+     */
+    private void addMarkerPopWindow(TLSBRoute route) {
+        if (route == null)
+            return;
+
+        tencentMap.setInfoWindowAdapter(infoAdapter == null
+                ? infoAdapter = new MyInfoWindowAdapter() : infoAdapter);
+
+        int distance = 0; // 剩余里程
+        int duration = 0; // 剩余时间
+
+        switch (currCarType) {
+            case PSG_FAST: // 快车
+                distance = route.getRemainingDistance();
+                duration = route.getRemainingTime();
+                break;
+
+            case PSG_HITCH_HIKE: // 顺风车
+            case PSG_CARPOOLING: // 拼车
+                ArrayList<TLSBWayPoint> wayPoints = route.getWayPoints();
+                if (wayPoints == null || wayPoints.size() == 0)
+                    break;
+
+                for (TLSBWayPoint wayPoint : wayPoints) {
+                    // 到达子订单的上车点剩余里程和时间
+                    if (pOrderId.equals(wayPoint.getPassengerOrderId())
+                            && wayPoint.getWayPointType()
+                            == TLSBWayPointType.TLSDWayPointTypeGetIn) {
+                        distance = wayPoint.getRemainingDistance();
+                        duration = wayPoint.getRemainingTime();
+                        break;
+                    }
+                }
+                break;
+
+        }
+
+        Log.e(LOG_TAG, "distance : " + distance + ", duration : " + duration);
+
+        if (carMarker != null) {
+            String dStr = "剩余 " + distance + " 米";
+            String tStr = "预计 " + duration + " 分钟";
+            infoAdapter.setDistanceAndDuration(dStr, tStr);
+            carMarker.showInfoWindow();
+        }
     }
 
     /**
@@ -260,10 +341,10 @@ public class PsgActivity extends PsgLsActivity implements RadioGroup.OnCheckedCh
         // 调整视图，使中心点为起点终点的中点
         if(points.size() >= 2) {
             SHelper.fitsWithRoute(mapView.getMap(), routePoints
-                    , (int) CommonUtils.dp2px(this, 32)
-                    , (int) CommonUtils.dp2px(this, 64)
-                    , (int) CommonUtils.dp2px(this, 32)
-                    , (int) CommonUtils.dp2px(this, 64));
+                    , CommonUtils.dp2px(this, 32)
+                    , CommonUtils.dp2px(this, 64)
+                    , CommonUtils.dp2px(this, 32)
+                    , CommonUtils.dp2px(this, 64));
         }
         polyline = mapView.getMap().addPolyline(new PolylineOptions()
                 .latLngs(points)
@@ -343,6 +424,52 @@ public class PsgActivity extends PsgLsActivity implements RadioGroup.OnCheckedCh
             }catch (Exception e){
                 Log.e(LOG_TAG, "erase handler handle message error:" + e.getMessage());
             }
+        }
+    }
+
+    class MyInfoWindowAdapter implements TencentMap.InfoWindowAdapter {
+
+        View view;
+        TextView tvDuration;
+        TextView tvDistance;
+
+        String distance; // 剩余里程
+        String duration; // 剩余时间
+
+        public void setDistanceAndDuration(String distance, String duration) {
+            this.distance = distance;
+            this.duration = duration;
+        }
+
+        @Override
+        public View getInfoWindow(final Marker marker) {
+            if (carMarker != null && marker.equals(carMarker)) {
+                return createCustomInfoView(marker);
+            }
+            // null时为默认信息窗样式
+            return null;
+        }
+
+        @Override
+        public View getInfoContents(Marker marker) {
+            if (carMarker != null && marker.equals(carMarker)) {
+                return createCustomInfoView(marker);
+            }
+            // null时为默认信息窗样式
+            return null;
+        }
+
+        private View createCustomInfoView(Marker marker) {
+            view = View.inflate(getApplicationContext()
+                    , R.layout.ls_psg_car_popwindow_layout, null);
+
+            tvDistance = view.findViewById(R.id.tv_psg_remain_distance);
+            tvDuration = view.findViewById(R.id.tv_psg_remain_duration);
+
+            tvDistance.setText(distance);
+            tvDuration.setText(duration);
+
+            return view;
         }
     }
 }

@@ -33,7 +33,10 @@ import java.util.ArrayList;
 public class HitchHikeDriver extends DriverBase implements RadioGroup.OnCheckedChangeListener {
 
     String driverId = "test_driver_000001";// 顺风车司机id
-    String orderId = "test_driver_order_000011";// 顺风车id
+    String orderId = "test_driver_order_a_000001";// 顺风车id
+    String pOderId01 = "test_passenger_order_a_000001"; // 乘客1ID
+    String pOderId02 = "test_passenger_order_000012"; // 乘客2ID
+
     int curOrderState = TLSBOrderStatus.TLSDOrderStatusNone;
     int curDrvierStatus = TLSDDrvierStatus.TLSDDrvierStatusStopped;// 默认收车
     int curOrderType = TLSBOrderType.TLSDOrderTypeHitchRide;
@@ -254,7 +257,7 @@ public class HitchHikeDriver extends DriverBase implements RadioGroup.OnCheckedC
 
     private TLSDWayPointInfo addWayAFrom() {
         TLSDWayPointInfo w1 = new TLSDWayPointInfo();
-        w1.setpOrderId("test_passenger_order_000011");// 乘客1订单id
+        w1.setpOrderId(pOderId01);// 乘客1订单id
         w1.setWayPointType(TLSBWayPointType.TLSDWayPointTypeGetIn);
         w1.setLat(39.940080);
         w1.setLng(116.355257);
@@ -267,7 +270,7 @@ public class HitchHikeDriver extends DriverBase implements RadioGroup.OnCheckedC
 
     private TLSDWayPointInfo addWayATo() {
         TLSDWayPointInfo w2 = new TLSDWayPointInfo();
-        w2.setpOrderId("test_passenger_order_000011");// 乘客1订单id
+        w2.setpOrderId(pOderId01);// 乘客1订单id
         w2.setWayPointType(TLSBWayPointType.TLSDWayPointTypeGetOff);
         w2.setLat(39.923890);
         w2.setLng(116.344700);
@@ -276,7 +279,7 @@ public class HitchHikeDriver extends DriverBase implements RadioGroup.OnCheckedC
 
     private TLSDWayPointInfo addWayBFrom() {
         TLSDWayPointInfo w1 = new TLSDWayPointInfo();
-        w1.setpOrderId("test_passenger_order_000012");// 乘客2订单id
+        w1.setpOrderId(pOderId02);// 乘客2订单id
         w1.setWayPointType(TLSBWayPointType.TLSDWayPointTypeGetIn);
         w1.setLat(39.932446);
         w1.setLng(116.363153);
@@ -285,7 +288,7 @@ public class HitchHikeDriver extends DriverBase implements RadioGroup.OnCheckedC
 
     private TLSDWayPointInfo addWayBTo() {
         TLSDWayPointInfo w2 = new TLSDWayPointInfo();
-        w2.setpOrderId("test_passenger_order_000012");// 乘客2订单id
+        w2.setpOrderId(pOderId02);// 乘客2订单id
         w2.setWayPointType(TLSBWayPointType.TLSDWayPointTypeGetOff);
         w2.setLat(39.923297);
         w2.setLng(116.360407);

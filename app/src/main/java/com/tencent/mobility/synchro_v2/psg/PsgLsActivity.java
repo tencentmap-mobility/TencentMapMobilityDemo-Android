@@ -32,15 +32,21 @@ public abstract class PsgLsActivity extends PsgBaseMapActivity {
 
     static final String LOG_TAG = "navi1234";
 
-    String orderId = "test_driver_order_000011"; // 司机订单id
+    protected static final int PSG_FAST = 0; // 快车
+    protected static final int PSG_HITCH_HIKE = 1; // 顺丰车
+    protected static final int PSG_CARPOOLING = 2; // 拼车
+
+    String orderId = "test_driver_order_a_000001"; // 司机订单id
     String psgId = "test_passenger_000001"; // 乘客id
-    String pOrderId = "test_passenger_order_000011"; // 乘客子订单id
+    String pOrderId = "test_passenger_order_a_000001"; // 乘客子订单id
     int curOrderType = TLSBOrderType.TLSDOrderTypeNormal; // 订单类型
     int curOrderState = TLSBOrderStatus.TLSDOrderStatusNone; // 送驾状态
     int curDriverState = TLSDDrvierStatus.TLSDDrvierStatusStopped; // 司机状态
 
     TSLPassengerManager tlspManager;// 司乘管理类
     TencentLocaiton locationManager;// 定位管理类
+
+    protected int currCarType = PSG_HITCH_HIKE;
 
     Marker psgMarker;
 
@@ -60,15 +66,13 @@ public abstract class PsgLsActivity extends PsgBaseMapActivity {
         locationManager.setLocationListener(new ILocation.ILocationListener() {
             @Override
             public void onLocationChanged(MapLocation location) {
-                if(tlspManager != null)// 上传定位点
-                    tlspManager.uploadPosition(ConvertHelper.tenPoTOTLSPo(location));
-                if(location != null) {// 展示自己位置
-                    if(psgMarker == null)
-                        psgMarker = addMarker(new LatLng(location.getLatitude(), location.getLongitude())
-                                , R.mipmap.psg_position_icon, 0);
-                    else
-                        psgMarker.setPosition(new LatLng(location.getLatitude(), location.getLongitude()));
-                }
+
+                // 上传定位点
+                updatePsgLoc(location);
+
+                // 展示自身位置
+                showPsgLoc(location);
+
             }
 
             @Override
@@ -76,6 +80,36 @@ public abstract class PsgLsActivity extends PsgBaseMapActivity {
 
             }
         });
+    }
+
+    private void updatePsgLoc(MapLocation location) {
+        // 支持快车
+        if (currCarType == PSG_FAST) {
+            TLSConfigPreference.create()
+                    .setAccountId(psgId);
+
+            tlspManager.getTLSPOrder()
+                    .setOrderId(orderId)
+                    .setOrderStatus(curOrderState)
+                    .setOrderType(curOrderType)
+                    .setCityCode(location.getCityCode());
+
+            tlspManager.uploadPosition(ConvertHelper.tenPoTOTLSPo(location));
+        }
+
+    }
+
+    private void showPsgLoc(MapLocation location) {
+        if (location != null) { // 展示自己位置
+            if(psgMarker == null)
+                psgMarker = addMarker(new LatLng
+                                (location.getLatitude(), location.getLongitude())
+                        , R.mipmap.psg_position_icon
+                        , 0);
+            else
+                psgMarker.setPosition(new LatLng
+                        (location.getLatitude(), location.getLongitude()));
+        }
     }
 
     /**
@@ -256,6 +290,9 @@ public abstract class PsgLsActivity extends PsgBaseMapActivity {
 
         @Override
         public void onPushPositionSuc() {
+            /**
+             * 注意：只支持快车司机展示乘客位置。
+             */
             Log.e(LOG_TAG, "push location suc !!");
         }
 
