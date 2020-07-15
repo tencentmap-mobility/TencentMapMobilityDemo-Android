@@ -21,9 +21,10 @@ public class ConvertHelper {
         driverPosition.setLatitude(tenLo.getLatitude());
         driverPosition.setLongitude(tenLo.getLongitude());
         driverPosition.setAccuracy(tenLo.getAccuracy());
-        driverPosition.setBearing((float) tenLo.getBearing());
+        driverPosition.setBearing(tenLo.getBearing());
         driverPosition.setVelocity(tenLo.getSpeed());
-        driverPosition.setTime(tenLo.getTime());
+        // 时间戳精确到毫米
+        driverPosition.setTime(tenLo.getTime() * 1000);
         driverPosition.setAltitude(tenLo.getAltitude());
         driverPosition.setProvider(tenLo.getProvider());
         driverPosition.setCityCode(tenLo.getCityCode());

@@ -189,18 +189,16 @@ public class FastDriver extends DriverBase {
         @Override
         public void onLocationChanged(TencentLocation location, int i, String s) {
             /**
-             * 定位成功的回调
+             * 在非导航态，上传定位点时，
+             * 也需要更新TLSBOrder信息。
              */
             if(lsManager != null && location != null) {
-                lsManager.getTLSBOrder().setOrderStatus(curOrderState)// 更新订单状态
-                        .setOrderId(orderId).setOrderType(curOrderType)
-                        .setDrvierStatus(curDrvierStatus)
-                        .setCityCode(location.getCityCode());
-                lsManager.uploadPosition(ConvertHelper.tenPoToTLSDPo(location));// 更新订单状态
+                lsManager.getTLSBOrder()
+                        .setOrderId("-1") // SDK默认-1，不能为空
+                        .setOrderType(curOrderType) // 默认快车
+                        .setDrvierStatus(curDrvierStatus); // 听单中
+                lsManager.uploadPosition(ConvertHelper.tenPoToTLSDPo(location));
             }
-
-            Log.e(LOG_TAG, "location suc -> lat : " + location.getLatitude()
-                    + ", lng : " + location.getLongitude());
         }
 
         @Override

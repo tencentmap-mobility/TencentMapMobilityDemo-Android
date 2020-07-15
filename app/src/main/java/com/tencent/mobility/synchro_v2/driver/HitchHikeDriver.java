@@ -261,8 +261,10 @@ public class HitchHikeDriver extends DriverBase implements RadioGroup.OnCheckedC
         w1.setWayPointType(TLSBWayPointType.TLSDWayPointTypeGetIn);
         w1.setLat(39.940080);
         w1.setLng(116.355257);
+
         /**
-         * 如果算路所在carNaviView和导航carNaviView相同，则可这样设置途经点bitmap
+         * 如果算路所在carNaviView和导航carNaviView相同，
+         * 则可这样设置途经点bitmap
          */
         w1.setImage(BitmapFactory.decodeResource(getResources(), R.mipmap.waypoint1_1));
         return w1;
@@ -314,18 +316,15 @@ public class HitchHikeDriver extends DriverBase implements RadioGroup.OnCheckedC
         @Override
         public void onLocationChanged(TencentLocation location, int i, String s) {
             /**
-             * 定位成功的回调
+             * 在非导航态，上传定位点时，也需要更新TLSBOrder信息。
              */
             if(lsManager != null && location != null) {
-                lsManager.getTLSBOrder().setOrderStatus(curOrderState)// 更新订单状态
-                        .setOrderId(orderId).setOrderType(curOrderType)
-                        .setDrvierStatus(curDrvierStatus)
-                        .setCityCode(location.getCityCode());
-                lsManager.uploadPosition(ConvertHelper.tenPoToTLSDPo(location));// 更新订单状态
+                lsManager.getTLSBOrder()
+                        .setOrderId("-1") // SDK默认-1，不能为空
+                        .setOrderType(curOrderType) // 默认快车
+                        .setDrvierStatus(curDrvierStatus); // 听单中
+                lsManager.uploadPosition(ConvertHelper.tenPoToTLSDPo(location));
             }
-
-            Log.e(LOG_TAG, "location suc -> lat : " + location.getLatitude()
-                    + ", lng : " + location.getLongitude());
         }
 
         @Override

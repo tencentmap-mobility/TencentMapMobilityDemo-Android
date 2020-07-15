@@ -75,6 +75,14 @@ public abstract class DriverBaseMapActivity extends BaseActivity {
         super.onRestart();
     }
 
+    /**
+     * 关联生命周期方法时，
+     * 需使用导航SDK提供的carNaviView，
+     * 而不要使用mapView。
+     *
+     * <p>在carNaviView内部会自动
+     * 地图周期。
+     */
     @Override
     public void onResume() {
         if (carNaviView != null) {

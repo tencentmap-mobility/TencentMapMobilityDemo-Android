@@ -42,7 +42,7 @@ dependencies {
     implementation 'pub.devrel:easypermissions:2.0.0'
     implementation 'com.gyf.immersionbar:immersionbar:2.3.1'
 
-    // 定位SDK，具体的版本使用情况可沟通客服
+    // 定位SDK，注：版本可沟通小助手
     implementation files('libs/TencentLocationSDK_v8.7.5.1.aar')
 
     // 腾讯地图SDK
@@ -53,16 +53,17 @@ dependencies {
     // 基础库SDK
     implementation 'com.tencent.map:tencent-map-nav-surport:1.0.2.4'
 
-    // 司乘SDK，需与司乘基础库
-    implementation files('libs/lsdriver_v2.1.2.aar') // 司乘SDK司机端
-    implementation files('libs/lspassenger_v2.1.1.aar') // 司乘SDK乘客端
-    // 司乘基础库SDK，注：与基础库不同
-    implementation files('libs/lssupport-release_v2.1.0.aar')
+    // 司乘SDK司机端
+    implementation files('libs/lsdriver_v2.1.2.aar')
+    // 司乘SDK乘客端
+    implementation files('libs/lspassenger_v2.1.1.aar')
+    // 司乘基础库SDK，注：与 tencent-map-nav-surport 基础库不同
+    implementation files('libs/lssupport_v2.1.1.aar')
 
-    // 推荐上车点SDK，需依赖 检索SDK 和 基础库SDK
+    // 推荐上车点SDK
     implementation files('libs/pickupspot_1.1.1.aar')
 
-    // 周边车辆SDK，需依赖 基础库SDK
+    // 周边车辆SDK
     implementation files('libs/tencentcarpreview_1.0.4.aar')
 
     // 检索SDK
