@@ -60,6 +60,12 @@
 
         <activity android:name=".nearbycar.NearbyCarActivity"/>
 
+        <activity android:name=".map.MapList"/>
+
+        <activity android:name=".map.MapCompass"/>
+
+        <activity android:name=".map.MapCompassBySetting"/>
+
     </application>
 
 </manifest>

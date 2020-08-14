@@ -10,6 +10,7 @@ import android.view.View;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.tencent.map.carpreview.CarTypeConfig;
 import com.tencent.map.carpreview.PreviewMapManager;
 import com.tencent.map.carpreview.nearby.beans.NearbyBean;
 import com.tencent.map.carpreview.nearby.contract.INearbyListener;
@@ -36,7 +37,9 @@ public class NearbyCarActivity extends AppCompatActivity
 
     private PreviewMapManager previewMapManager;
 
-    private LatLng lastLanlng;
+    // 默认软件园南街
+    private LatLng lastLanlng = new LatLng
+            (40.040959,116.272608);
 
     /**
      * 需要将地图挪动监听，同步给周边车辆SDK
@@ -89,17 +92,53 @@ public class NearbyCarActivity extends AppCompatActivity
         types.add("5");
         types.add("6");
         previewMapManager.setCarsType(types);
+
         previewMapManager.setMock(true);
         previewMapManager.attachCarsMap(mTencentCarsMap);
 
-        HashMap<String, Integer> typeResMap = new HashMap<>();
-        typeResMap.put("1", R.mipmap.car1);
-        typeResMap.put("2", R.mipmap.car2);
-        typeResMap.put("3", R.mipmap.car3);
-        typeResMap.put("4", R.mipmap.car4);
-        typeResMap.put("5", R.mipmap.car5);
+//        HashMap<String, Integer> typeResMap = new HashMap<>();
+//        typeResMap.put("1", R.mipmap.car1);
+//        typeResMap.put("2", R.mipmap.car2);
+//        typeResMap.put("3", R.mipmap.car3);
+//        typeResMap.put("4", R.mipmap.car4);
+//        typeResMap.put("5", R.mipmap.car5);
+//        try {
+//            previewMapManager.setCarsTypeResMap(typeResMap); // 设置carType 对应 Res
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+
+        // 可以控制 carType 对应 Res 是否旋转
+        // 可替代 PreviewMapManager#setCarsTypeResMap 方法
+        HashMap<String, CarTypeConfig> typeResMap = new HashMap<>();
+        CarTypeConfig carTypeConfig1 = new CarTypeConfig();
+        carTypeConfig1.setRes(R.mipmap.car1);
+        carTypeConfig1.setWillRotate(false);
+
+        CarTypeConfig carTypeConfig2 = new CarTypeConfig();
+        carTypeConfig2.setRes(R.mipmap.car2);
+        carTypeConfig2.setWillRotate(false);
+
+        CarTypeConfig carTypeConfig3 = new CarTypeConfig();
+        carTypeConfig3.setRes(R.mipmap.car3);
+        carTypeConfig3.setWillRotate(false);
+
+        CarTypeConfig carTypeConfig4 = new CarTypeConfig();
+        carTypeConfig4.setRes(R.mipmap.car4);
+        carTypeConfig4.setWillRotate(false);
+
+        CarTypeConfig carTypeConfig5 = new CarTypeConfig();
+        carTypeConfig5.setRes(R.mipmap.car5);
+        carTypeConfig5.setWillRotate(false);
+
+        typeResMap.put("1", carTypeConfig1);
+        typeResMap.put("2", carTypeConfig2);
+        typeResMap.put("3", carTypeConfig3);
+        typeResMap.put("4", carTypeConfig4);
+        typeResMap.put("5", carTypeConfig5);
+
         try {
-            previewMapManager.setCarsTypeResMap(typeResMap);
+            previewMapManager.setCarTypeConfigMap(typeResMap);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -128,8 +167,12 @@ public class NearbyCarActivity extends AppCompatActivity
 
     @Override
     public void onLocationChanged(TencentLocation tencentLocation, int i, String s) {
-        lastLanlng = new LatLng(tencentLocation.getLatitude()
-                , tencentLocation.getLongitude());
+        double start, dest;
+        if (!((start = tencentLocation.getLatitude()) == 0
+                || (dest = tencentLocation.getLongitude()) == 0)) {
+            lastLanlng = new LatLng(start, dest);
+        }
+
         Log.d(TAG, "onLocationChanged lat : " + tencentLocation.getLatitude()
                 + " lng : " + tencentLocation.getLongitude());
 
