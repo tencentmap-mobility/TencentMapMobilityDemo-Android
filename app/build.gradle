@@ -29,6 +29,11 @@ android {
         pickFirst 'assets/html/index.html'
     }
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
 }
 
 dependencies {
@@ -49,7 +54,7 @@ dependencies {
     implementation 'com.tencent.map:tencent-map-vector-sdk:4.3.3.5'
 
     // 导航SDK，注：导航版本需与地图版本对应
-    implementation 'com.tencent.map:tencent-map-nav-sdk:5.2.1.2'
+    implementation 'com.tencent.map:tencent-map-nav-sdk:5.2.3.1'
     // 基础库SDK
     implementation 'com.tencent.map:tencent-map-nav-surport:1.0.2.4'
 
@@ -68,5 +73,25 @@ dependencies {
 
     // 检索SDK
     implementation files('libs/navi_search_1.2.2.aar')
+
+
+    /** 导航 SDK changelog ****** start *******/
+
+    // 接口文档地址：
+    // https://tencentmap-mobility.github.io/
+
+    // v5.2.3.1
+    // 1、【ADD】设置导航路线上箭头密度接口
+    // 2、【ADD】设置导航路线颜色值和擦除色
+    // 3、【UPDATE】调整 SDK 提供的默认 UI 控件
+
+    // v5.2.3.0
+    // 1、【ADD】支持步骑行导航
+    // 2、【ADD】算路结果对外提供 segRoadNames 路名字段
+    // 3、【UPDATE】支持在导航过程中，添加 CarNaviView
+    // 4、【ADD】设置拖动地图后能否回弹到之前的状态
+    // 5、【FIX】修复已知 bug
+
+    /** 导航 SDK changelog ****** end   *******/
 
 }
