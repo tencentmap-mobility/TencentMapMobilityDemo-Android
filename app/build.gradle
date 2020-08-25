@@ -51,7 +51,7 @@ dependencies {
     implementation files('libs/TencentLocationSDK_v8.7.5.1.aar')
 
     // 腾讯地图SDK
-    implementation 'com.tencent.map:tencent-map-vector-sdk:4.3.3.5'
+    implementation 'com.tencent.map:tencent-map-vector-sdk:4.3.9'
 
     // 导航SDK，注：导航版本需与地图版本对应
     implementation 'com.tencent.map:tencent-map-nav-sdk:5.2.3.1'
