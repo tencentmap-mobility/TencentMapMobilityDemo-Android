@@ -66,7 +66,7 @@ dependencies {
     implementation files('libs/lssupport_v2.1.1.aar')
 
     // 推荐上车点SDK
-    implementation files('libs/pickupspot_1.1.1.aar')
+    implementation files('libs/pickupspot_1.1.2.aar')
 
     // 周边车辆SDK
     implementation files('libs/tencentcarpreview_v1.2.1.aar')
