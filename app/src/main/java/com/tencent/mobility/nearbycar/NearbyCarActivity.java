@@ -2,6 +2,7 @@ package com.tencent.mobility.nearbycar;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -38,8 +39,7 @@ public class NearbyCarActivity extends AppCompatActivity
     private PreviewMapManager previewMapManager;
 
     // 默认软件园南街
-    private LatLng lastLanlng = new LatLng
-            (40.040959,116.272608);
+    private LatLng lastLanlng = new LatLng(40.040959,116.272608);
 
     /**
      * 需要将地图挪动监听，同步给周边车辆SDK
@@ -77,8 +77,7 @@ public class NearbyCarActivity extends AppCompatActivity
         // 可通过setKey接口，动态设置key
 //        previewMapManager.setKey("key");
         // 签名校验
-        previewMapManager.setWebServiceKey("key"
-                , true);
+        previewMapManager.setWebServiceKey("key", true);
         previewMapManager.isOpenLog(true);
 
         previewMapManager.setCarsCount(10);
@@ -96,49 +95,8 @@ public class NearbyCarActivity extends AppCompatActivity
         previewMapManager.setMock(true);
         previewMapManager.attachCarsMap(mTencentCarsMap);
 
-//        HashMap<String, Integer> typeResMap = new HashMap<>();
-//        typeResMap.put("1", R.mipmap.car1);
-//        typeResMap.put("2", R.mipmap.car2);
-//        typeResMap.put("3", R.mipmap.car3);
-//        typeResMap.put("4", R.mipmap.car4);
-//        typeResMap.put("5", R.mipmap.car5);
-//        try {
-//            previewMapManager.setCarsTypeResMap(typeResMap); // 设置carType 对应 Res
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-
-        // 可以控制 carType 对应 Res 是否旋转
-        // 可替代 PreviewMapManager#setCarsTypeResMap 方法
-        HashMap<String, CarTypeConfig> typeResMap = new HashMap<>();
-        CarTypeConfig carTypeConfig1 = new CarTypeConfig();
-        carTypeConfig1.setRes(R.mipmap.car1);
-        carTypeConfig1.setWillRotate(false);
-
-        CarTypeConfig carTypeConfig2 = new CarTypeConfig();
-        carTypeConfig2.setRes(R.mipmap.car2);
-        carTypeConfig2.setWillRotate(false);
-
-        CarTypeConfig carTypeConfig3 = new CarTypeConfig();
-        carTypeConfig3.setRes(R.mipmap.car3);
-        carTypeConfig3.setWillRotate(false);
-
-        CarTypeConfig carTypeConfig4 = new CarTypeConfig();
-        carTypeConfig4.setRes(R.mipmap.car4);
-        carTypeConfig4.setWillRotate(false);
-
-        CarTypeConfig carTypeConfig5 = new CarTypeConfig();
-        carTypeConfig5.setRes(R.mipmap.car5);
-        carTypeConfig5.setWillRotate(false);
-
-        typeResMap.put("1", carTypeConfig1);
-        typeResMap.put("2", carTypeConfig2);
-        typeResMap.put("3", carTypeConfig3);
-        typeResMap.put("4", carTypeConfig4);
-        typeResMap.put("5", carTypeConfig5);
-
         try {
-            previewMapManager.setCarTypeConfigMap(typeResMap);
+            previewMapManager.setCarTypeConfigMap(getCarTypeConfig());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -152,6 +110,65 @@ public class NearbyCarActivity extends AppCompatActivity
 
     public void location(View view) {
         getLocation();
+    }
+
+    public void changeCarIcon(View view) {
+        HashMap<String, CarTypeConfig> typeResMap = getCarTypeConfig();
+        CarTypeConfig carTypeConfig1 = new CarTypeConfig();
+        carTypeConfig1.setCarIconBitmap(BitmapFactory
+                .decodeResource(getResources(), R.mipmap.ic_launcher));
+        carTypeConfig1.setWillRotate(true);
+        typeResMap.put("1", carTypeConfig1);
+        try {
+            previewMapManager.setCarTypeConfigMap(typeResMap);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private HashMap<String, CarTypeConfig> getCarTypeConfig() {
+        /*HashMap<String, Integer> typeResMap = new HashMap<>();
+        typeResMap.put("1", R.mipmap.car1);
+        typeResMap.put("2", R.mipmap.car2);
+        typeResMap.put("3", R.mipmap.car3);
+        typeResMap.put("4", R.mipmap.car4);
+        typeResMap.put("5", R.mipmap.car5);
+        try {
+            previewMapManager.setCarsTypeResMap(typeResMap); // 设置carType 对应 Res
+        } catch (Exception e) {
+            e.printStackTrace();
+        }*/
+
+        // 可以控制 carType 对应 Res 是否旋转
+        // 可替代 PreviewMapManager#setCarsTypeResMap 方法
+        HashMap<String, CarTypeConfig> typeResMap = new HashMap<>();
+        CarTypeConfig carTypeConfig1 = new CarTypeConfig();
+        carTypeConfig1.setRes(R.mipmap.car1);
+        carTypeConfig1.setWillRotate(true);
+
+        CarTypeConfig carTypeConfig2 = new CarTypeConfig();
+        carTypeConfig2.setRes(R.mipmap.car2);
+        carTypeConfig2.setWillRotate(true);
+
+        CarTypeConfig carTypeConfig3 = new CarTypeConfig();
+        carTypeConfig3.setRes(R.mipmap.car3);
+        carTypeConfig3.setWillRotate(true);
+
+        CarTypeConfig carTypeConfig4 = new CarTypeConfig();
+        carTypeConfig4.setRes(R.mipmap.car4);
+        carTypeConfig4.setWillRotate(true);
+
+        CarTypeConfig carTypeConfig5 = new CarTypeConfig();
+        carTypeConfig5.setRes(R.mipmap.car5);
+        carTypeConfig5.setWillRotate(true);
+
+        typeResMap.put("1", carTypeConfig1);
+        typeResMap.put("2", carTypeConfig2);
+        typeResMap.put("3", carTypeConfig3);
+        typeResMap.put("4", carTypeConfig4);
+        typeResMap.put("5", carTypeConfig5);
+
+        return typeResMap;
     }
 
     public void getLocation() {

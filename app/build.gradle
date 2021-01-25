@@ -69,7 +69,7 @@ dependencies {
     implementation files('libs/pickupspot_1.1.3.aar')
 
     // 周边车辆SDK
-    implementation files('libs/tencentcarpreview_v1.2.2.aar')
+    implementation files('libs/tencentcarpreview_v1.2.3.aar')
 
     // 检索SDK
     implementation files('libs/navi_search_1.2.2.aar')

@@ -11,10 +11,20 @@
         app:map_top_ratio="0.5" />
 
     <Button
-        android:id="@+id/location"
+        android:id="@+id/change_car_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="50dip"
+        android:onClick="changeCarIcon"
+        android:layout_marginLeft="12dp"
+        android:textColor="#333"
+        android:text="替换小车位图" />
+
+    <Button
+        android:id="@+id/location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100dip"
         android:onClick="location"
         android:layout_marginLeft="12dp"
         android:textColor="#333"
