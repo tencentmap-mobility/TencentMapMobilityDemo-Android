@@ -51,15 +51,15 @@ dependencies {
     implementation files('libs/TencentLocationSDK_v8.8.6.aar')
 
     // 腾讯地图SDK
-    implementation 'com.tencent.map:tencent-map-vector-sdk:4.3.9.9'
+    implementation 'com.tencent.map:tencent-map-vector-sdk:4.4.2'
 
     // 导航SDK，注：导航版本需与地图版本对应
-    implementation 'com.tencent.map:tencent-map-nav-sdk:5.2.5.0'
+    implementation 'com.tencent.map:tencent-map-nav-sdk:5.2.9.4'
     // 基础库SDK
     implementation 'com.tencent.map:tencent-map-nav-surport:1.0.2.6'
 
     // 司乘SDK司机端
-    implementation files('libs/lsdriver_v2.1.5.aar')
+    implementation files('libs/lsdriver_v2.1.7.aar')
     // 司乘SDK乘客端
     implementation files('libs/lspassenger_v2.1.1.aar')
     // 司乘基础库SDK，注：与 tencent-map-nav-surport 基础库不同

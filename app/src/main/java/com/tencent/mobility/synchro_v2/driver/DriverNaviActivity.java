@@ -19,6 +19,7 @@ import com.tencent.map.navi.car.TencentCarNaviManager;
 import com.tencent.map.navi.data.AttachedLocation;
 import com.tencent.map.navi.data.NaviPoi;
 import com.tencent.map.navi.data.NaviTts;
+import com.tencent.map.navi.data.ParallelRoadStatus;
 import com.tencent.map.navi.data.RouteData;
 import com.tencent.map.navi.ui.car.CarNaviInfoPanel;
 import com.tencent.mobility.BaseActivity;
@@ -275,6 +276,16 @@ public class DriverNaviActivity extends BaseActivity {
 
         @Override
         public void onFollowRouteClick(String s, ArrayList<LatLng> arrayList) {
+
+        }
+
+        @Override
+        public void onRecalculateRouteSuccessInFence(int i) {
+
+        }
+
+        @Override
+        public void onUpdateParallelRoadStatus(ParallelRoadStatus parallelRoadStatus) {
 
         }
     };
