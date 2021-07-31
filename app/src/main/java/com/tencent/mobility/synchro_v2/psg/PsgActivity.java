@@ -291,8 +291,10 @@ public class PsgActivity extends PsgLsActivity implements RadioGroup.OnCheckedCh
         if (route == null)
             return;
 
-        tencentMap.setInfoWindowAdapter(infoAdapter == null
-                ? infoAdapter = new MyInfoWindowAdapter() : infoAdapter);
+        if (null == infoAdapter) {
+            infoAdapter = new MyInfoWindowAdapter();
+        }
+        tencentMap.setInfoWindowAdapter(infoAdapter);
 
         int distance = 0; // 剩余里程
         int duration = 0; // 剩余时间
@@ -436,15 +438,15 @@ public class PsgActivity extends PsgLsActivity implements RadioGroup.OnCheckedCh
         String distance; // 剩余里程
         String duration; // 剩余时间
 
-        public void setDistanceAndDuration(String distance, String duration) {
+        void setDistanceAndDuration(String distance, String duration) {
             this.distance = distance;
             this.duration = duration;
         }
 
         @Override
         public View getInfoWindow(final Marker marker) {
-            if (carMarker != null && marker.equals(carMarker)) {
-                return createCustomInfoView(marker);
+            if (marker.equals(carMarker)) {
+                return createCustomInfoView();
             }
             // null时为默认信息窗样式
             return null;
@@ -452,23 +454,21 @@ public class PsgActivity extends PsgLsActivity implements RadioGroup.OnCheckedCh
 
         @Override
         public View getInfoContents(Marker marker) {
-            if (carMarker != null && marker.equals(carMarker)) {
-                return createCustomInfoView(marker);
+            if (marker.equals(carMarker)) {
+                return createCustomInfoView();
             }
             // null时为默认信息窗样式
             return null;
         }
 
-        private View createCustomInfoView(Marker marker) {
+        private View createCustomInfoView() {
             view = View.inflate(getApplicationContext()
-                    , R.layout.ls_psg_car_popwindow_layout, null);
-
+                    , R.layout.ls_psg_car_popwindow_layout
+                    , null);
             tvDistance = view.findViewById(R.id.tv_psg_remain_distance);
             tvDuration = view.findViewById(R.id.tv_psg_remain_duration);
-
             tvDistance.setText(distance);
             tvDuration.setText(duration);
-
             return view;
         }
     }
