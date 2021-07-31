@@ -40,7 +40,7 @@ public class MapCompassBySetting extends TMapBase implements IPasView {
                     lastLatlng = new LatLng(location.getLatitude(), location.getLongitude());
                     setPoi(lastLatlng);
 
-                    Log.e("tag1234", ">>>>> location bearing : " + (location != null ? location.getBearing() : 0));
+//                    Log.e("tag1234", ">>>>> location bearing : " + (location != null ? location.getBearing() : 0));
 
                     // location source
                     if(ls != null) {
@@ -99,6 +99,7 @@ public class MapCompassBySetting extends TMapBase implements IPasView {
         tencentMap.setLocationSource(new LocationSource() {
             @Override
             public void activate(OnLocationChangedListener onlocationchangedlistener) {
+                // 在定位sdk回调中，更新定位数据
                 ls = onlocationchangedlistener;
             }
 
@@ -107,6 +108,12 @@ public class MapCompassBySetting extends TMapBase implements IPasView {
                 ls = null;
                 lo = null;
             }
+        });
+        // 需要配合 setLocationSource 使用
+        tencentMap.setOnMyLocationChangeListener((location) -> {
+            Log.e("TAG", "locationChange: "
+                    + location.getLatitude()
+                    + "," + location.getLongitude());
         });
         tencentMap.setMyLocationEnabled(true);
         tencentMap.getUiSettings().setMyLocationButtonEnabled(true);
