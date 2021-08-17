@@ -12,27 +12,13 @@
         android:requestLegacyExternalStorage="true"
         >
 
-        <!-- 导航地图的key-->
         <meta-data
             android:name="TencentMapSDK"
-            android:value="xxx" />
+            android:value="Y5IBZ-BRT3F-YIPJQ-NI5UK-VXCD5-DEFAT" />
 
-        <!-- 司乘同显的key-->
         <meta-data
-            android:name="com.tencent.map.ls.api_key"
-            android:value="xxx" />
-
-        <!-- 周边运力key-->
-        <meta-data
-            android:name="com.tencent.map.carpreview.api_key"
-            android:value="xxx"
-            />
-
-        <!-- 推荐上车点-->
-        <meta-data
-            android:name="com.tencent.map.recospot.api_key"
-            android:value="xxx"
-            />
+            android:name="com.tencent.map.api_key"
+            android:value="CHOBZ-RN6RI-CDTGQ-5BL4Y-VL6Q3-WHB3O" />
 
         <activity android:name=".MainTaskActivity">
             <intent-filter>

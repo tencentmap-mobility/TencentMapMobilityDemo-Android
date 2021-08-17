@@ -20,6 +20,7 @@ import com.tencent.map.geolocation.TencentLocation;
 import com.tencent.map.geolocation.TencentLocationListener;
 import com.tencent.map.geolocation.TencentLocationManager;
 import com.tencent.map.geolocation.TencentLocationRequest;
+import com.tencent.mobility.location.GeoLocationAdapter;
 import com.tencent.tencentmap.mapsdk.maps.TencentMap;
 import com.tencent.tencentmap.mapsdk.maps.model.CameraPosition;
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
@@ -29,13 +30,9 @@ import java.util.HashMap;
 
 import com.tencent.mobility.R;
 
-public class NearbyCarActivity extends AppCompatActivity
-        implements TencentLocationListener {
-
-    public static String TAG = ">>Tag";
+public class NearbyCarActivity extends AppCompatActivity {
 
     private TencentCarsMap mTencentCarsMap;
-
     private PreviewMapManager previewMapManager;
 
     // 默认软件园南街
@@ -172,26 +169,25 @@ public class NearbyCarActivity extends AppCompatActivity
     }
 
     public void getLocation() {
-        TencentLocationRequest request = TencentLocationRequest.create();
-        request.setInterval(200);
-        TencentLocationManager locationManager = TencentLocationManager
-                .getInstance(NearbyCarActivity.this);
-        int error = locationManager.requestSingleFreshLocation(request
-                , this
-                , getMainLooper());
-        Log.d(TAG, "getLocation : " + error);
+        GeoLocationAdapter.singleton.get().startGeoLocationAdapter(getApplicationContext());
+        GeoLocationAdapter.singleton.get().addGeoLocationListener(
+                (geoLocation) ->
+                    onLocationChanged(geoLocation.getLocation()
+                            , geoLocation.getStatus()
+                            , geoLocation.getReason())
+                );
     }
 
-    @Override
     public void onLocationChanged(TencentLocation tencentLocation, int i, String s) {
         double start, dest;
         if (!((start = tencentLocation.getLatitude()) == 0
                 || (dest = tencentLocation.getLongitude()) == 0)) {
             lastLanlng = new LatLng(start, dest);
         }
-
-        Log.d(TAG, "onLocationChanged lat : " + tencentLocation.getLatitude()
-                + " lng : " + tencentLocation.getLongitude());
+        if (null != lastLanlng) {
+            // 单次即可
+            GeoLocationAdapter.singleton.get().stopGeoLocationAdapter();
+        }
 
         try {
             // 周边车辆
@@ -200,11 +196,6 @@ public class NearbyCarActivity extends AppCompatActivity
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public void onStatusUpdate(String s, int i, String s1) {
-
     }
 
     private void initPermission() {
@@ -266,6 +257,7 @@ public class NearbyCarActivity extends AppCompatActivity
         if (mTencentCarsMap != null)
             mTencentCarsMap.onStop();
         previewMapManager.stopRefresh();
+        GeoLocationAdapter.singleton.get().stopGeoLocationAdapter();
     }
 
     @Override
@@ -277,5 +269,4 @@ public class NearbyCarActivity extends AppCompatActivity
                 , grantResults);
         getLocation();
     }
-
 }

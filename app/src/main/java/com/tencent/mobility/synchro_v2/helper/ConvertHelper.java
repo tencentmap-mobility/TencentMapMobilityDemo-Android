@@ -5,7 +5,6 @@ import com.tencent.map.lssupport.bean.TLSBDriverPosition;
 import com.tencent.map.lssupport.bean.TLSBPosition;
 import com.tencent.map.lssupport.bean.TLSBRouteTrafficItem;
 import com.tencent.map.lssupport.bean.TLSLatlng;
-import com.tencent.mobility.location.bean.MapLocation;
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
 
 import java.util.ArrayList;
@@ -31,7 +30,7 @@ public class ConvertHelper {
         return driverPosition;
     }
 
-    public static TLSBPosition tenPoTOTLSPo(MapLocation location) {
+    public static TLSBPosition tenPoTOTLSPo(TencentLocation location) {
         TLSBPosition position = new TLSBPosition();
         position.setLatitude(location.getLatitude());
         position.setLongitude(location.getLongitude());

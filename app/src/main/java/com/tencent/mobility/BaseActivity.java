@@ -1,73 +1,65 @@
 package com.tencent.mobility;
 
 import android.Manifest;
-import android.content.pm.ActivityInfo;
+import android.annotation.TargetApi;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
-import com.gyf.barlibrary.ImmersionBar;
+import static android.Manifest.permission.RECORD_AUDIO;
+import static android.os.Build.VERSION_CODES.M;
 
-import java.util.List;
+public class BaseActivity extends AppCompatActivity {
 
-import pub.devrel.easypermissions.EasyPermissions;
-
-public class BaseActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks {
-
-    String[] perms = {
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.READ_PHONE_STATE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-    };
-
-    protected ImmersionBar mImmersionBar;
+    private static final int REQUEST_PERMISSIONS = 2;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // 沉浸式状态栏
-        mImmersionBar = ImmersionBar.with(this);
-        mImmersionBar.fitsSystemWindows(true)
-                .statusBarColor(R.color.status_bar_color);
-        mImmersionBar.init();
 
-        // 竖屏
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        // 去掉标题栏
-        if(getSupportActionBar() != null){
-            getSupportActionBar().hide();
-        }
-
-        initPermission();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (mImmersionBar != null) {
-            mImmersionBar.destroy();
+        if (!hasPermissions() && Build.VERSION.SDK_INT >= M) {
+            requestPermissions();
         }
     }
 
-    private void initPermission() {
-        if (!EasyPermissions.hasPermissions(this, perms)) {
-            EasyPermissions.requestPermissions(this
-                    , "必要的权限"
-                    , 0
-                    , perms);
+    private boolean hasPermissions() {
+        PackageManager pm = getPackageManager();
+        String packageName = getPackageName();
+        int granted = pm.checkPermission(RECORD_AUDIO, packageName);
+        return granted == PackageManager.PERMISSION_GRANTED;
+    }
+
+    @TargetApi(M)
+    private void requestPermissions() {
+        final String[] permissions = {
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.READ_PHONE_STATE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+        };
+        boolean showRationale = false;
+        for (String perm : permissions) {
+            showRationale |= shouldShowRequestPermissionRationale(perm);
         }
-    }
-
-    @Override
-    public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
-
-    }
-
-    @Override
-    public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
-
+        if (!showRationale) {
+            ActivityCompat.requestPermissions(this, permissions, REQUEST_PERMISSIONS);
+            return;
+        }
+        new AlertDialog.Builder(this)
+                .setMessage("使用腾讯出行demo")
+                .setCancelable(false)
+                .setPositiveButton(android.R.string.ok, (DialogInterface dialog, int which) ->
+                        ActivityCompat.requestPermissions(BaseActivity.this,
+                                permissions, REQUEST_PERMISSIONS)
+                )
+                .setNegativeButton(android.R.string.cancel, null)
+                .create()
+                .show();
     }
 }

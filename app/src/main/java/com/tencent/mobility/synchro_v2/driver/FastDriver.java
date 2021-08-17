@@ -205,6 +205,16 @@ public class FastDriver extends DriverBase {
         public void onStatusUpdate(String s, int i, String s1) {
 
         }
+
+        @Override
+        public void onGnssInfoChanged(Object o) {
+
+        }
+
+        @Override
+        public void onNmeaMsgChanged(String s) {
+
+        }
     }
 
     /**
