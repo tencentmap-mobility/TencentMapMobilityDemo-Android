@@ -17,6 +17,7 @@ import com.tencent.map.navi.agent.routes.interfaces.DrivingRouteListener;
 import com.tencent.map.navi.agent.routes.interfaces.WalkingRouteListener;
 import com.tencent.map.navi.agent.sug.SugOptions;
 import com.tencent.map.navi.agent.sug.interfaces.SugListener;
+import com.tencent.map.navi.data.NaviPoi;
 import com.tencent.mobility.search.helper.SearchConvertHelper;
 import com.tencent.mobility.util.RouteUtils;
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
@@ -114,6 +115,8 @@ public class SearchModel implements IModel {
         drivingOptions.setFrom(new SearchLatLng(40.034852, 116.319820));
         // 设置终点位置坐标
         drivingOptions.setTo(new SearchLatLng(40.034852, 117.319820));
+        // 设置途径点
+        //drivingOptions.setWaypoints(new ArrayList<SearchLatLng>());
         /**
          * 更多默认参数，可参数接口文档{@link DrivingOptions}
          */
