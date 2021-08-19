@@ -14,11 +14,11 @@
 
         <meta-data
             android:name="TencentMapSDK"
-            android:value="Y5IBZ-BRT3F-YIPJQ-NI5UK-VXCD5-DEFAT" />
+            android:value="xxx" />
 
         <meta-data
             android:name="com.tencent.map.api_key"
-            android:value="CHOBZ-RN6RI-CDTGQ-5BL4Y-VL6Q3-WHB3O" />
+            android:value="xxx" />
 
         <activity android:name=".MainTaskActivity">
             <intent-filter>

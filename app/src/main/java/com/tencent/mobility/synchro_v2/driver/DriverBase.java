@@ -180,6 +180,9 @@ public abstract class DriverBase extends DriverBaseMapActivity implements IHandl
             if (pointStart < pointEnd) {
                 pointStart = pointEnd;
             }
+            if (pointStart == pointSize - 1) {
+                break;
+            }
             pointEnd = traffics.get(j).getToIndex();
             trafficColor = getTrafficColorByCode(traffics.get(j).getTraffic());
             for (int k = pointStart; k < pointEnd || k == pointSize - 1; k++) {
