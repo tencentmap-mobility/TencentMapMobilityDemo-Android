@@ -19,20 +19,8 @@
 
         <!-- 司乘同显的key-->
         <meta-data
-            android:name="com.tencent.map.ls.api_key"
+            android:name="com.tencent.map.api_key"
             android:value="xxx" />
-
-        <!-- 周边运力key-->
-        <meta-data
-            android:name="com.tencent.map.carpreview.api_key"
-            android:value="xxx"
-            />
-
-        <!-- 推荐上车点-->
-        <meta-data
-            android:name="com.tencent.map.recospot.api_key"
-            android:value="xxx"
-            />
 
         <activity android:name=".MainTaskActivity">
             <intent-filter>
