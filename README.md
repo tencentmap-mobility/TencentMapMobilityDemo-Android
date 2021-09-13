@@ -9,7 +9,7 @@ https://tencentmap-mobility.github.io/
 
 ## 依赖项
 
-![#f03c15](https://placehold.it/15/f03c15/000000?text=+) `注意SDK间的版本搭配，防止冲突！！`
+`注意SDK间的版本搭配，防止冲突！！`
 
 ### 腾讯地图SDK
 详细信息和使用方式可以在官网 https://lbs.qq.com 上获得。
@@ -18,6 +18,6 @@ https://tencentmap-mobility.github.io/
 1. [出行周边车辆SDK](https://github.com/tentcentmap-mobility/TencentMapMobilityDemo-Android/blob/master/app/src/main/assets/readme/%E5%91%A8%E8%BE%B9%E8%BD%A6%E8%BE%86.md)
 2. [出行推荐上车点SDK](https://github.com/tentcentmap-mobility/TencentMapMobilityDemo-Android/blob/master/app/src/main/assets/readme/%E6%8E%A8%E8%8D%90%E4%B8%8A%E8%BD%A6%E7%82%B9.md)
 3. [出行检索SDK](https://github.com/tentcentmap-mobility/TencentMapMobilityDemo-Android/blob/master/app/src/main/assets/readme/%E6%A3%80%E7%B4%A2.md)
-4. [司乘同显SDK](https://github.com/tencentmap-mobility/TencentMapMobilityDemo-Android/edit/release/2.0/docs/outline.md)
-5. [司乘同显司机端流程](https://github.com/tencentmap-mobility/TencentMapMobilityDemo-Android/edit/release/2.0/docs/driver.md)
-6. [司乘同显乘客端流程](https://github.com/tencentmap-mobility/TencentMapMobilityDemo-Android/edit/release/2.0/docs/passenger.md)
+4. [司乘同显SDK](https://github.com/tencentmap-mobility/TencentMapMobilityDemo-Android/blob/release/2.0/docs/outline.md)
+5. [司乘同显司机端流程](https://github.com/tencentmap-mobility/TencentMapMobilityDemo-Android/blob/release/2.0/docs/driver.md)
+6. [司乘同显乘客端流程](https://github.com/tencentmap-mobility/TencentMapMobilityDemo-Android/blob/release/2.0/docs/passenger.md)

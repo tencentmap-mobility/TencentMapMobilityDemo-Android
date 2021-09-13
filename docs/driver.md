@@ -327,16 +327,18 @@
 3.3 当前订单送驾结束后，清理接力单信息，并将接力单信息设置为当前订单
 
 ```java
-    // 待补充
+    // 将接力单信息设置为当前订单
+    orderManager.useOrder(orderManager.getRelayOrder());
+    // 获取原接力单的路线
+    final TLSBRoute tagRoute = routeManager.getRouteByOrderId(
+            orderManager.getUsingOrder().getOrderId());
+    // 同步当前正在进行的路线
+    routeManager.useRouteId(tagRoute.getRouteId());
 ```
 
 ## 4. 乘客选路
 
-乘客可以在送驾前和送驾中去提前选择或切换送驾路线。 司机端需开启选路功能
-
-```java
-    // 待补充
-```
+乘客可以在送驾前和送驾中去提前选择或切换送驾路线。
 
 ### 4.1 送驾前选路
 
