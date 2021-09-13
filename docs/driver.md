@@ -327,6 +327,9 @@
 3.3 当前订单送驾结束后，清理接力单信息，并将接力单信息设置为当前订单
 
 ```java
+    final OrderManager orderManager = mDriverSync.getOrderManager();
+    final RouteManager routeManager = mDriverSync.getRouteManager();
+
     // 将接力单信息设置为当前订单
     orderManager.useOrder(orderManager.getRelayOrder());
     // 获取原接力单的路线

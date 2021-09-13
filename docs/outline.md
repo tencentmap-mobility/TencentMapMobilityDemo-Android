@@ -71,5 +71,5 @@ gradle⽂件中引⽤，如：
 
 ## 快速接入
 
-1. [司乘同显司机端流程](https://github.com/tencentmap-mobility/TencentMapMobilityDemo-Android/edit/release/2.0/docs/driver.md)
-2. [司乘同显乘客端流程](https://github.com/tencentmap-mobility/TencentMapMobilityDemo-Android/edit/release/2.0/docs/passenger.md)
+1. [司乘同显司机端流程](https://github.com/tencentmap-mobility/TencentMapMobilityDemo-Android/blob/release/2.0/docs/driver.md)
+2. [司乘同显乘客端流程](https://github.com/tencentmap-mobility/TencentMapMobilityDemo-Android/blob/release/2.0/docs/passenger.md)

@@ -85,6 +85,8 @@
 
 ## 3. 接力单
 
+[接力单路线](https://github.com/tencentmap-mobility/TencentMapMobilityDemo-Android/blob/release/2.0/docs/imgs/接力单.png)
+
 如果当前乘客的订单是接力单，那么这个订单的路线会分为两段：司机送其他乘客的送驾路线route和司机送其他乘客后接驾路线relayRoute。路线需要拼接route+relayRoute， 剩余时间和里程也需要拼接，可参考demo 。
 
 其中司机送其他乘客的送驾路线route:
@@ -129,6 +131,8 @@
 ```
 
 ### 4.2 送驾中选路
+
+![](https://github.com/tencentmap-mobility/mapmobilitydemo-iOS/blob/realse/2.2.0/images/passenger_chooseroute.gif)
 
 送驾中，在SimplePsgDataListener#onPullLsInfoSuc 拉取路线成功后，当前路线和备选路线都会同步更新至RouteManager内，开发者可获取全部路线：
 
