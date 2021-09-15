@@ -30,6 +30,8 @@
         <activity android:name=".synchro_v2.driver.FastDriver"/>
         <activity android:name=".synchro_v2.driver.DriverNaviActivity"/>
         <activity android:name=".synchro_v2.psg.PsgActivity"/>
+        <activity android:name=".synchro_v2.psg.PassengerSelectRoutesActivity"/>
+        <activity android:name=".synchro_v2.driver.DriverRelayOrderActivity"/>
         <activity android:name=".search.SearchActivity"/>
         <activity android:name=".synchro_v2.driver.CarpoolingDriver"/>
         <activity android:name=".spot.SpotActivity"/>

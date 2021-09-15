@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.tencent.mobility.ui.PanelView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/panel_enter"
+        android:padding="5dp"
+        android:background="@android:color/holo_blue_dark"
+        android:textColor="@android:color/white"
+        android:textStyle="bold"
+        android:textSize="15sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:id="@+id/panel_console"
+        android:layout_gravity="end"
+        android:maxWidth="180dp"
+        android:maxHeight="100dp"
+        android:clickable="false"
+        android:longClickable="true"
+        android:background="#88aaaaaa"
+        android:scrollbars="vertical"
+        android:textColor="@color/black"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+
+</com.tencent.mobility.ui.PanelView>
