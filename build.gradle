@@ -17,6 +17,20 @@ buildscript {
     }
 }
 
+def parseLocalProperties(){
+    File file = rootProject.file('local.properties')
+    if(file.exists()){
+        InputStream inputStream = rootProject.file('local.properties').newDataInputStream();
+        Properties properties = new Properties()
+        properties.load(inputStream)
+        properties.each { name, value ->
+            ext[name] = value
+        }
+    }
+}
+
+parseLocalProperties()
+
 allprojects {
     repositories {
         google()

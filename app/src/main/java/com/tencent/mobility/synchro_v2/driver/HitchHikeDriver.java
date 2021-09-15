@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 
 import com.tencent.map.geolocation.TencentLocation;
 import com.tencent.map.lsdriver.lsd.listener.DriDataListener;
+import com.tencent.map.lsdriver.lsd.listener.SimpleDriDataListener;
 import com.tencent.map.lssupport.bean.TLSBOrderStatus;
 import com.tencent.map.lssupport.bean.TLSBOrderType;
 import com.tencent.map.lssupport.bean.TLSBPosition;
@@ -26,6 +27,7 @@ import com.tencent.mobility.synchro_v2.helper.ConvertHelper;
 import com.tencent.mobility.util.ToastUtils;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 顺风车司机端
@@ -181,7 +183,7 @@ public class HitchHikeDriver extends DriverBase implements RadioGroup.OnCheckedC
                  */
                 lsManager.requestBestSortedWayPoints(from, to, ws, new DriDataListener.ISortedWayPointsCallBack() {
                     @Override
-                    public void onSortedWaysSuc(ArrayList<TLSDWayPointInfo> sortedWays) {
+                    public void onSortedWaysSuc(List<TLSDWayPointInfo> sortedWays) {
                         ws.clear();
                         ws.addAll(sortedWays);// 排好序的途经点
                         // 获取最优顺序后，开始算路
@@ -346,7 +348,7 @@ public class HitchHikeDriver extends DriverBase implements RadioGroup.OnCheckedC
     /**
      * 司乘数据回调
      */
-    class MyDriverListener implements DriDataListener.ITLSDriverListener {
+    class MyDriverListener extends SimpleDriDataListener {
         @Override
         public void onPushRouteSuc() {
             Log.e(LOG_TAG, "onPushRouteSuc()");
@@ -368,7 +370,7 @@ public class HitchHikeDriver extends DriverBase implements RadioGroup.OnCheckedC
         }
 
         @Override
-        public void onPullLsInfoSuc(ArrayList<TLSBPosition> los) {
+        public void onPullLsInfoSuc(List<TLSBPosition> los) {
             Log.e(LOG_TAG, "onPullLsInfoSuc()");
             showPsgPosition(los);// 展示乘客位置
         }

@@ -8,6 +8,7 @@ import com.tencent.map.lssupport.bean.TLSLatlng;
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ConvertHelper {
 
@@ -76,7 +77,7 @@ public class ConvertHelper {
      *  latlng的转换
      * @param list
      */
-    public static ArrayList<LatLng> transformLatLngs(ArrayList<TLSLatlng> list) {
+    public static List<LatLng> transformLatLngs(List<TLSLatlng> list) {
         if(list == null){
             return null;
         }

@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 
 import com.tencent.map.lsdriver.TSLDExtendManager;
 import com.tencent.map.lsdriver.lsd.listener.DriDataListener;
+import com.tencent.map.lsdriver.lsd.listener.SimpleDriDataListener;
 import com.tencent.map.lssupport.bean.TLSBPosition;
 import com.tencent.map.lssupport.bean.TLSDWayPointInfo;
 import com.tencent.map.navi.TencentNaviCallback;
@@ -31,6 +32,7 @@ import com.tencent.tencentmap.mapsdk.maps.model.Marker;
 import com.tencent.tencentmap.mapsdk.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class DriverNaviActivity extends BaseActivity {
 
@@ -65,7 +67,7 @@ public class DriverNaviActivity extends BaseActivity {
         lsManager.addTLSDriverListener(new MyDriverListener());// 数据callback
         lsManager.addRemoveWayPointCallBack(new DriDataListener.IRemoveWayByUserCallBack() {
             @Override
-            public void onRemoveWayPoint(ArrayList<TLSDWayPointInfo> wayPoints) {
+            public void onRemoveWayPoint(List<TLSDWayPointInfo> wayPoints) {
                 // 剔除途经点的回调
                 Log.e(LOG_TAG, ">>>onRemoveWayPoint !!");
                 // app->停止导航，重新算路，开始导航
@@ -314,7 +316,7 @@ public class DriverNaviActivity extends BaseActivity {
     /**
      * 数据回调
      */
-    class MyDriverListener implements DriDataListener.ITLSDriverListener {
+    class MyDriverListener extends SimpleDriDataListener {
         @Override
         public void onPushRouteSuc() {
             Log.e(LOG_TAG, "navigation onPushRouteSuc()");
@@ -336,7 +338,7 @@ public class DriverNaviActivity extends BaseActivity {
         }
 
         @Override
-        public void onPullLsInfoSuc(ArrayList<TLSBPosition> los) {
+        public void onPullLsInfoSuc(List<TLSBPosition> los) {
             Log.e(LOG_TAG, "navigation onPullLsInfoSuc()");
 
             // 显示乘客位置，注意：适用于快车

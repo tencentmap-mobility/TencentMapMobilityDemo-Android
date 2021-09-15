@@ -8,7 +8,7 @@ import androidx.annotation.Nullable;
 
 import com.tencent.map.geolocation.TencentLocation;
 import com.tencent.map.lspassenger.TSLPassengerManager;
-import com.tencent.map.lspassenger.lsp.listener.PsgDataListener;
+import com.tencent.map.lspassenger.lsp.listener.SimplePsgDataListener;
 import com.tencent.map.lssupport.bean.TLSBDriverPosition;
 import com.tencent.map.lssupport.bean.TLSBOrder;
 import com.tencent.map.lssupport.bean.TLSBOrderStatus;
@@ -25,7 +25,7 @@ import com.tencent.navi.surport.utils.DeviceUtils;
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
 import com.tencent.tencentmap.mapsdk.maps.model.Marker;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public abstract class PsgLsActivity extends PsgBaseMapActivity {
 
@@ -249,7 +249,7 @@ public abstract class PsgLsActivity extends PsgBaseMapActivity {
      * @param order
      * @param pos
      */
-    abstract void updateDriverInfo(TLSBRoute route, TLSBOrder order, ArrayList<TLSBDriverPosition> pos);
+    abstract void updateDriverInfo(TLSBRoute route, TLSBOrder order, List<TLSBDriverPosition> pos);
 
     /**
      * 清空当前界面ui
@@ -259,7 +259,7 @@ public abstract class PsgLsActivity extends PsgBaseMapActivity {
     /**
      * 司乘sdk对外暴露的回调接口
      */
-    class MyPullDriverInfo implements PsgDataListener.ITLSPassengerListener {
+    class MyPullDriverInfo extends SimplePsgDataListener {
 
         @Override
         public void onPullLsInfoSuc(TLSDFetchedData fetchedData) {

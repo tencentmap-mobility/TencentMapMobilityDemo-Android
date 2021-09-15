@@ -48,7 +48,7 @@ public class SHelper {
     /**
      * 获取点串第一个吸附成功的点
      */
-    public static TLSBDriverPosition getFirsttLocation(ArrayList<TLSBDriverPosition> locations) {
+    public static TLSBDriverPosition getFirsttLocation(List<TLSBDriverPosition> locations) {
         if(locations == null || locations.size() == 0)
             return null;
         for(TLSBDriverPosition location : locations) {
@@ -62,7 +62,7 @@ public class SHelper {
      *  获取小车平滑需要的点串信息
      * @param locations
      */
-    public static LatLng[] getLatLngsBySynchroLocation(ArrayList<TLSBDriverPosition> locations) {
+    public static LatLng[] getLatLngsBySynchroLocation(List<TLSBDriverPosition> locations) {
         if(locations == null){
             return null;
         }

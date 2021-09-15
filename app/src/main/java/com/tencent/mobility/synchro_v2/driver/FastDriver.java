@@ -9,12 +9,14 @@ import androidx.annotation.Nullable;
 
 import com.tencent.map.geolocation.TencentLocation;
 import com.tencent.map.lsdriver.lsd.listener.DriDataListener;
+import com.tencent.map.lsdriver.lsd.listener.SimpleDriDataListener;
 import com.tencent.map.lssupport.bean.TLSBOrder;
 import com.tencent.map.lssupport.bean.TLSBOrderStatus;
 import com.tencent.map.lssupport.bean.TLSBOrderType;
 import com.tencent.map.lssupport.bean.TLSBPosition;
 import com.tencent.map.lssupport.bean.TLSDDrvierStatus;
 import com.tencent.map.lssupport.bean.TLSDWayPointInfo;
+import com.tencent.map.lssupport.protocol.OrderManager;
 import com.tencent.map.navi.car.CarRouteSearchOptions;
 import com.tencent.map.navi.data.NaviPoi;
 import com.tencent.map.navi.data.RouteData;
@@ -24,6 +26,7 @@ import com.tencent.mobility.synchro_v2.helper.ConvertHelper;
 import com.tencent.mobility.util.ToastUtils;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 快车司机端
@@ -84,9 +87,9 @@ public class FastDriver extends DriverBase {
      */
     public void pullGuestPoints(View view) {
        if(lsManager != null) {
-           TLSBOrder order = lsManager.getTLSBOrder();
+           OrderManager order = lsManager.getOrderManager();
            if(order.getDrvierStatus() != TLSDDrvierStatus.TLSDDrvierStatusServing) {// 只有在服务中才有订单
-               order.setOrderStatus(curOrderState)
+               order.editCurrent().setOrderStatus(curOrderState)
                        .setOrderId(orderId).setOrderType(curOrderType)
                        .setDrvierStatus(curDrvierStatus);
            }
@@ -220,7 +223,7 @@ public class FastDriver extends DriverBase {
     /**
      * 司乘数据回调
      */
-    class MyDriverListener implements DriDataListener.ITLSDriverListener {
+    class MyDriverListener extends SimpleDriDataListener {
         @Override
         public void onPushRouteSuc() {
             Log.e(LOG_TAG, "onPushRouteSuc()");
@@ -242,7 +245,7 @@ public class FastDriver extends DriverBase {
         }
 
         @Override
-        public void onPullLsInfoSuc(ArrayList<TLSBPosition> los) {
+        public void onPullLsInfoSuc(List<TLSBPosition> los) {
             Log.e(LOG_TAG, "onPullLsInfoSuc()");
             showPsgPosition(los);// 展示乘客位置
         }

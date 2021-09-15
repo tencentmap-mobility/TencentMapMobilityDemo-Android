@@ -154,7 +154,7 @@ public abstract class DriverBase extends DriverBaseMapActivity implements IHandl
     }
 
     @Override
-    public void drawUi(RouteData curRoute, NaviPoi from, NaviPoi to, ArrayList<TLSDWayPointInfo> ws) {
+    public void drawUi(RouteData curRoute, NaviPoi from, NaviPoi to, List<TLSDWayPointInfo> ws) {
 
         if(polyline != null)
             polyline.remove();
@@ -216,7 +216,7 @@ public abstract class DriverBase extends DriverBaseMapActivity implements IHandl
      * @param los
      */
     @Override
-    public void showPsgPosition(ArrayList<TLSBPosition> los) {
+    public void showPsgPosition(List<TLSBPosition> los) {
         if(los == null || los.size() == 0)// 1:可能是快车乘客没有上传点，2:顺风车
             return;
         int size = los.size();
@@ -247,7 +247,7 @@ public abstract class DriverBase extends DriverBaseMapActivity implements IHandl
 
     }
 
-    private void addWayMarker(ArrayList<TLSDWayPointInfo> ways) {
+    private void addWayMarker(List<TLSDWayPointInfo> ways) {
         removeWaysMarker();
 
         ArrayList<TLSDWayPointInfo> ws = new ArrayList<>();
