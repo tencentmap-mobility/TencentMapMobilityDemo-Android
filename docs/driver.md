@@ -394,7 +394,74 @@
    });
 ```
 
-## 5. 司乘同显司机端回调
+## 5. 送驾中修改目的地
+
+监听 SimpleDriDataListener 或 DriDataListener.ITLSDriverListener 的回调：
+
+```java
+    /**
+     * 新目的地通知。
+     * 
+     * <p>如果乘客更改了目的地，会给司机变更通知。
+     *
+     * @param newDest 新目的地
+     * @param changedTime 修改时间
+     */
+    public void onNewDestinationNotify(final TLSLatlng newDest, final long changedTime);
+    /**
+     * 目的地修改结果
+     * @param status 0-修改成功，其他-修改失败
+     * @param message 修改结果的描述
+     */
+    public void onDestinationChangeResult(final int status, final String message);
+```
+
+处理开启导航、未开启导航两种情况：
+
+```java
+       @Override
+       public void onNewDestinationNotify(final TLSLatlng newDest, final long changedTime) {
+           super.onNewDestinationNotify(newDest, changedTime);
+            driverPanel.print("乘客的新目的地[" + newDest + "]:" + changedTime);
+
+            //标记更新
+            driverSync.getRouteManager().editCurrent()
+                    .setDestPosition(newDest)
+                    .setDestPositionChanged(true);
+	
+	    // 乘客端更改了目的地
+	    // 如果当前正在导航，需要开发者调用导航SDK修改目的地方法；如果当前还没开启导航，需要开发者重新进行路径规划。
+	    
+	    if (isNavigationing) {
+	        // 修改导航终点
+	        mNaviManager.changeDestination(ConvertHelper.convertToNaviPoi(newDest));
+	    } else {
+	        // 还没开启导航，需要开发者重新路径规划
+                // 导航起点：司机当前位置，导航终点：新目的地 newDest
+		mNaviManager.searchRoute(...);
+	    }
+        }
+
+        @Override
+        public void onDestinationChangeResult(final int status, final String message) {
+            super.onDestinationChangeResult(status, message);
+            driverPanel.print("更改目的地[" + status + "]:" + message);
+	    
+	    // 司机端本身更改了目的地。别忘了同步driverSync.getRouteManager()
+	    
+            if (isNavigationing) {
+	        // 修改导航终点
+	        mNaviManager.changeDestination(ConvertHelper.convertToNaviPoi(newDest));
+	    } else {
+	        // 还没开启导航，需要开发者重新路径规划
+                // 导航起点：司机当前位置，导航终点：新目的地 newDest
+		mNaviManager.searchRoute(...);
+	    }
+	    
+        }
+```
+
+## 6. 司乘同显司机端回调
 
 ```java
     /**
