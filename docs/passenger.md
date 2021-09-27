@@ -154,7 +154,49 @@
 
 ```
 
-## 5. 司乘同显乘客端回调
+## 5. 送驾乘客修改目的地
+
+```java
+    // 送驾中乘客选修改目的地方法. since 2.3.0
+    // @param destLatLng 目的地信息。
+    mPassengerSync.changeDestination(TLSLatlng destLatLng)
+```
+
+通过SimplePsgDataListener 或 PsgDataListener.ITLSPassengerListener 回调可以看到请求状态
+
+```java
+    passengerSync.addTLSPassengerListener(new SimplePsgDataListener() {
+
+        /**
+         * 目的地修改结果
+         * @param status 0-修改成功，其他-修改失败
+         * @param message 修改结果的描述
+         */
+        @Override
+        public void onDestinationChangeResult(final int status, final String message) {
+            super.onDestinationChangeResult(status, message);
+            passengerPanel.print("更改目的地[" + status + "]:" + message);
+        }
+        
+        /**
+         * 新目的地通知。
+         * 
+         * <p>如果司机更改了目的地，会给乘客变更通知。
+         *
+         * @param newDest 新目的地
+         * @param changedTime 修改时间
+         */
+        @Override
+        public void onNewDestinationNotify(final TLSLatlng newDest, final long changedTime) {
+            super.onNewDestinationNotify(newDest, changedTime);
+            passengerPanel.print("司机的新目的地[" + newDest + "]:" + changedTime);
+            // 更新目的地
+            passengerSync.getRouteManager().editCurrent().setDestPosition(newDest);
+        }
+    });
+```
+
+## 6. 司乘同显乘客端回调
 
 ```java
     /**
