@@ -223,4 +223,12 @@
      * 发起选路请求失败回调
      */
     void onPushRouteFail(int errCode, String errStr);
+    /**
+     * 新目的地通知。
+     */
+    public void onNewDestinationNotify(final TLSLatlng newDest, final long changedTime);
+    /**
+     * 目的地修改结果
+     */
+    public void onDestinationChangeResult(final int status, final String message);
 ```

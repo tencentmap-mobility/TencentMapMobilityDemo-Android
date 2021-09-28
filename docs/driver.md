@@ -502,4 +502,12 @@
      * 路线选择之后，在当前的路线列表中未找到
      */
     void onSelectedRouteNotFoundNotify(String selectedRouteId);
+    /**
+     * 新目的地通知。
+     */
+    public void onNewDestinationNotify(final TLSLatlng newDest, final long changedTime);
+    /**
+     * 目的地修改结果
+     */
+    public void onDestinationChangeResult(final int status, final String message);
 ```
