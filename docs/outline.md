@@ -27,7 +27,7 @@
 gradle⽂件中引⽤，如：
 
 ```java
-    implementation 'com.tencent.map:tencent-map-vector-sdk:4.4.5.1'
+    implementation 'com.tencent.map:tencent-map-vector-sdk:4.4.5.5'
 ```
 
 并在AndroidMainfest⽂件中，配置key，如：
@@ -45,7 +45,7 @@ gradle⽂件中引⽤，如：
 
 ```java
     // 需与地图SDKv4.3.3.9后版本搭配使⽤
-    implementation 'com.tencent.map:tencent-map-nav-sdk:5.3.1.2'
+    implementation 'com.tencent.map:tencent-map-nav-sdk:5.3.2.0'
 ```
 
 需要注意的是，导航SDK需要依赖支持库SDK，具体如下：
@@ -71,5 +71,5 @@ gradle⽂件中引⽤，如：
 
 ## 快速接入
 
-1. [司乘同显司机端流程](https://github.com/tencentmap-mobility/TencentMapMobilityDemo-Android/blob/release/2.0/docs/driver.md)
-2. [司乘同显乘客端流程](https://github.com/tencentmap-mobility/TencentMapMobilityDemo-Android/blob/release/2.0/docs/passenger.md)
+1. [司乘同显司机端流程](docs/driver.md)
+2. [司乘同显乘客端流程](docs/passenger.md)
