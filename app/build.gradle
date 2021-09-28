@@ -1,8 +1,8 @@
 apply plugin: 'com.android.application'
+apply from: "${project.rootProject.file('common_function.gradle')}"
 
 android {
     compileSdkVersion 29
-    buildToolsVersion "29.0.2"
     defaultConfig {
         applicationId "com.tencent.mobility"
         minSdkVersion 18
@@ -12,8 +12,13 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         ndk {
-            abiFilters 'armeabi', 'armeabi-v7a'
+            abiFilters 'armeabi', 'armeabi-v7a', 'arm64-v8a', 'x86'
         }
+
+        manifestPlaceholders = [
+                填入地图KEY : mapsdk_key,
+                填入服务KEY : apisdk_key
+        ]
     }
 
     buildTypes {
@@ -33,45 +38,29 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-
 }
 
 dependencies {
-//    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.0-alpha-2'
+    implementation 'androidx.appcompat:appcompat:1.3.1'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test:runner:1.4.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.0'
+    implementation 'androidx.recyclerview:recyclerview:1.2.1'
 
-    implementation 'androidx.recyclerview:recyclerview:1.0.0-alpha1'
-    implementation 'pub.devrel:easypermissions:2.0.0'
-    implementation 'com.gyf.immersionbar:immersionbar:2.3.1'
+    implementation Tencent_Map_Version     // 地图SDK
+    implementation Tencent_Navi_Version    // 导航SDK
+    implementation Tencent_Support_Verison // 导航SDK基础库
+    // 大定位SDK，非官网版本。
+    // 单独使用时，需配合 libmapbase.so 和 libOlRoute.so 使用
+    // 与导航SDK 一起时，可以不加，导航内部已经包含了上述 so 文件
+    implementation files(Tencent_Fusion_Location_Verison)
 
-    // 定位SDK，注：版本可沟通小助手
-    implementation files('libs/TencentLocationSDK_v8.8.6.aar')
+    implementation files(Tencent_TLSD_Verison) // 司乘SDK司机端
+    implementation files(Tencent_TLSP_Verison) // 司乘SDK乘客端
+    implementation files(Tencent_TLSB_Verison) // 司乘支持库
 
-    // 腾讯地图SDK
-    implementation 'com.tencent.map:tencent-map-vector-sdk:4.4.2'
-
-    // 导航SDK，注：导航版本需与地图版本对应
-    implementation 'com.tencent.map:tencent-map-nav-sdk:5.2.9.4'
-    // 基础库SDK
-    implementation 'com.tencent.map:tencent-map-nav-surport:1.0.2.6'
-
-    // 司乘SDK司机端
-    implementation files('libs/lsdriver_v2.1.7.aar')
-    // 司乘SDK乘客端
-    implementation files('libs/lspassenger_v2.1.1.aar')
-    // 司乘基础库SDK，注：与 tencent-map-nav-surport 基础库不同
-    implementation files('libs/lssupport_v2.1.1.aar')
-
-    // 推荐上车点SDK
-    implementation files('libs/pickupspot_1.1.3.aar')
-
-    // 周边车辆SDK
-    implementation files('libs/tencentcarpreview_v1.2.3.aar')
-
-    // 检索SDK
-    implementation files('libs/navi_search_1.2.2.aar')
-
+    implementation Tencent_Mobility_Search_Verison       // 出行检索SDK
+    implementation files(Tencent_Boarding_Point_Verison) // 推荐上车点SDK
+    implementation files(Tencent_NearBy_Car_Version)     // 周边车辆SDK
 }

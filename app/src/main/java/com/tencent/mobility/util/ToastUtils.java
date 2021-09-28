@@ -1,9 +1,8 @@
 package com.tencent.mobility.util;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.widget.Toast;
-
-import com.tencent.map.lssupport.util.StringUtils;
 
 public class ToastUtils {
 
@@ -33,7 +32,7 @@ public class ToastUtils {
     }
 
     public void Toast(String msg) {
-        if(!StringUtils.isEmpty(msg) && mContext != null){
+        if(!TextUtils.isEmpty(msg) && mContext != null){
             Toast.makeText(mContext.getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
         }
     }

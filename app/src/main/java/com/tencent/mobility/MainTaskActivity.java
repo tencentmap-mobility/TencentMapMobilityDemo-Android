@@ -7,8 +7,10 @@ import com.tencent.mobility.nearbycar.NearbyCarActivity;
 import com.tencent.mobility.search.SearchActivity;
 import com.tencent.mobility.spot.SpotActivity;
 import com.tencent.mobility.synchro_v2.driver.CarpoolingDriver;
+import com.tencent.mobility.synchro_v2.driver.DriverRelayOrderActivity;
 import com.tencent.mobility.synchro_v2.driver.FastDriver;
 import com.tencent.mobility.synchro_v2.driver.HitchHikeDriver;
+import com.tencent.mobility.synchro_v2.psg.PassengerSelectRoutesActivity;
 import com.tencent.mobility.synchro_v2.psg.PsgActivity;
 import com.tencent.mobility.util.CommonUtils;
 
@@ -63,6 +65,14 @@ public class MainTaskActivity extends BaseActivity {
     public void onSearch(View view) {
         // 检索
         CommonUtils.toIntent(this, SearchActivity.class);
+    }
+
+    public void onRelayOrder(View view) {
+        CommonUtils.toIntent(this, DriverRelayOrderActivity.class);
+    }
+
+    public void onSelectRoutes(View view) {
+        CommonUtils.toIntent(this, PassengerSelectRoutesActivity.class);
     }
 
 }

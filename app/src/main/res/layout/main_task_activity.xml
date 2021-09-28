@@ -167,6 +167,36 @@
             app:itemContent="SearchActivity"
             android:onClick="onSearch"
             />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="#787878"
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="12dp"
+            />
+
+        <com.tencent.mobility.ui.ItemLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:itemTitle="司机接力单"
+            app:itemContent="DriverRelayOrderActivity"
+            android:onClick="onRelayOrder"
+            />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="#787878"
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="12dp"
+            />
+
+        <com.tencent.mobility.ui.ItemLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:itemTitle="乘客选路"
+            app:itemContent="PassengerSelectRoutesActivity"
+            android:onClick="onSelectRoutes"
+            />
 
     </LinearLayout>
 

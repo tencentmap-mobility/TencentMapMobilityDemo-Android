@@ -174,7 +174,7 @@ public class PsgActivity extends PsgLsActivity implements RadioGroup.OnCheckedCh
     }
 
     @Override
-    void updateDriverInfo(TLSBRoute route, TLSBOrder order, ArrayList<TLSBDriverPosition> pos) {
+    void updateDriverInfo(TLSBRoute route, TLSBOrder order, List<TLSBDriverPosition> pos) {
 
         if(route == null || order == null || pos == null)
             return;
@@ -307,7 +307,7 @@ public class PsgActivity extends PsgLsActivity implements RadioGroup.OnCheckedCh
 
             case PSG_HITCH_HIKE: // 顺风车
             case PSG_CARPOOLING: // 拼车
-                ArrayList<TLSBWayPoint> wayPoints = route.getWayPoints();
+                List<TLSBWayPoint> wayPoints = route.getWayPoints();
                 if (wayPoints == null || wayPoints.size() == 0)
                     break;
 

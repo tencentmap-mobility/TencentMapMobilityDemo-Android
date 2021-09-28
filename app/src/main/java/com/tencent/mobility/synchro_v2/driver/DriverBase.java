@@ -14,8 +14,8 @@ import com.tencent.map.navi.data.NaviPoi;
 import com.tencent.map.navi.data.RouteData;
 import com.tencent.map.navi.data.TrafficItem;
 import com.tencent.map.navi.tlocation.ITNKLocationCallBack;
-import com.tencent.map.navi.tlocation.TNKLocationManager;
 import com.tencent.mobility.R;
+import com.tencent.mobility.location.GeoLocationAdapter;
 import com.tencent.mobility.synchro_v2.helper.SHelper;
 import com.tencent.mobility.synchro_v2.helper.SingleHelper;
 import com.tencent.mobility.util.CommonUtils;
@@ -34,7 +34,6 @@ public abstract class DriverBase extends DriverBaseMapActivity implements IHandl
     static final String LOG_TAG = "navi1234";
 
     TSLDExtendManager lsManager;// 司乘管理类
-    TNKLocationManager loManager;// 导航内部定位
     TencentCarNaviManager naviManager;
 
     ArrayList<Marker> markers = new ArrayList<>();// 起点终点
@@ -60,9 +59,6 @@ public abstract class DriverBase extends DriverBaseMapActivity implements IHandl
         lsManager = TSLDExtendManager.getInstance();
         lsManager.setNaviManager(naviManager);
 
-        // 初始化定位
-        loManager = TNKLocationManager.getInstance();
-        loManager.setContext(getApplicationContext());
     }
 
     @Override
@@ -84,19 +80,21 @@ public abstract class DriverBase extends DriverBaseMapActivity implements IHandl
     /**
      * 开启定位
      */
-    public void startLoc(ITNKLocationCallBack locListener) {
-        ToastUtils.INSTANCE().Toast("开始定位");
-        if(loManager != null)// 注册监听后，自动启动定位
-            loManager.addLocationListener(locListener);
+    public void startLoc(final ITNKLocationCallBack locListener) {
+        GeoLocationAdapter.singleton.get().startGeoLocationAdapter(getApplicationContext());
+        GeoLocationAdapter.singleton.get().addGeoLocationListener(
+                (tencentGeoLocation) ->
+                        locListener.onLocationChanged(tencentGeoLocation.getLocation()
+                                , tencentGeoLocation.getStatus()
+                                , tencentGeoLocation.getReason())
+        );
     }
 
     /**
      * 停止定位
      */
     public void stopLoc(ITNKLocationCallBack locListener) {
-        ToastUtils.INSTANCE().Toast("停止定位!!");
-        if(loManager != null)
-            loManager.removeLicationListener(locListener);
+        GeoLocationAdapter.singleton.get().stopGeoLocationAdapter();
     }
 
     /**
@@ -156,7 +154,7 @@ public abstract class DriverBase extends DriverBaseMapActivity implements IHandl
     }
 
     @Override
-    public void drawUi(RouteData curRoute, NaviPoi from, NaviPoi to, ArrayList<TLSDWayPointInfo> ws) {
+    public void drawUi(RouteData curRoute, NaviPoi from, NaviPoi to, List<TLSDWayPointInfo> ws) {
 
         if(polyline != null)
             polyline.remove();
@@ -218,7 +216,7 @@ public abstract class DriverBase extends DriverBaseMapActivity implements IHandl
      * @param los
      */
     @Override
-    public void showPsgPosition(ArrayList<TLSBPosition> los) {
+    public void showPsgPosition(List<TLSBPosition> los) {
         if(los == null || los.size() == 0)// 1:可能是快车乘客没有上传点，2:顺风车
             return;
         int size = los.size();
@@ -249,7 +247,7 @@ public abstract class DriverBase extends DriverBaseMapActivity implements IHandl
 
     }
 
-    private void addWayMarker(ArrayList<TLSDWayPointInfo> ways) {
+    private void addWayMarker(List<TLSDWayPointInfo> ways) {
         removeWaysMarker();
 
         ArrayList<TLSDWayPointInfo> ws = new ArrayList<>();

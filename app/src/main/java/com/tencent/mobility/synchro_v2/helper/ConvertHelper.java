@@ -5,10 +5,11 @@ import com.tencent.map.lssupport.bean.TLSBDriverPosition;
 import com.tencent.map.lssupport.bean.TLSBPosition;
 import com.tencent.map.lssupport.bean.TLSBRouteTrafficItem;
 import com.tencent.map.lssupport.bean.TLSLatlng;
-import com.tencent.mobility.location.bean.MapLocation;
+import com.tencent.map.navi.data.NaviPoi;
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ConvertHelper {
 
@@ -31,7 +32,7 @@ public class ConvertHelper {
         return driverPosition;
     }
 
-    public static TLSBPosition tenPoTOTLSPo(MapLocation location) {
+    public static TLSBPosition tenPoTOTLSPo(TencentLocation location) {
         TLSBPosition position = new TLSBPosition();
         position.setLatitude(location.getLatitude());
         position.setLongitude(location.getLongitude());
@@ -77,7 +78,7 @@ public class ConvertHelper {
      *  latlng的转换
      * @param list
      */
-    public static ArrayList<LatLng> transformLatLngs(ArrayList<TLSLatlng> list) {
+    public static List<LatLng> transformLatLngs(List<TLSLatlng> list) {
         if(list == null){
             return null;
         }
@@ -86,5 +87,9 @@ public class ConvertHelper {
             latLngs.add(new LatLng(lstlng.getLatitude(), lstlng.getLongitude()));
         }
         return latLngs;
+    }
+
+    public static NaviPoi toNaviPoi(LatLng latLng) {
+        return new NaviPoi(latLng.latitude, latLng.longitude);
     }
 }

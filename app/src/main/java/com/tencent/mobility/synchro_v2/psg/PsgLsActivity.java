@@ -6,8 +6,9 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
+import com.tencent.map.geolocation.TencentLocation;
 import com.tencent.map.lspassenger.TSLPassengerManager;
-import com.tencent.map.lspassenger.lsp.listener.PsgDataListener;
+import com.tencent.map.lspassenger.lsp.listener.SimplePsgDataListener;
 import com.tencent.map.lssupport.bean.TLSBDriverPosition;
 import com.tencent.map.lssupport.bean.TLSBOrder;
 import com.tencent.map.lssupport.bean.TLSBOrderStatus;
@@ -17,16 +18,14 @@ import com.tencent.map.lssupport.bean.TLSConfigPreference;
 import com.tencent.map.lssupport.bean.TLSDDrvierStatus;
 import com.tencent.map.lssupport.bean.TLSDFetchedData;
 import com.tencent.mobility.R;
-import com.tencent.mobility.location.ILocation;
-import com.tencent.mobility.location.TencentLocaiton;
-import com.tencent.mobility.location.bean.MapLocation;
+import com.tencent.mobility.location.GeoLocationAdapter;
 import com.tencent.mobility.synchro_v2.helper.ConvertHelper;
 import com.tencent.mobility.util.ToastUtils;
 import com.tencent.navi.surport.utils.DeviceUtils;
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
 import com.tencent.tencentmap.mapsdk.maps.model.Marker;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public abstract class PsgLsActivity extends PsgBaseMapActivity {
 
@@ -44,7 +43,6 @@ public abstract class PsgLsActivity extends PsgBaseMapActivity {
     int curDriverState = TLSDDrvierStatus.TLSDDrvierStatusStopped; // 司机状态
 
     TSLPassengerManager tlspManager;// 司乘管理类
-    TencentLocaiton locationManager;// 定位管理类
 
     protected int currCarType = PSG_HITCH_HIKE;
 
@@ -61,28 +59,20 @@ public abstract class PsgLsActivity extends PsgBaseMapActivity {
                 .setAccountId(psgId)
                 .setDeviceId(DeviceUtils.getImei(getApplicationContext())));
         tlspManager.addTLSPassengerListener(new MyPullDriverInfo());// 司乘回调
-
-        locationManager = new TencentLocaiton(getApplicationContext()); // 初始化定位
-        locationManager.setLocationListener(new ILocation.ILocationListener() {
-            @Override
-            public void onLocationChanged(MapLocation location) {
-
-                // 上传定位点
-                updatePsgLoc(location);
-
-                // 展示自身位置
-                showPsgLoc(location);
-
-            }
-
-            @Override
-            public void onStatusUpdate(String s, int i, String s1) {
-
-            }
-        });
     }
 
-    private void updatePsgLoc(MapLocation location) {
+    private void startGeoLocation() {
+        GeoLocationAdapter.singleton.get().startGeoLocationAdapter(getApplicationContext());
+        GeoLocationAdapter.singleton.get().addGeoLocationListener(
+                (tencentGeoLocation) -> {
+                    // 上传定位点
+                    updatePsgLoc(tencentGeoLocation.getLocation());
+                    // 展示自身位置
+                    showPsgLoc(tencentGeoLocation.getLocation());
+                });
+    }
+
+    private void updatePsgLoc(TencentLocation location) {
         // 支持快车
         if (currCarType == PSG_FAST) {
             TLSConfigPreference.create()
@@ -99,7 +89,7 @@ public abstract class PsgLsActivity extends PsgBaseMapActivity {
 
     }
 
-    private void showPsgLoc(MapLocation location) {
+    private void showPsgLoc(TencentLocation location) {
         if (location != null) { // 展示自己位置
             if(psgMarker == null)
                 psgMarker = addMarker(new LatLng
@@ -214,9 +204,7 @@ public abstract class PsgLsActivity extends PsgBaseMapActivity {
      * @param view
      */
     public void startLocation(View view) {
-        ToastUtils.INSTANCE().Toast("开启定位");
-        if(locationManager != null)
-            locationManager.startLocation();
+        startGeoLocation();
     }
 
     /**
@@ -224,9 +212,7 @@ public abstract class PsgLsActivity extends PsgBaseMapActivity {
      * @param view
      */
     public void stopLocation(View view) {
-        ToastUtils.INSTANCE().Toast("停止定位!!");
-        if(locationManager != null)
-            locationManager.stopLocation();
+        GeoLocationAdapter.singleton.get().stopGeoLocationAdapter();
     }
 
     /**
@@ -263,7 +249,7 @@ public abstract class PsgLsActivity extends PsgBaseMapActivity {
      * @param order
      * @param pos
      */
-    abstract void updateDriverInfo(TLSBRoute route, TLSBOrder order, ArrayList<TLSBDriverPosition> pos);
+    abstract void updateDriverInfo(TLSBRoute route, TLSBOrder order, List<TLSBDriverPosition> pos);
 
     /**
      * 清空当前界面ui
@@ -273,7 +259,7 @@ public abstract class PsgLsActivity extends PsgBaseMapActivity {
     /**
      * 司乘sdk对外暴露的回调接口
      */
-    class MyPullDriverInfo implements PsgDataListener.ITLSPassengerListener {
+    class MyPullDriverInfo extends SimplePsgDataListener {
 
         @Override
         public void onPullLsInfoSuc(TLSDFetchedData fetchedData) {
