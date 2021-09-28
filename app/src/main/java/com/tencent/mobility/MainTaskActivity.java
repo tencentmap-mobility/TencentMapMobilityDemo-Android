@@ -6,6 +6,7 @@ import android.view.View;
 import com.tencent.mobility.nearbycar.NearbyCarActivity;
 import com.tencent.mobility.search.SearchActivity;
 import com.tencent.mobility.spot.SpotActivity;
+import com.tencent.mobility.synchro_v2.ChangeDestinationActivity;
 import com.tencent.mobility.synchro_v2.driver.CarpoolingDriver;
 import com.tencent.mobility.synchro_v2.driver.DriverRelayOrderActivity;
 import com.tencent.mobility.synchro_v2.driver.FastDriver;
@@ -73,6 +74,10 @@ public class MainTaskActivity extends BaseActivity {
 
     public void onSelectRoutes(View view) {
         CommonUtils.toIntent(this, PassengerSelectRoutesActivity.class);
+    }
+
+    public void onChangeDestination(View view) {
+        CommonUtils.toIntent(this, ChangeDestinationActivity.class);
     }
 
 }

@@ -81,7 +81,7 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
         mDriverPanel = findViewById(R.id.group_panel_driver);
         mPassengerPanel = findViewById(R.id.group_panel_passenger);
 
-        mMockSyncService = new MockSyncService(TLSConfigPreference.getGlobalKey(this), false);
+        mMockSyncService = new MockSyncService(TLSConfigPreference.getGlobalKey(this));
 
         initPassengerPanel();
         initDriverPanel();

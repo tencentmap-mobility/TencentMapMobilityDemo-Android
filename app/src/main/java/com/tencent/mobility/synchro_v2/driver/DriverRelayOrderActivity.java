@@ -80,7 +80,7 @@ public class DriverRelayOrderActivity extends BaseActivity {
         mPassengerAPanel = findViewById(R.id.group_panel_passenger_a);
         mPassengerBPanel = findViewById(R.id.group_panel_passenger_b);
 
-        mMockSyncService = new MockSyncService(TLSConfigPreference.getGlobalKey(this), false);
+        mMockSyncService = new MockSyncService(TLSConfigPreference.getGlobalKey(this));
 
         initCurrentPassengerPanel();
         initDriverPanel();
