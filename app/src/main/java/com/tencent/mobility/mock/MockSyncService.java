@@ -31,9 +31,9 @@ public class MockSyncService {
     private final String mSyncKey;
     private final boolean mIsTestEnv;
 
-    public MockSyncService(String syncKey, boolean testEnv) {
+    public MockSyncService(String syncKey) {
         mSyncKey = syncKey;
-        mIsTestEnv = testEnv;
+        mIsTestEnv = false;
     }
 
     /**

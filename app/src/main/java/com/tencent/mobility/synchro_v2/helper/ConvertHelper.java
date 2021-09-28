@@ -89,6 +89,13 @@ public class ConvertHelper {
         return latLngs;
     }
 
+    public static NaviPoi convertToNaviPoi(TLSLatlng point) {
+        if (point == null) {
+            return null;
+        }
+        return new NaviPoi(point.getLatitude(), point.getLongitude(), point.getPoiId());
+    }
+
     public static NaviPoi toNaviPoi(LatLng latLng) {
         return new NaviPoi(latLng.latitude, latLng.longitude);
     }

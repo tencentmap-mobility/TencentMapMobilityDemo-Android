@@ -34,6 +34,7 @@ public class PanelView extends FrameLayout {
     private final StringBuffer mConsoleBuffer = new StringBuffer();
     private final List<String> mPanelItemKeys = new ArrayList<>();
     private final Map<String, Action> mActions = new HashMap<>();
+    private final Map<String, String> mActionIndexes = new HashMap<>();
     private final HandlerThread mActionThread = new HandlerThread("action_thread") {
         @Override
         protected void onLooperPrepared() {
@@ -87,13 +88,22 @@ public class PanelView extends FrameLayout {
     }
 
     private void openDialog() {
-        final String[] items = mPanelItemKeys.toArray(new String[0]);
+        final String[] actionItems = mPanelItemKeys.toArray(new String[0]);
+        final String[] items = new String[mPanelItemKeys.size()];
+        for (int index = 0; index < mPanelItemKeys.size(); index++) {
+            String key = mPanelItemKeys.get(index);
+            if (mActionIndexes.containsKey(key)) {
+                items[index] = mActionIndexes.get(key) + ": " + key;
+            } else {
+                items[index] = key;
+            }
+        }
         AlertDialog.Builder listDialog =
                 new AlertDialog.Builder(getContext());
         listDialog.setTitle("操作");
         listDialog.setItems(items, (dialog, which) -> {
             Message message = Message.obtain(mActionHandler, () -> {
-                String actionName = items[which];
+                String actionName = actionItems[which];
                 doAction(actionName);
             });
             message.sendToTarget();
@@ -120,6 +130,7 @@ public class PanelView extends FrameLayout {
     private void doAction(String actionName) {
         Action action = mActions.get(actionName);
         if (action != null) {
+            action.reset();
             Object ret = action.run();
             if (ret != action.value) {
                 action.setValue(ret);
@@ -149,6 +160,7 @@ public class PanelView extends FrameLayout {
         });
     }
 
+
     /**
      * 初始化面板
      *
@@ -156,6 +168,23 @@ public class PanelView extends FrameLayout {
      * @param actions 功能选项名称
      */
     public void init(String title, String... actions) {
+        init(title, null, actions);
+    }
+
+    /**
+     * 初始化面板
+     *
+     * @param title   标题
+     * @param indexes 选项索引
+     * @param actions 功能选项名称
+     */
+    public void init(String title, String[] indexes, String... actions) {
+        if (indexes != null && indexes.length == actions.length) {
+            for (int i = 0; i < indexes.length; i++) {
+                mActionIndexes.put(actions[i], indexes[i]);
+            }
+        }
+
         mEnter.setText(title);
         mPanelItemKeys.addAll(Arrays.asList(actions));
         mActionThread.start();
@@ -199,8 +228,10 @@ public class PanelView extends FrameLayout {
     public static class Action<T> {
 
         private T value;
+        private final T mDef;
 
         public Action(T def) {
+            mDef = def;
             this.value = def;
         }
 
@@ -214,6 +245,10 @@ public class PanelView extends FrameLayout {
 
         public T getValue() {
             return value;
+        }
+
+        public void reset() {
+            value = mDef;
         }
     }
 }
