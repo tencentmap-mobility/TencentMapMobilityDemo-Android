@@ -10,14 +10,13 @@ import androidx.annotation.Nullable;
 import com.tencent.map.geolocation.TencentLocation;
 import com.tencent.map.lsdriver.lsd.listener.DriDataListener;
 import com.tencent.map.lsdriver.lsd.listener.SimpleDriDataListener;
-import com.tencent.map.lssupport.bean.TLSBOrder;
+import com.tencent.map.lsdriver.protocol.OrderRouteSearchOptions;
 import com.tencent.map.lssupport.bean.TLSBOrderStatus;
 import com.tencent.map.lssupport.bean.TLSBOrderType;
 import com.tencent.map.lssupport.bean.TLSBPosition;
 import com.tencent.map.lssupport.bean.TLSDDrvierStatus;
 import com.tencent.map.lssupport.bean.TLSDWayPointInfo;
 import com.tencent.map.lssupport.protocol.OrderManager;
-import com.tencent.map.navi.car.CarRouteSearchOptions;
 import com.tencent.map.navi.data.NaviPoi;
 import com.tencent.map.navi.data.RouteData;
 import com.tencent.map.navi.tlocation.ITNKLocationCallBack;
@@ -133,7 +132,7 @@ public class FastDriver extends DriverBase {
         if(lsManager == null)
             return;
         curOrderType = TLSBOrderType.TLSDOrderTypeNormal;
-        lsManager.searchCarRoutes(from, to, ws, CarRouteSearchOptions.create()
+        lsManager.searchCarRoutes(from, to, ws, OrderRouteSearchOptions.create(orderId)
                 , new DriDataListener.ISearchCallBack() {
                     @Override
                     public void onParamsInvalid(int errCode, String errMsg) {
@@ -166,9 +165,10 @@ public class FastDriver extends DriverBase {
     public void startMeetingGuest(View view) {
         curDrvierStatus = TLSDDrvierStatus.TLSDDrvierStatusServing;// 服务中
         curOrderState = TLSBOrderStatus.TLSDOrderStatusPickUp;
-        lsManager.getTLSBOrder().setOrderStatus(curOrderState)
+        lsManager.getOrderManager().editCurrent().setOrderStatus(curOrderState)
                 .setOrderId(orderId).setOrderType(curOrderType)
                 .setDrvierStatus(curDrvierStatus);
+        lsManager.getRouteManager().useRouteIndex(curRouteIndex);
         lsManager.uploadRouteWithIndex(curRouteIndex);// 上传路线
 
         Intent intent = new Intent(this, DriverNaviActivity.class);

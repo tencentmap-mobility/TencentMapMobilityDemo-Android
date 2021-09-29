@@ -127,7 +127,7 @@
      *
      * <p>下面以顺风车场景的最优算路接口，五个参数的方法为例。
      */
-    mDriverSync.searchCarRoutes(from, to, ws, CarRouteSearchOptions.create()
+    mDriverSync.searchCarRoutes(from, to, ws, OrderRouteSearchOptions.create(orderId)
         , new DriDataListener.ISearchCallBack() {
             @Override
             public void onParamsInvalid(int errCode, String errMsg) {
@@ -244,7 +244,7 @@
      *
      * <p>下面以顺风车场景的最优算路接口，五个参数的方法为例。
      */
-    mDriverSync.searchCarRoutes(from, to, ws, CarRouteSearchOptions.create()
+    mDriverSync.searchCarRoutes(from, to, ws, OrderRouteSearchOptions.create(orderId)
         , new DriDataListener.ISearchCallBack() {
             @Override
             public void onParamsInvalid(int errCode, String errMsg) {
@@ -354,7 +354,7 @@
 ```java
     // 开始算路
     TSLDExtendManager#searchCarRoutes(NaviPoi from, NaviPoi to, final List<TLSDWayPointInfo> ws,
-                          final CarRouteSearchOptions searchOptions,
+                          final OrderRouteSearchOptions searchOptions,
                           final DriDataListener.ISearchCallBack callback);
 
     // 在算路结束后，会有路线变更回调
