@@ -142,6 +142,8 @@
             @Override
             public void onRouteSearchSuccess(ArrayList<RouteData> arrayList) {
                 ToastUtils.INSTANCE().Toast("算路成功");
+		// 选中正使用路线
+		mDriverSync.getRouteManager().useRouteIndex(curRouteIndex);
 		// 上报路线，注意此时要保证2.2.1订单状态正确
 		mDriverSync.uploadRouteWithIndex(curRouteIndex); // curRouteIndex 要上报的路线索引
 		// 开始导航
@@ -257,6 +259,8 @@
             @Override
             public void onRouteSearchSuccess(ArrayList<RouteData> arrayList) {
                 ToastUtils.INSTANCE().Toast("算路成功");
+		// 选中正使用路线
+		mDriverSync.getRouteManager().useRouteIndex(curRouteIndex);
 		// 上报路线，注意此时要保证2.2.1订单状态正确
 		mDriverSync.uploadRouteWithIndex(curRouteIndex); // curRouteIndex 要上报的路线索引
 		// 开始导航
