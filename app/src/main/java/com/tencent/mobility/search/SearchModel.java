@@ -78,6 +78,7 @@ public class SearchModel implements IModel {
         sugOptions.setPolicy("1")
                 .setRegion("北京")
                 .setKeyword("之春里")
+                .setRegionFix(0)
                 .setLocation(locationBean);
         dataManager.getSug(sugOptions);
     }
