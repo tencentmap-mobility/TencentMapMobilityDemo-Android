@@ -20,6 +20,7 @@ android {
                 填入地图KEY : mapsdk_key,
                 填入服务KEY : apisdk_key
         ]
+
     }
 
     buildTypes {
@@ -56,13 +57,13 @@ dependencies {
     // 大定位SDK，非官网版本。
     // 单独使用时，需配合 libmapbase.so 和 libOlRoute.so 使用
     // 与导航SDK 一起时，可以不加，导航内部已经包含了上述 so 文件
-    implementation files(Tencent_Fusion_Location_Verison)
+    implementation Tencent_Fusion_Location_Verison
 
-    implementation files(Tencent_TLSD_Verison) // 司乘SDK司机端
-    implementation files(Tencent_TLSP_Verison) // 司乘SDK乘客端
-    implementation files(Tencent_TLSB_Verison) // 司乘支持库
+    implementation Tencent_TLSD_Verison // 司乘SDK司机端
+    implementation Tencent_TLSP_Verison // 司乘SDK乘客端
+    implementation Tencent_TLSB_Verison // 司乘支持库
 
-    implementation Tencent_Mobility_Search_Verison       // 出行检索SDK
-    implementation files(Tencent_Boarding_Point_Verison) // 推荐上车点SDK
-    implementation files(Tencent_NearBy_Car_Version)     // 周边车辆SDK
+    implementation Tencent_Mobility_Search_Verison  // 出行检索SDK
+    implementation Tencent_Boarding_Point_Verison   // 推荐上车点SDK
+    implementation Tencent_NearBy_Car_Version       // 周边车辆SDK
 }

@@ -16,11 +16,11 @@ ext {
     Tencent_Mobility_Search_Verison = 'com.tencent.map:tencent-navi-search:1.2.3'
 
     // 司乘同显sdk 司机端
-    Tencent_TLSD_Verison = files('libs/lsdriver-release-v2.3.0.aar')
+    Tencent_TLSD_Verison = files('libs/lsdriver-release-v2.3.1.aar')
     // 司乘同显sdk 乘客端
-    Tencent_TLSP_Verison = files('libs/lspassenger-release-v2.3.0.aar')
+    Tencent_TLSP_Verison = files('libs/lspassenger-release-v2.3.1.aar')
     // 司乘同显支持库
-    Tencent_TLSB_Verison = files('libs/lssupport-release-v2.3.0.aar')
+    Tencent_TLSB_Verison = files('libs/lssupport-release-v2.3.1.aar')
 
     // 推荐上车点SDK
     Tencent_Boarding_Point_Verison = files('libs/pickupspot_1.1.3.aar')
