@@ -85,10 +85,13 @@
 2.2.2 路径规划+上报路线+开启导航
 
 #### 多路线策略
+
 算路默认开启多路线，目前不支持有途经点的多路线
+
 **在顺风车场景下，用户可以使用OrderRouteSearchOptions.rejectWayPoint()接口用来剔除参与算路的途径点，在没有途径点的时候，用户可以在算路结果中获取到多条路线。**
 
 #### 途经点顺序优化策略
+
 在算路之前，用户可根据需要是否使用**最优送驾顺序接口，顺风车场景与拼车场景区别见注释**代码示例：
 
 ```java
@@ -117,7 +120,7 @@
         }
     });
 ```
-#### 算路
+##### 算路
 ```java
     /**
      * 导航的起点
@@ -181,7 +184,7 @@
     });
 ```
 
-#### 路线上报
+##### 路线上报
 ```java
     // 选中正使用路线
     mDriverSync.getRouteManager().useRouteIndex(curRouteIndex);
@@ -189,13 +192,13 @@
     mDriverSync.uploadRouteWithIndex(curRouteIndex); // curRouteIndex 要上报的路线索引
 ```
 
-#### 开启导航
+##### 开启导航
 ```java
     // 开始导航
     naviManager.startNavi(curRouteIndex);
 ```
 
-2.2.3 到达接驾点
+##### 到达接驾点
 
 ```java
     // 停止导航
