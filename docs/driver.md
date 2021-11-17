@@ -84,6 +84,40 @@
 
 2.2.2 路径规划+上报路线+开启导航
 
+#### 多路线策略
+算路默认开启多路线，目前不支持有途经点的多路线
+**在顺风车场景下，用户可以使用OrderRouteSearchOptions.rejectWayPoint()接口用来剔除参与算路的途径点，在没有途径点的时候，用户可以在算路结果中获取到多条路线。**
+
+#### 途经点顺序优化策略
+在算路之前，用户可根据需要是否使用**最优送驾顺序接口，顺风车场景与拼车场景区别见注释**代码示例：
+
+```java
+    /**
+     * 在拼车场景中，因为没有导航终点，所以需要使用{@link TSLDExtendManager#requestBestSortedWayPoints
+     * (NaviPoi, ArrayList, ISortedWayPointsCallBack)}方法。而在顺风车场景下，存在导航终点，所以需要
+     * 使用重载方法{@link TSLDExtendManager#requestBestSortedWayPoints
+     * (NaviPoi, NaviPoi, ArrayList, ISortedWayPointsCallBack)}
+     *
+     * <p>下面以顺风车场景的最优算路接口，四个参数的方法为例。
+     */
+    mDriverSync.requestBestSortedWayPoints(from, to, sorts, new DriDataListener.ISortedWayPointsCallBack() {
+        @Override
+        public void onSortedWaysSuc(ArrayList<TLSDWayPointInfo> sortedWays) {
+            /**
+	     * {@code sortedWays}是排序好的途经点
+	     * 用户可以拿{@code sortedWays}使用 searchCarRoutes 再直接开启算路
+	     *
+	     * @see TLSDWayPointInfo
+	     */
+        }
+
+        @Override
+        public void onSortedWayFail(int errCode, String errMsg) {
+            Log.e(LOG_TAG, ">>>errCode : " + errCode + ", errMsg : " + errMsg);
+        }
+    });
+```
+#### 算路
 ```java
     /**
      * 导航的起点
@@ -142,45 +176,23 @@
             @Override
             public void onRouteSearchSuccess(ArrayList<RouteData> arrayList) {
                 ToastUtils.INSTANCE().Toast("算路成功");
-		// 选中正使用路线
-		mDriverSync.getRouteManager().useRouteIndex(curRouteIndex);
-		// 上报路线，注意此时要保证2.2.1订单状态正确
-		mDriverSync.uploadRouteWithIndex(curRouteIndex); // curRouteIndex 要上报的路线索引
-		// 开始导航
-		naviManager.startNavi(curRouteIndex);
+                //TODO 处理数据
             }
     });
 ```
 
-在算路之前，用户可根据需要是否使用**最优送驾顺序接口，顺风车场景与拼车场景区别见注释，在顺风车场景下，
-用户可以使用OrderRouteSearchOptions.rejectWayPoint()接口用来剔除参与算路的途径点，在没有途径点的时候，
-用户可以在算路结果中获取到多条路线。**，代码示例：
-
+#### 路线上报
 ```java
-    /**
-     * 在拼车场景中，因为没有导航终点，所以需要使用{@link TSLDExtendManager#requestBestSortedWayPoints
-     * (NaviPoi, ArrayList, ISortedWayPointsCallBack)}方法。而在顺风车场景下，存在导航终点，所以需要
-     * 使用重载方法{@link TSLDExtendManager#requestBestSortedWayPoints
-     * (NaviPoi, NaviPoi, ArrayList, ISortedWayPointsCallBack)}
-     *
-     * <p>下面以顺风车场景的最优算路接口，四个参数的方法为例。
-     */
-    mDriverSync.requestBestSortedWayPoints(from, to, sorts, new DriDataListener.ISortedWayPointsCallBack() {
-        @Override
-        public void onSortedWaysSuc(ArrayList<TLSDWayPointInfo> sortedWays) {
-            /**
-	     * {@code sortedWays}是排序好的途经点
-	     * 用户可以拿{@code sortedWays}使用 searchCarRoutes 再直接开启算路
-	     *
-	     * @see TLSDWayPointInfo
-	     */
-        }
+    // 选中正使用路线
+    mDriverSync.getRouteManager().useRouteIndex(curRouteIndex);
+    // 上报路线，注意此时要保证2.2.1订单状态正确
+    mDriverSync.uploadRouteWithIndex(curRouteIndex); // curRouteIndex 要上报的路线索引
+```
 
-        @Override
-        public void onSortedWayFail(int errCode, String errMsg) {
-            Log.e(LOG_TAG, ">>>errCode : " + errCode + ", errMsg : " + errMsg);
-        }
-    });
+#### 开启导航
+```java
+    // 开始导航
+    naviManager.startNavi(curRouteIndex);
 ```
 
 2.2.3 到达接驾点
