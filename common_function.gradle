@@ -9,7 +9,7 @@ ext {
     // 导航录音录屏库
     Tencent_Recored_Verison = 'com.tencent.map:tencent-map-nav-record:1.0.0.3'
     // 地图sdk
-    Tencent_Map_Version = 'com.tencent.map:tencent-map-vector-sdk:4.4.5.7'
+    Tencent_Map_Version = 'com.tencent.map:tencent-map-vector-sdk:4.4.5.8'
     // 大定位sdk
     Tencent_Fusion_Location_Verison = files('libs/FusionLocationSDK-20210908185224-txfusionloc-1.8.7.aar')
     // 出行检索

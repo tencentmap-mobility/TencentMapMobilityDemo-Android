@@ -6,7 +6,10 @@ import android.view.View;
 import com.tencent.mobility.nearbycar.NearbyCarActivity;
 import com.tencent.mobility.search.SearchActivity;
 import com.tencent.mobility.spot.SpotActivity;
+import com.tencent.mobility.synchro_v2.CarpoolingNormalActivity;
 import com.tencent.mobility.synchro_v2.ChangeDestinationActivity;
+import com.tencent.mobility.synchro_v2.HitchHikeNormalActivity;
+import com.tencent.mobility.synchro_v2.HitchHikeOneVipActivity;
 import com.tencent.mobility.synchro_v2.driver.CarpoolingDriver;
 import com.tencent.mobility.synchro_v2.driver.DriverRelayOrderActivity;
 import com.tencent.mobility.synchro_v2.driver.FastDriver;
@@ -23,14 +26,14 @@ public class MainTaskActivity extends BaseActivity {
         setContentView(R.layout.main_task_activity);
     }
 
-    public void OnHitchHikeDri(View view) {
-        // 顺风车-司机端
-        CommonUtils.toIntent(this, HitchHikeDriver.class);
+    public void OnHitchHikeSingle(View view) {
+        // 顺风车-单人
+        CommonUtils.toIntent(this, HitchHikeOneVipActivity.class);
     }
 
-    public void OnHitchHikePsg(View view) {
-        // 顺风车-乘客端
-        CommonUtils.toIntent(this, PsgActivity.class);
+    public void OnHitchHikeMulti(View view) {
+        // 顺风车-多人
+        CommonUtils.toIntent(this, HitchHikeNormalActivity.class);
     }
 
     public void onFastDri(View view) {
@@ -43,14 +46,9 @@ public class MainTaskActivity extends BaseActivity {
         CommonUtils.toIntent(this, PsgActivity.class);
     }
 
-    public void OnCarpoolingDri(View view) {
-        // 拼车-司机端
-        CommonUtils.toIntent(this, CarpoolingDriver.class);
-    }
-
-    public void OnCarpoolingPsg(View view) {
-        // 拼车-客户端
-        CommonUtils.toIntent(this, PsgActivity.class);
+    public void OnCarpooling(View view) {
+        // 拼车-至少两人
+        CommonUtils.toIntent(this, CarpoolingNormalActivity.class);
     }
 
     public void onNearbyCar(View view) {

@@ -28,10 +28,10 @@ import com.tencent.mobility.mock.MockDriver;
 import com.tencent.mobility.mock.MockOrder;
 import com.tencent.mobility.mock.MockPassenger;
 import com.tencent.mobility.mock.MockSyncService;
-import com.tencent.mobility.synchro_v2.helper.ConvertHelper;
-import com.tencent.mobility.synchro_v2.helper.SHelper;
-import com.tencent.mobility.synchro_v2.helper.SingleHelper;
 import com.tencent.mobility.ui.PanelView;
+import com.tencent.mobility.util.ConvertHelper;
+import com.tencent.mobility.util.SHelper;
+import com.tencent.mobility.util.SingleHelper;
 import com.tencent.tencentmap.mapsdk.maps.MapView;
 import com.tencent.tencentmap.mapsdk.maps.TencentMap;
 import com.tencent.tencentmap.mapsdk.maps.model.BitmapDescriptorFactory;
@@ -64,7 +64,8 @@ public class DriverRelayOrderActivity extends BaseActivity {
     private MockPassenger mPassengerA;
     private MockPassenger mPassengerB;
 
-    private MockSyncService mMockSyncService;
+    private MockSyncService mDriverSyncService;
+    private MockSyncService mPassengerSyncService;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -80,8 +81,6 @@ public class DriverRelayOrderActivity extends BaseActivity {
         mPassengerAPanel = findViewById(R.id.group_panel_passenger_a);
         mPassengerBPanel = findViewById(R.id.group_panel_passenger_b);
 
-        mMockSyncService = new MockSyncService(TLSConfigPreference.getGlobalKey(this));
-
         initCurrentPassengerPanel();
         initDriverPanel();
         initRelayPassengerPanel();
@@ -90,13 +89,14 @@ public class DriverRelayOrderActivity extends BaseActivity {
     private void initCurrentPassengerPanel() {
         mPassengerA = MockSyncService.newRandomPassenger(mMapView1.getMap());
         mPassengerSyncA = TSLPassengerManager.newInstance();
+        mPassengerSyncService = new MockSyncService(mPassengerSyncA);
         mPassengerSyncA.init(DriverRelayOrderActivity.this,
-                TLSConfigPreference.create().setAccountId(mPassengerA.getId()));
+                TLSConfigPreference.create().setDebuggable(true).setAccountId(mPassengerA.getId()));
         mPassengerAPanel.init("当前乘客", "创建订单");
         mPassengerAPanel.postAction("创建订单", new PanelView.Action<String>("") {
             @Override
             public String run() {
-                MockOrder order = mMockSyncService.newOrder(mMapView1.getMap(), mPassengerA);
+                MockOrder order = mPassengerSyncService.newOrder(mMapView1.getMap(), mPassengerA);
                 if (order != null && !TextUtils.isEmpty(order.getId())) {
                     mPassengerAPanel.postPrint("等待接驾");
                     mPassengerSyncA.getTLSPOrder().setOrderId(order.getId());
@@ -143,7 +143,7 @@ public class DriverRelayOrderActivity extends BaseActivity {
         mPassengerBPanel.postAction("创建订单", new PanelView.Action<String>("") {
             @Override
             public String run() {
-                MockOrder order = mMockSyncService.newOrder(mMapView2.getMap(), mPassengerB);
+                MockOrder order = mPassengerSyncService.newOrder(mMapView2.getMap(), mPassengerB);
                 if (order != null && !TextUtils.isEmpty(order.getId())) {
                     mPassengerBPanel.postPrint("等待接驾");
                     mPassengerSyncB.getOrderManager().editCurrent().setRelay(true).setOrderId(order.getId());
@@ -185,6 +185,7 @@ public class DriverRelayOrderActivity extends BaseActivity {
         MockCar car = MockSyncService.newRandomCar();
         mDriver = MockSyncService.newRandomDriver(mCarNaviView.getMap(), car);
         mDriverSync = TSLDExtendManager.newInstance();
+        mDriverSyncService = new MockSyncService(mDriverSync);
         mDriverSync.init(DriverRelayOrderActivity.this,
                 TLSConfigPreference.create().setAccountId(mDriver.getId()));
         mDriverSync.setNaviManager(SingleHelper.getNaviManager(this));
@@ -195,17 +196,17 @@ public class DriverRelayOrderActivity extends BaseActivity {
         mDriverPanel.addAction("绑定订单", new PanelView.Action<String>("") {
             @Override
             public String run() {
-                MockOrder order = mMockSyncService.getOrder(mPassengerA);
+                MockOrder order = mDriverSyncService.getOrder(mPassengerA);
                 mDriverSync.getTLSBOrder().setOrderId(order.getId());
-                if (order.isWaiting()) {
+                if (order.isIdle() || order.isWaiting()) {
                     mDriverSync.getTLSBOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusNone);
                     mPassengerSyncA.getTLSPOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusNone);
-                    mMockSyncService.acceptPassenger(mDriver, mPassengerA);
+                    mDriverSyncService.acceptPassenger(mDriver, mPassengerA);
                     if (order.isAccepted()) {
                         mDriverSync.getTLSBOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusPickUp);
                         mPassengerSyncA.getTLSPOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusPickUp);
                         mDriverPanel.print("当前订单接驾中");
-                        mMockSyncService.onTheWayPassenger(mDriver, mPassengerA);
+                        mDriverSyncService.onTheWayPassenger(mDriver, mPassengerA);
                         if (order.isOnTheWay()) {
                             mDriverSync.getTLSBOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusTrip);
                             mPassengerSyncA.getTLSPOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusTrip);
@@ -235,7 +236,7 @@ public class DriverRelayOrderActivity extends BaseActivity {
         mDriverPanel.addAction("请求路线", new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
-                final MockOrder orderA = mMockSyncService.getOrder(mPassengerA);
+                final MockOrder orderA = mDriverSyncService.getOrder(mPassengerA);
                 final CountDownLatch syncWaiting = new CountDownLatch(1);
                 final List<RouteData> routeData = new ArrayList<>();
 
@@ -275,7 +276,7 @@ public class DriverRelayOrderActivity extends BaseActivity {
                 mDriverSync.getRouteManager().useRouteIndex(0);
                 mDriverPanel.print("当前线路：" + routeData.get(0).getRouteId());
 
-                final MockOrder orderB = mMockSyncService.getOrder(mPassengerB);
+                final MockOrder orderB = mDriverSyncService.getOrder(mPassengerB);
                 final CountDownLatch syncWaiting2 = new CountDownLatch(1);
                 // 接力单路线
                 mDriverSync.searchCarRoutes(
@@ -359,7 +360,7 @@ public class DriverRelayOrderActivity extends BaseActivity {
         mDriverPanel.addAction("绑定接力订单", new PanelView.Action<String>("") {
             @Override
             public String run() {
-                MockOrder order = mMockSyncService.acceptPassenger(mDriver, mPassengerB);
+                MockOrder order = mDriverSyncService.acceptPassenger(mDriver, mPassengerB);
                 if (order != null && order.isAccepted()) {
                     mPassengerSyncB.getTLSPOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusPickUp);
                     mDriverSync.getOrderManager()

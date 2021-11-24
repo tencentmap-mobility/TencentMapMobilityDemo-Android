@@ -1,4 +1,4 @@
-package com.tencent.mobility.util;
+package com.tencent.mobility.location;
 
 import android.content.Context;
 

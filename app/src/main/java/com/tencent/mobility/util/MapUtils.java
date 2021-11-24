@@ -26,11 +26,11 @@ public class MapUtils {
      * @param bottomMargin 下边距
      */
     public static void fitsWithRoute(final TencentMap map,
-                                     final List<LatLng> routePoints,
-                                     final int leftMargin,
-                                     final int topMargin,
-                                     final int rightMargin,
-                                     final int bottomMargin) {
+            final List<LatLng> routePoints,
+            final int leftMargin,
+            final int topMargin,
+            final int rightMargin,
+            final int bottomMargin) {
         if ((routePoints == null) || map == null) {
             return;
         }
@@ -45,6 +45,7 @@ public class MapUtils {
 
     /**
      * 获取点串第一个吸附成功的点
+     *
      * @param locations
      */
     public static TLSBDriverPosition getFirsttLocation(List<TLSBDriverPosition> locations) {
@@ -62,7 +63,8 @@ public class MapUtils {
     }
 
     /**
-     *  获取小车平滑需要的点串信息
+     * 获取小车平滑需要的点串信息
+     *
      * @param locations
      */
     public static LatLng[] getLatLngsBySynchroLocation(List<TLSBDriverPosition> locations) {
@@ -94,11 +96,8 @@ public class MapUtils {
             return false;
         }
 
-        if (latLng0.getLongitude() == latLng1.getLongitude()
-                && latLng0.getLatitude() == latLng1.getLatitude()) {
-            return true;
-        }
-        return false;
+        return latLng0.getLongitude() == latLng1.getLongitude()
+                && latLng0.getLatitude() == latLng1.getLatitude();
     }
 
     /**

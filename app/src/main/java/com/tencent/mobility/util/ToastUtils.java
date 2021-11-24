@@ -4,14 +4,15 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.widget.Toast;
 
+
 public class ToastUtils {
 
-    private static ToastUtils mToast;
     static Context mContext;
+    private static ToastUtils mToast;
 
     private ToastUtils(){}
 
-    public static ToastUtils INSTANCE() {
+    public static ToastUtils instance() {
         if(mToast == null) {
             synchronized (ToastUtils.class){
                 if(mToast == null){
@@ -31,8 +32,8 @@ public class ToastUtils {
         mToast = null;
     }
 
-    public void Toast(String msg) {
-        if(!TextUtils.isEmpty(msg) && mContext != null){
+    public void toast(String msg) {
+        if (!TextUtils.isEmpty(msg) && mContext != null) {
             Toast.makeText(mContext.getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
         }
     }

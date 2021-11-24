@@ -1,4 +1,4 @@
-package com.tencent.mobility.synchro_v2;
+package com.tencent.mobility.ui;
 
 import android.graphics.Color;
 import android.os.Bundle;
@@ -12,11 +12,17 @@ import com.tencent.map.lsdriver.lsd.listener.DriDataListener;
 import com.tencent.map.lsdriver.lsd.listener.SimpleDriDataListener;
 import com.tencent.map.lsdriver.protocol.OrderRouteSearchOptions;
 import com.tencent.map.lspassenger.TSLPassengerManager;
+import com.tencent.map.lspassenger.anima.MarkerTranslateAnimator;
 import com.tencent.map.lspassenger.lsp.listener.SimplePsgDataListener;
 import com.tencent.map.lspassenger.protocol.SearchProtocol;
+import com.tencent.map.lssupport.bean.TLSBDriverPosition;
 import com.tencent.map.lssupport.bean.TLSBOrderStatus;
+import com.tencent.map.lssupport.bean.TLSBPosition;
 import com.tencent.map.lssupport.bean.TLSBRoute;
+import com.tencent.map.lssupport.bean.TLSBWayPoint;
+import com.tencent.map.lssupport.bean.TLSBWayPointType;
 import com.tencent.map.lssupport.bean.TLSConfigPreference;
+import com.tencent.map.lssupport.bean.TLSDFetchedData;
 import com.tencent.map.lssupport.bean.TLSLatlng;
 import com.tencent.map.lssupport.protocol.BaseSyncProtocol;
 import com.tencent.map.lssupport.protocol.RouteManager;
@@ -28,18 +34,17 @@ import com.tencent.map.navi.data.RouteData;
 import com.tencent.map.tools.Callback;
 import com.tencent.mobility.BaseActivity;
 import com.tencent.mobility.R;
+import com.tencent.mobility.location.GpsNavi;
 import com.tencent.mobility.mock.MockCar;
 import com.tencent.mobility.mock.MockDriver;
 import com.tencent.mobility.mock.MockOrder;
 import com.tencent.mobility.mock.MockPassenger;
 import com.tencent.mobility.mock.MockSyncService;
-import com.tencent.mobility.synchro_v2.helper.ConvertHelper;
-import com.tencent.mobility.synchro_v2.helper.SingleHelper;
-import com.tencent.mobility.ui.PanelView;
+import com.tencent.mobility.util.ConvertHelper;
 import com.tencent.mobility.util.CommonUtils;
 import com.tencent.mobility.util.ConvertUtils;
-import com.tencent.mobility.util.GpsNavi;
 import com.tencent.mobility.util.MapUtils;
+import com.tencent.mobility.util.SingleHelper;
 import com.tencent.tencentmap.mapsdk.maps.MapView;
 import com.tencent.tencentmap.mapsdk.maps.TencentMap;
 import com.tencent.tencentmap.mapsdk.maps.model.BitmapDescriptorFactory;
@@ -64,50 +69,179 @@ import java.util.concurrent.CountDownLatch;
 public abstract class OneDriverOnePassengerActivity extends BaseActivity {
 
     public static final String ACTION_SYNC_OPEN = "开启同显";
-    public static final String ACTION_NAVI_SIMULATOR_OPEN = "开启模拟导航";
+    public static final String ACTION_SYNC_CLOSE = "关闭同显";
+
     public static final String ACTION_ROUTES_SEARCH = "检索路线";
     public static final String ACTION_ROUTES_PLAN = "路线规划";
     public static final String ACTION_ROUTES_RECTIFY_DEVIATION = "路线纠偏";
     public static final String ACTION_ROUTES_DRAW = "绘制路线";
     public static final String ACTION_ROUTES_UPLOAD = "上报路线数据";
+
+    public static final String ACTION_PULL = "拉取数据";
+
     public static final String ACTION_ORDER_CREATE = "创建订单";
     public static final String ACTION_ORDER_BIND = "绑定订单";
     public static final String ACTION_ORDER_TO_TRIP = "订单到送驾";
     public static final String ACTION_ORDER_TO_PICKUP = "订单到接驾";
+
+    public static final String ACTION_NAVI_SIMULATOR_OPEN = "开启模拟导航";
+    public static final String ACTION_NAVI_OPEN = "开启导航";
+    public static final String ACTION_NAVI_SIMULATOR_CLOSE = "关闭模拟导航";
+
+    public static final String ACTION_ARRIVED_GETON = "到达上车点";
+    public static final String ACTION_ARRIVED_GETOFF = "到达下车点";
+
+
     private final GpsNavi gpsInfo = new GpsNavi();
     private final Map<String, Polyline> mPassengerLines = new HashMap<>();
     private final Map<String, Polyline> mDriverLines = new HashMap<>();
+    private final List<Marker> mPassengerWayMarkers = new ArrayList<>(20);
+    private final List<Marker> mDriverWayMarkers = new ArrayList<>(20);
+    private final List<Marker> driverList = new ArrayList<>(20);
+    protected PassengerInfo mPassengerInfo;
+    protected DriverInfo mDriverInfo;
     private CarNaviView mCarNaviView;
     private MapView mMapView;
     private TencentCarNaviManager mNaviManager;
     private PanelView mDriverPanel;
     private PanelView mPassengerPanel;
     private TSLDExtendManager mDriverSync;
+    private final SimpleDriDataListener driDataListener = new SimpleDriDataListener() {
+
+        @Override
+        public void onSelectedRouteWantToChangeNotify(TLSBRoute selectedRoute) {
+            super.onSelectedRouteWantToChangeNotify(selectedRoute);
+            mDriverPanel.print("线路发生变更：" + selectedRoute.getRouteId());
+            mDriverSync.getRouteManager().useRouteId(selectedRoute.getRouteId());
+//            List<TLSBRoute> temp = new ArrayList<>(1);
+//            temp.add(selectedRoute);
+//            drawRoutes(mCarNaviView.getMap(), temp, true, null);
+//            if (tencentCarNaviManager.isNavigating()) {
+//                tencentCarNaviManager.changeToFollowedRoute(selectedRoute.getRouteId());
+//            }
+        }
+
+        @Override
+        public void onSelectedRouteNotFoundNotify(String selectedRouteId) {
+            super.onSelectedRouteNotFoundNotify(selectedRouteId);
+            mDriverPanel.print("没有匹配到对应路线");
+        }
+
+        @Override
+        public void onPullLsInfoSuc(List<TLSBPosition> los) {
+            if (los != null && !los.isEmpty()) {
+                for (Marker marker : driverList) {
+                    marker.remove();
+                }
+                driverList.clear();
+                for (TLSBPosition position : los) {
+                    Marker marker = mCarNaviView.getMap().addMarker(
+                            new MarkerOptions(new LatLng(position.getLatitude(), position.getLongitude()))
+                                    .title(position.getExtraInfo()));
+                    marker.showInfoWindow();
+                    driverList.add(marker);
+                }
+            }
+        }
+
+        @Override
+        public void onPullLsInfoFail(int errCode, String errMsg) {
+            mDriverPanel.postPrint("拉取乘客位置失败：" + errCode + " " + errMsg);
+        }
+
+        @Override
+        public void onNewDestinationNotify(final TLSLatlng newDest, final long changedTime) {
+            mDriverPanel.postPrint("新目的地通知:" + changedTime);
+//            showNewDest(new LatLng(newDest.getLatitude(), newDest.getLongitude()), true);
+            mDriverSync.getRouteManager().editCurrent().setDestPosition(newDest).setDestPositionChanged(true);
+//            tencentCarNaviManager.changeDestination(new NaviPoi(newDest.getLatitude(), newDest.getLongitude(), newDest.getPoiId()));
+        }
+
+        @Override
+        public void onDestinationChangeResult(final int status, final String message) {
+            mDriverPanel.postPrint("目的地修改:" + status + "  " + message);
+        }
+    };
     private TSLPassengerManager mPassengerSync;
     private MockDriver mDriver;
     private MockPassenger mPassenger;
-    private MockSyncService mMockSyncService;
     private Marker mPassengerStartMarker;
     private Marker mPassengerEndMarker;
     private Marker mDriverStartMarker;
     private Marker mDriverEndMarker;
+    private Marker psg = null;
+    private final SimplePsgDataListener psgDataListener = new SimplePsgDataListener() {
+        @Override
+        public void onPullLsInfoSuc(TLSDFetchedData fetchedData) {
+            if (fetchedData != null) {
+                if (fetchedData.getPositions() != null) {
+                    showLocation(mMapView.getMap(), fetchedData.getPositions(), fetchedData.getDriverPosition());
+                }
+                if (fetchedData.getRoutes() != null && !fetchedData.getRoutes().isEmpty()) {
+                    int startIndex = fetchedData.getDriverPosition() == null ? 0 : fetchedData.getDriverPosition()
+                            .getPointIndex();
+                    if (fetchedData.getGetOffWayPoint() != null && mPassengerInfo.mMockSyncService.getOrder(mPassenger)
+                            .isOnTheWay()) {
+                        TLSBRoute subRoute = RouteManager.subRouteByIndex(fetchedData.getRoute(), startIndex,
+                                fetchedData.getGetOffWayPoint().getPointIndex());
+                        mPassengerSync.getRouteManager().editCurrent().copy(subRoute);
+                    } else if (fetchedData.getGetInWayPoint() != null) {
+                        TLSBRoute subRoute = RouteManager.subRouteByIndex(fetchedData.getRoute(), startIndex,
+                                fetchedData.getGetInWayPoint().getPointIndex());
+                        mPassengerSync.getRouteManager().editCurrent().copy(subRoute);
+                    }
+                    mPassengerPanel.postAction(ACTION_ROUTES_DRAW);
+                }
+            }
+        }
 
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.one_driver_one_passenger_layout);
+        @Override
+        public void onPullLsInfoFail(int errCode, String errMsg) {
+            mPassengerPanel.postPrint("拉取失败:" + errCode + " " + errMsg);
+        }
 
-        mCarNaviView = findViewById(R.id.navi_car_view);
-        mMapView = findViewById(R.id.map_view1);
+        @Override
+        public void onRouteSelectSuccess() {
+            mPassengerPanel.postPrint("路线选择成功");
+        }
 
+        @Override
+        public void onRouteSelectFail(int status, String message) {
+            mPassengerPanel.postPrint("路线选择失败:" + status + " " + message);
+        }
 
-        mDriverPanel = findViewById(R.id.group_panel_driver);
-        mPassengerPanel = findViewById(R.id.group_panel_passenger);
+        @Override
+        public void onNewDestinationNotify(final TLSLatlng newDest, final long changedTime) {
+            mPassengerPanel.postPrint("新目的地通知:" + changedTime);
+//            showNewDest(new LatLng(newDest.getLatitude(), newDest.getLongitude()), false);
+        }
 
-        mMockSyncService = new MockSyncService(TLSConfigPreference.getGlobalKey(this));
+        @Override
+        public void onDestinationChangeResult(final int status, final String message) {
+            mPassengerPanel.postPrint("目的地修改:" + status + "  " + message);
+        }
+    };
 
-        initPassengerPanel();
-        initDriverPanel();
+    protected int getLayoutResId() {
+        return R.layout.one_driver_one_passenger_layout;
+    }
+
+    public MockPassenger getPassenger() {
+        return mPassenger;
+    }
+
+    protected String getDriverName() {
+        return "司机";
+    }
+
+    protected String getPassengerName() {
+        return "乘客";
+    }
+
+    protected void changePassenger(PassengerInfo passengerInfo) {
+        mPassenger = passengerInfo.mPassenger;
+        mPassengerSync = passengerInfo.mPassengerSync;
+        runOnUiThread(this::initPassengerPanel);
     }
 
     protected String[] getPassengerActionIndexes() {
@@ -122,25 +256,37 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
 
     protected abstract String[] getDriverActions();
 
-    protected abstract void onCreatePassengerAction(final MockPassenger passenger, final TSLPassengerManager passengerSync, final PanelView passengerPanel, final MapView mapView);
+    protected abstract void onCreatePassengerAction(final MockPassenger passenger,
+            final TSLPassengerManager passengerSync,
+            final PanelView passengerPanel, final MapView mapView);
 
-    protected abstract void onCreateDriverAction(final MockDriver driver, final TSLDExtendManager driverSync, final PanelView driverPanel, final CarNaviView carNaviView);
+    protected abstract void onCreateDriverAction(final MockDriver driver, final TSLDExtendManager driverSync,
+            final PanelView driverPanel, final CarNaviView carNaviView,
+            final TencentCarNaviManager manager);
 
-    private void initPassengerPanel() {
+    protected PassengerInfo createPassenger() {
         mPassenger = MockSyncService.newRandomPassenger(mMapView.getMap());
         mPassengerSync = TSLPassengerManager.newInstance();
         mPassengerSync.init(this, TLSConfigPreference.create()
                 .setDebuggable(true)
                 .setAccountId(mPassenger.getId()));
-        mPassengerPanel.init("乘客", getPassengerActionIndexes(), getPassengerActions());
+        return new PassengerInfo(mPassenger, mPassengerSync);
+    }
+
+    private void initPassengerPanel() {
+        mPassengerPanel.init(getPassengerName(), getPassengerActionIndexes(), getPassengerActions());
         mPassengerPanel.addAction(ACTION_ORDER_CREATE, new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
-                MockOrder order = mMockSyncService.newOrder(mMapView.getMap(), mPassenger);
+                MockOrder order = mPassengerInfo.mMockSyncService.newOrder(mMapView.getMap(), mPassenger);
                 if (order != null && !TextUtils.isEmpty(order.getId())) {
                     mPassengerPanel.print("创建订单：" + order.getId());
-                    mPassengerSync.getTLSPOrder().setOrderId(order.getId())
-                            .setOrderStatus(TLSBOrderStatus.TLSDOrderStatusNone);
+                    MockOrder driverOrder = mDriverInfo.mMockSyncService.getOrder(mDriver);
+                    if (driverOrder != null) {
+                        mPassengerSync.getTLSPOrder().setOrderId(driverOrder.getId())
+                                .setSubOrderId(order.getId())
+                                .setOrderStatus(TLSBOrderStatus.TLSDOrderStatusNone);
+                    }
                     return true;
                 }
                 return false;
@@ -150,7 +296,7 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
         mPassengerPanel.addAction(ACTION_ROUTES_SEARCH, new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
-                MockOrder order = mMockSyncService.getOrder(mPassenger);
+                MockOrder order = mPassengerInfo.mMockSyncService.getOrder(mPassenger);
                 final CountDownLatch sync = new CountDownLatch(1);
                 TLSLatlng from = new TLSLatlng(order.getBegin().latitude, order.getBegin().longitude);
                 TLSLatlng to = new TLSLatlng(order.getEnd().latitude, order.getEnd().longitude);
@@ -229,17 +375,42 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
             }
         });
 
+        mPassengerPanel.addAction(ACTION_SYNC_CLOSE, new PanelView.Action<Boolean>(false) {
+            @Override
+            public Boolean run() {
+                mPassengerSync.stop();
+                return true;
+            }
+        });
+
+        mPassengerPanel.addAction(ACTION_PULL, new PanelView.Action<Boolean>(false) {
+            @Override
+            public Boolean run() {
+                mPassengerSync.addTLSPassengerListener(psgDataListener);
+                return true;
+            }
+        });
+
+        mPassengerPanel.addAction(ACTION_ARRIVED_GETON, new PanelView.Action<Boolean>(false) {
+            @Override
+            public Boolean run() {
+                mDriverSync.arrivedPassengerStartPoint(mPassengerInfo.mMockSyncService.getOrder(mPassenger).getId());
+                return true;
+            }
+        });
+
+        mPassengerPanel.addAction(ACTION_ARRIVED_GETOFF, new PanelView.Action<Boolean>(false) {
+            @Override
+            public Boolean run() {
+                mDriverSync.arrivedPassengerEndPoint(mPassengerInfo.mMockSyncService.getOrder(mPassenger).getId());
+                return true;
+            }
+        });
+
         onCreatePassengerAction(mPassenger, mPassengerSync, mPassengerPanel, mMapView);
     }
 
     private void initDriverPanel() {
-        MockCar car = MockSyncService.newRandomCar();
-        mDriver = MockSyncService.newRandomDriver(mCarNaviView.getMap(), car);
-        mDriverSync = TSLDExtendManager.newInstance();
-        mDriverSync.init(this,
-                TLSConfigPreference.create()
-                        .setDebuggable(true)
-                        .setAccountId(mDriver.getId()));
         mNaviManager = SingleHelper.getNaviManager(this);
         mNaviManager.setMulteRoutes(true);
         mNaviManager.addNaviView(mCarNaviView);
@@ -251,12 +422,26 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
         mDriverSync.setNaviManager(mNaviManager);
         mDriverSync.setCarNaviView(mCarNaviView);
         mCarNaviView.setNavigationPanelVisible(false);
-        mDriverPanel.init("司机", getDriverActionIndexes(), getDriverActions());
+        mDriverPanel.init(getDriverName(), getDriverActionIndexes(), getDriverActions());
+
+        mDriverPanel.addAction(ACTION_ORDER_CREATE, new PanelView.Action<Boolean>(false) {
+            @Override
+            public Boolean run() {
+                MockOrder order = mDriverInfo.mMockSyncService.newOrder(mMapView.getMap(), mDriver);
+                if (order != null && !TextUtils.isEmpty(order.getId())) {
+                    mDriverPanel.print("创建订单：" + order.getId());
+                    mDriverSync.getTLSBOrder().setOrderId(order.getId())
+                            .setOrderStatus(TLSBOrderStatus.TLSDOrderStatusNone);
+                    return true;
+                }
+                return false;
+            }
+        });
 
         mDriverPanel.addAction(ACTION_ORDER_BIND, new PanelView.Action<String>("") {
             @Override
             public String run() {
-                MockOrder order = mMockSyncService.getOrder(mPassenger);
+                MockOrder order = mPassengerInfo.mMockSyncService.getOrder(mPassenger);
                 mDriverSync.getTLSBOrder().setOrderId(order.getId());
                 return order.getId();
             }
@@ -265,11 +450,11 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
         mDriverPanel.addAction(ACTION_ORDER_TO_PICKUP, new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
-                MockOrder order = mMockSyncService.getOrder(mPassenger);
-                mDriverSync.getTLSBOrder().setOrderId(order.getId());
-                mDriverSync.getTLSBOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusNone);
-                mPassengerSync.getTLSPOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusNone);
-                mMockSyncService.acceptPassenger(mDriver, mPassenger);
+                MockOrder order = mPassengerInfo.mMockSyncService.getOrder(mPassenger);
+//                mDriverSync.getTLSBOrder().setOrderId(order.getId());
+//                mDriverSync.getTLSBOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusNone);
+//                mPassengerSync.getTLSPOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusNone);
+//                order = mMockSyncService.acceptPassenger(mDriver, mPassenger);
                 if (order.isAccepted()) {
                     mDriverSync.getTLSBOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusPickUp);
                     mPassengerSync.getTLSPOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusPickUp);
@@ -284,9 +469,8 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
         mDriverPanel.addAction(ACTION_ORDER_TO_TRIP, new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
-                MockOrder order = mMockSyncService.getOrder(mPassenger);
+                MockOrder order = mDriverInfo.mMockSyncService.onTheWayPassenger(mDriver, mPassenger);
                 mDriverSync.getTLSBOrder().setOrderId(order.getId());
-                mMockSyncService.onTheWayPassenger(mDriver, mPassenger);
                 if (order.isOnTheWay()) {
                     mDriverSync.getTLSBOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusTrip);
                     mPassengerSync.getTLSPOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusTrip);
@@ -306,6 +490,14 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
             }
         });
 
+        mDriverPanel.addAction(ACTION_SYNC_CLOSE, new PanelView.Action<Boolean>(false) {
+            @Override
+            public Boolean run() {
+                mDriverSync.stop();
+                return true;
+            }
+        });
+
         mDriverPanel.addAction(ACTION_NAVI_SIMULATOR_OPEN, new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
@@ -320,23 +512,52 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
             }
         });
 
-        mDriverPanel.addAction(ACTION_ROUTES_RECTIFY_DEVIATION, new PanelView.Action<Boolean>(false) {
+        mDriverPanel.addAction(ACTION_NAVI_OPEN, new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
-                TLSLatlng dest = mDriverSync.getRouteManager().getDestPosition();
-                if (dest == null) {
-                    return false;
+                try {
+                    gpsInfo.enableGps(OneDriverOnePassengerActivity.this);
+                    mNaviManager.startNavi(0);
+                    return true;
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-
-                mNaviManager.changeDestination(ConvertHelper.convertToNaviPoi(dest));
-                return true;
+                return false;
             }
         });
+
+        mDriverPanel.addAction(ACTION_NAVI_SIMULATOR_CLOSE, new PanelView.Action<Boolean>(false) {
+            @Override
+            public Boolean run() {
+                try {
+                    gpsInfo.disableGps();
+                    mNaviManager.stopSimulateNavi();
+                    return true;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return false;
+            }
+        });
+
+        mDriverPanel.addAction(ACTION_ROUTES_RECTIFY_DEVIATION,
+                new PanelView.Action<Boolean>(false) {
+                    @Override
+                    public Boolean run() {
+                        TLSLatlng dest = mDriverSync.getRouteManager().getDestPosition();
+                        if (dest == null) {
+                            return false;
+                        }
+
+                        mNaviManager.changeDestination(ConvertHelper.convertToNaviPoi(dest));
+                        return true;
+                    }
+                });
 
         mDriverPanel.addAction(ACTION_ROUTES_PLAN, new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
-                final MockOrder order = mMockSyncService.getOrder(mPassenger);
+                final MockOrder order = mPassengerInfo.mMockSyncService.getOrder(mPassenger);
                 final CountDownLatch syncWaiting = new CountDownLatch(1);
                 final List<RouteData> routeData = new ArrayList<>();
                 // 当前送驾路线
@@ -427,7 +648,37 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
             }
         });
 
-        onCreateDriverAction(mDriver, mDriverSync, mDriverPanel, mCarNaviView);
+        mDriverPanel.addAction(ACTION_PULL, new PanelView.Action<Boolean>(false) {
+            @Override
+            public Boolean run() {
+                mDriverSync.addTLSDriverListener(driDataListener);
+                return true;
+            }
+        });
+
+        onCreateDriverAction(mDriver, mDriverSync, mDriverPanel, mCarNaviView, mNaviManager);
+    }
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(getLayoutResId());
+
+        mCarNaviView = findViewById(R.id.navi_car_view);
+        mMapView = findViewById(R.id.map_view1);
+
+        mDriverPanel = findViewById(R.id.group_panel_driver);
+        mPassengerPanel = findViewById(R.id.group_panel_passenger);
+
+        mPassengerInfo = createPassenger();
+        mDriverInfo = createDriver();
+        mPassenger = mPassengerInfo.mPassenger;
+        mPassengerSync = mPassengerInfo.mPassengerSync;
+        mDriver = mDriverInfo.mDriver;
+        mDriverSync = mDriverInfo.mDriverManager;
+
+        initPassengerPanel();
+        initDriverPanel();
     }
 
     private boolean drawRoute(TencentMap map, BaseSyncProtocol manager, Map<String, Polyline> cache) {
@@ -459,6 +710,7 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
     private void updateStartAndEndPosition(TencentMap map, BaseSyncProtocol manager, List<LatLng> all) {
         TLSLatlng startPosition = manager.getRouteManager().getStartPosition();
         TLSLatlng destPosition = manager.getRouteManager().getDestPosition();
+        List<TLSBWayPoint> wayPoints = manager.getRouteManager().getWayPoints();
 
         if (startPosition != null) {
             Marker startMarker = getStartMarker(manager);
@@ -483,6 +735,25 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
             }
 
             all.add(ConvertUtil.toLatLng(destPosition));
+        }
+
+        if (wayPoints != null && wayPoints.size() > 0) {
+            List<Marker> wayMarkers = getWayMarkers(manager);
+            if (wayMarkers != null && wayMarkers.size() > 0) {
+                for (Marker marker : wayMarkers) {
+                    marker.remove();
+                }
+                wayMarkers.clear();
+            }
+            for (TLSBWayPoint point : wayPoints) {
+                Marker marker = map.addMarker(new MarkerOptions(ConvertUtil.toLatLng(point.getPosition()))
+                        .title(point.getPassengerOrderId()));
+                if (point.getWayPointType() == TLSBWayPointType.TLSDWayPointTypeGetOff) {
+                    marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                }
+                marker.showInfoWindow();
+                wayMarkers.add(marker);
+            }
         }
     }
 
@@ -510,7 +781,12 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
         return manager instanceof TSLPassengerManager ? mPassengerEndMarker : mDriverEndMarker;
     }
 
-    private boolean drawRoutes(TencentMap map, BaseSyncProtocol manager, Map<String, Polyline> cache, Callback<Integer> selectCallback) {
+    private List<Marker> getWayMarkers(BaseSyncProtocol manager) {
+        return manager instanceof TSLPassengerManager ? mPassengerWayMarkers : mDriverWayMarkers;
+    }
+
+    private boolean drawRoutes(TencentMap map, BaseSyncProtocol manager, Map<String, Polyline> cache,
+            Callback<Integer> selectCallback) {
         clearNoUseLine(manager.getRouteManager(), cache);
 
         List<TLSLatlng> latlngs = manager.getRouteManager().getPoints();
@@ -589,7 +865,8 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
         for (TLSBRoute route : routes) {
             usingIds.add(route.getRouteId());
         }
-        for (Iterator<Map.Entry<String, Polyline>> entryIterator = cache.entrySet().iterator(); entryIterator.hasNext(); ) {
+        for (Iterator<Map.Entry<String, Polyline>> entryIterator = cache.entrySet().iterator();
+                entryIterator.hasNext(); ) {
             Map.Entry<String, Polyline> entry = entryIterator.next();
             if (!usingIds.contains(entry.getKey())) {
                 Polyline polyline = entry.getValue();
@@ -599,6 +876,45 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
                 entryIterator.remove();
             }
         }
+    }
+
+    protected DriverInfo createDriver() {
+        MockCar car = MockSyncService.newRandomCar();
+        mDriver = MockSyncService.newRandomDriver(mCarNaviView.getMap(), car);
+        mDriverSync = TSLDExtendManager.newInstance();
+        mDriverSync.init(this,
+                TLSConfigPreference.create()
+                        .setDebuggable(true)
+                        .setAccountId(mDriver.getId()));
+        return new DriverInfo(mDriver, mDriverSync);
+    }
+
+    private boolean showLocation(TencentMap map, List<TLSBDriverPosition> positions, TLSBDriverPosition driPos) {
+        if (positions == null || positions.isEmpty()) {
+            return false;
+        }
+        LatLng[] latLngs = MapUtils.getLatLngsBySynchroLocation(positions);
+        if (latLngs == null || latLngs.length == 0) {
+            return false;
+        }
+
+        if (psg == null) {
+            psg = map.addMarker(new MarkerOptions(new LatLng(driPos.getAttachLat(), driPos.getAttachLng()))
+                    .anchor(0.5f, 0.5f)
+                    .rotation(driPos.getMatchedCourse())
+                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.map_icon_driver))
+                    .flat(true)
+                    .title("driver"));
+        } else {
+            TLSBDriverPosition temp = positions.get(positions.size() - 1);
+            psg.setTitle(temp.getRemainingDistance() / 1000.0 + "公里" + "  " +
+                    temp.getRemainingTime() + "分钟");
+//            psg.setPosition(new LatLng(driPos.getAttachLat(), driPos.getAttachLng()));
+//            psg.setRotation(driPos.getMatchedCourse());
+        }
+        MarkerTranslateAnimator animator = new MarkerTranslateAnimator(psg, 4000, latLngs, true);
+        animator.startAnimation();
+        return true;
     }
 
     @Override
@@ -642,10 +958,39 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
         mDriverSync.destroy();
         mNaviManager.stopSimulateNavi();
         mNaviManager.stopNavi();
+        mNaviManager.removeNaviView(mCarNaviView);
         gpsInfo.disableGps();
         mCarNaviView.onDestroy();
 
         mPassengerSync.destroy();
         mMapView.onDestroy();
+    }
+
+    public static class PassengerInfo {
+
+        public MockPassenger mPassenger;
+        public TSLPassengerManager mPassengerSync;
+        public MockSyncService mMockSyncService;
+
+        public PassengerInfo(MockPassenger passenger, TSLPassengerManager passengerSync) {
+            mPassenger = passenger;
+            mPassengerSync = passengerSync;
+            mMockSyncService = new MockSyncService(passengerSync);
+        }
+    }
+
+    public static class DriverInfo {
+
+        public MockCar mCar;
+        public MockDriver mDriver;
+        public TSLDExtendManager mDriverManager;
+        public MockSyncService mMockSyncService;
+
+        public DriverInfo(MockDriver driver, TSLDExtendManager driverManager) {
+            mDriver = driver;
+            mDriverManager = driverManager;
+            mCar = driver.getCar();
+            mMockSyncService = new MockSyncService(driverManager);
+        }
     }
 }

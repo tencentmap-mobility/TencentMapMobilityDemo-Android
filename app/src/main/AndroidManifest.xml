@@ -38,6 +38,9 @@
         <activity android:name=".spot.PoiSearchActivity"/>
         <activity android:name=".nearbycar.NearbyCarActivity"/>
         <activity android:name=".synchro_v2.ChangeDestinationActivity"/>
+        <activity android:name=".synchro_v2.CarpoolingNormalActivity"/>
+        <activity android:name=".synchro_v2.HitchHikeNormalActivity"/>
+        <activity android:name=".synchro_v2.HitchHikeOneVipActivity"/>
     </application>
 
     <!-- 导航 SDK permission start -->

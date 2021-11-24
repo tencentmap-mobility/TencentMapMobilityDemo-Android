@@ -22,19 +22,23 @@ import com.tencent.mobility.R;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class PanelView extends FrameLayout {
 
-    private TextView mEnter;
-    private TextView mConsole;
     private final AtomicInteger doActionCount = new AtomicInteger(1);
     private final StringBuffer mConsoleBuffer = new StringBuffer();
     private final List<String> mPanelItemKeys = new ArrayList<>();
     private final Map<String, Action> mActions = new HashMap<>();
     private final Map<String, String> mActionIndexes = new HashMap<>();
+    private final Action sEmptyAction = new Action(null);
+    private TextView mEnter;
+    private TextView mConsole;
+    private volatile Handler mActionHandler;
     private final HandlerThread mActionThread = new HandlerThread("action_thread") {
         @Override
         protected void onLooperPrepared() {
@@ -50,7 +54,6 @@ public class PanelView extends FrameLayout {
             }
         }
     };
-    private volatile Handler mActionHandler;
 
     public PanelView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -72,7 +75,8 @@ public class PanelView extends FrameLayout {
         mConsole.setMovementMethod(ScrollingMovementMethod.getInstance());
         mConsole.setOnLongClickListener(v -> {
             if (mConsoleBuffer.length() > 0) {
-                ClipboardManager clipboard = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipboardManager clipboard = (ClipboardManager) getContext()
+                        .getSystemService(Context.CLIPBOARD_SERVICE);
                 clipboard.setPrimaryClip(ClipData.newPlainText(mEnter.getText().toString(), mConsoleBuffer.toString()));
                 Toast.makeText(getContext(), "拷贝成功", Toast.LENGTH_SHORT).show();
                 return true;
@@ -131,7 +135,7 @@ public class PanelView extends FrameLayout {
         Action action = mActions.get(actionName);
         if (action != null) {
             action.reset();
-            Object ret = action.run();
+            Object ret = action.doRun();
             if (ret != action.value) {
                 action.setValue(ret);
                 mConsoleBuffer.append(doActionCount.getAndIncrement()).append(".")
@@ -164,7 +168,7 @@ public class PanelView extends FrameLayout {
     /**
      * 初始化面板
      *
-     * @param title   标题
+     * @param title 标题
      * @param actions 功能选项名称
      */
     public void init(String title, String... actions) {
@@ -174,11 +178,16 @@ public class PanelView extends FrameLayout {
     /**
      * 初始化面板
      *
-     * @param title   标题
+     * @param title 标题
      * @param indexes 选项索引
      * @param actions 功能选项名称
      */
     public void init(String title, String[] indexes, String... actions) {
+        mPanelItemKeys.clear();
+        mActionIndexes.clear();
+        mConsoleBuffer.delete(0, mConsoleBuffer.length());
+        doActionCount.set(0);
+
         if (indexes != null && indexes.length == actions.length) {
             for (int i = 0; i < indexes.length; i++) {
                 mActionIndexes.put(actions[i], indexes[i]);
@@ -187,14 +196,16 @@ public class PanelView extends FrameLayout {
 
         mEnter.setText(title);
         mPanelItemKeys.addAll(Arrays.asList(actions));
-        mActionThread.start();
-        while (mActionHandler == null) {
-            try {
-                synchronized (mActionThread) {
-                    mActionThread.wait(200);
+        if (!mActionThread.isAlive()) {
+            mActionThread.start();
+            while (mActionHandler == null) {
+                try {
+                    synchronized (mActionThread) {
+                        mActionThread.wait(200);
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
             }
         }
 
@@ -225,17 +236,43 @@ public class PanelView extends FrameLayout {
         postAction(key);
     }
 
+    public Action getAction(String actionName) {
+        Action action = mActions.get(actionName);
+        if (action == null) {
+            return sEmptyAction;
+        }
+        return action;
+    }
+
+
     public static class Action<T> {
 
-        private T value;
         private final T mDef;
+        private final Set<Runnable> beforeRuns = new HashSet<>();
+        private final Set<Runnable> afterRuns = new HashSet<>();
+        private T value;
 
         public Action(T def) {
             mDef = def;
             this.value = def;
         }
 
+        T doRun() {
+            for (Runnable runnable : beforeRuns) {
+                runnable.run();
+            }
+            T ret = run();
+            for (Runnable runnable : afterRuns) {
+                runnable.run();
+            }
+            return ret;
+        }
+
         public T run() {
+            return value;
+        }
+
+        public T getValue() {
             return value;
         }
 
@@ -243,12 +280,20 @@ public class PanelView extends FrameLayout {
             this.value = value;
         }
 
-        public T getValue() {
-            return value;
-        }
-
         public void reset() {
             value = mDef;
+        }
+
+        public void beforeRun(Runnable runnable) {
+            if (runnable != null) {
+                beforeRuns.add(runnable);
+            }
+        }
+
+        public void afterRun(Runnable runnable) {
+            if (runnable != null) {
+                afterRuns.add(runnable);
+            }
         }
     }
 }

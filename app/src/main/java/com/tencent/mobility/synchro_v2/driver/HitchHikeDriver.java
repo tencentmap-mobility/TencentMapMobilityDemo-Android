@@ -23,7 +23,7 @@ import com.tencent.map.navi.data.NaviPoi;
 import com.tencent.map.navi.data.RouteData;
 import com.tencent.map.navi.tlocation.ITNKLocationCallBack;
 import com.tencent.mobility.R;
-import com.tencent.mobility.synchro_v2.helper.ConvertHelper;
+import com.tencent.mobility.util.ConvertHelper;
 import com.tencent.mobility.util.ToastUtils;
 
 import java.util.ArrayList;
@@ -116,7 +116,7 @@ public class HitchHikeDriver extends DriverBase implements RadioGroup.OnCheckedC
      */
     public void pullGuestPoints(View view) {
         // 在顺风单中，司机不能拉取乘客位置
-        ToastUtils.INSTANCE().Toast("顺风车不支持拉取乘客位置!!");
+        ToastUtils.instance().toast("顺风车不支持拉取乘客位置!!");
     }
 
     /**
@@ -124,7 +124,7 @@ public class HitchHikeDriver extends DriverBase implements RadioGroup.OnCheckedC
      * @param view
      */
     public void stopPullGuestPoints(View view) {
-        ToastUtils.INSTANCE().Toast("顺风车不支持拉取乘客位置!!");
+        ToastUtils.instance().toast("顺风车不支持拉取乘客位置!!");
     }
 
     /**
@@ -211,12 +211,12 @@ public class HitchHikeDriver extends DriverBase implements RadioGroup.OnCheckedC
                 , new DriDataListener.ISearchCallBack() {
                     @Override
                     public void onParamsInvalid(int errCode, String errMsg) {
-                        ToastUtils.INSTANCE().Toast("参数不合法!!");
+                        ToastUtils.instance().toast("参数不合法!!");
                     }
 
                     @Override
                     public void onRouteSearchFailure(int i, String s) {
-                        ToastUtils.INSTANCE().Toast("算路失败!!");
+                        ToastUtils.instance().toast("算路失败!!");
                     }
 
                     @Override
@@ -224,7 +224,7 @@ public class HitchHikeDriver extends DriverBase implements RadioGroup.OnCheckedC
                         /**
                          * 算路成功回调
                          */
-                        ToastUtils.INSTANCE().Toast("算路成功");
+                        ToastUtils.instance().toast("算路成功");
                         curRoute = arrayList.get(curRouteIndex);
                         curRouteId = curRoute.getRouteId();
                         // 绘制路线

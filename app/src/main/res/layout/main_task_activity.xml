@@ -155,9 +155,9 @@
             android:id="@+id/hitch_hike_dri_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:itemTitle="司机端"
-            app:itemContent="HitchHikeDriver"
-            android:onClick="OnHitchHikeDri"
+            app:itemTitle="单人顺风"
+            app:itemContent="HitchHikeOneVipActivity"
+            android:onClick="OnHitchHikeSingle"
             />
 
         <View
@@ -172,9 +172,9 @@
             android:id="@+id/hitch_hike_psg_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:itemTitle="乘客端"
-            app:itemContent="PsgActivity"
-            android:onClick="OnHitchHikePsg"
+            app:itemTitle="多人顺风"
+            app:itemContent="HitchHikeNormalActivity"
+            android:onClick="OnHitchHikeMulti"
             />
 
         <TextView
@@ -191,26 +191,9 @@
             android:id="@+id/carpooling_dri_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:itemTitle="司机端"
-            app:itemContent="CarpoolingDriver"
-            android:onClick="OnCarpoolingDri"
-            />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="0.5dp"
-            android:background="#787878"
-            android:layout_marginLeft="12dp"
-            android:layout_marginRight="12dp"
-            />
-
-        <com.tencent.mobility.ui.ItemLayout
-            android:id="@+id/carpooling_psg_layout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:itemTitle="乘客端"
-            app:itemContent="PsgActivity"
-            android:onClick="OnCarpoolingPsg"
+            app:itemTitle="至少2人拼车"
+            app:itemContent="CarpoolingNormalActivity"
+            android:onClick="OnCarpooling"
             />
 
     </LinearLayout>

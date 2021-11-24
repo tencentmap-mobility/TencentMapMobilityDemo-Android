@@ -252,12 +252,12 @@ public class CarpoolingDriver extends DriverBase {
                 , new DriDataListener.ISearchCallBack() {
                     @Override
                     public void onParamsInvalid(int errCode, String errMsg) {
-                        ToastUtils.INSTANCE().Toast("参数不合法!!");
+                        ToastUtils.instance().toast("参数不合法!!");
                     }
 
                     @Override
                     public void onRouteSearchFailure(int i, String s) {
-                        ToastUtils.INSTANCE().Toast("算路失败!!");
+                        ToastUtils.instance().toast("算路失败!!");
                     }
 
                     @Override
@@ -265,7 +265,7 @@ public class CarpoolingDriver extends DriverBase {
                         /**
                          * 算路成功回调
                          */
-                        ToastUtils.INSTANCE().Toast("算路成功");
+                        ToastUtils.instance().toast("算路成功");
                         curRoute = arrayList.get(curRouteIndex);
                         curRouteId = curRoute.getRouteId();
                         // 绘制路线

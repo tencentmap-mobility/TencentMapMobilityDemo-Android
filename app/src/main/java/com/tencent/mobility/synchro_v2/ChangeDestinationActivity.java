@@ -10,9 +10,11 @@ import com.tencent.map.lssupport.bean.TLSDFetchedData;
 import com.tencent.map.lssupport.bean.TLSLatlng;
 import com.tencent.map.lssupport.utils.ConvertUtil;
 import com.tencent.map.navi.car.CarNaviView;
+import com.tencent.map.navi.car.TencentCarNaviManager;
 import com.tencent.mobility.mock.MockDriver;
 import com.tencent.mobility.mock.MockPassenger;
 import com.tencent.mobility.mock.MockSyncService;
+import com.tencent.mobility.ui.OneDriverOnePassengerActivity;
 import com.tencent.mobility.ui.PanelView;
 import com.tencent.tencentmap.mapsdk.maps.MapView;
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
@@ -103,10 +105,9 @@ public class ChangeDestinationActivity extends OneDriverOnePassengerActivity {
     }
 
     @Override
-    protected void onCreateDriverAction(final MockDriver driver,
-                                        final TSLDExtendManager driverSync,
-                                        final PanelView driverPanel,
-                                        final CarNaviView carNaviView) {
+    protected void onCreateDriverAction(MockDriver driver, TSLDExtendManager driverSync,
+                                        PanelView driverPanel, CarNaviView carNaviView,
+                                        TencentCarNaviManager manager) {
 
         driverSync.addTLSDriverListener(new SimpleDriDataListener() {
 

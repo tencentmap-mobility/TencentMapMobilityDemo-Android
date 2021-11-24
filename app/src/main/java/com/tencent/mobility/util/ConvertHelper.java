@@ -1,4 +1,4 @@
-package com.tencent.mobility.synchro_v2.helper;
+package com.tencent.mobility.util;
 
 import com.tencent.map.geolocation.TencentLocation;
 import com.tencent.map.lssupport.bean.TLSBDriverPosition;

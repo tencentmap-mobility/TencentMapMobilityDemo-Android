@@ -5,26 +5,26 @@
 
     <TextView
         android:id="@+id/panel_enter"
-        android:padding="5dp"
-        android:background="@android:color/holo_blue_dark"
-        android:textColor="@android:color/white"
-        android:textStyle="bold"
-        android:textSize="15sp"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:background="@android:color/holo_blue_dark"
+        android:padding="5dp"
+        android:textColor="@android:color/white"
+        android:textSize="15sp"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/panel_console"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="end"
-        android:maxWidth="180dp"
-        android:maxHeight="100dp"
+        android:background="#88aaaaaa"
         android:clickable="false"
         android:longClickable="true"
-        android:background="#88aaaaaa"
+        android:maxWidth="180dp"
+        android:maxHeight="100dp"
         android:scrollbars="vertical"
-        android:textColor="@color/black"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:textColor="@color/black" />
 
 
 </com.tencent.mobility.ui.PanelView>

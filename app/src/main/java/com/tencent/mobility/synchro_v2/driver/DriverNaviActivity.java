@@ -25,7 +25,7 @@ import com.tencent.map.navi.data.RouteData;
 import com.tencent.map.navi.ui.car.CarNaviInfoPanel;
 import com.tencent.mobility.BaseActivity;
 import com.tencent.mobility.R;
-import com.tencent.mobility.synchro_v2.helper.SingleHelper;
+import com.tencent.mobility.util.SingleHelper;
 import com.tencent.tencentmap.mapsdk.maps.model.BitmapDescriptorFactory;
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
 import com.tencent.tencentmap.mapsdk.maps.model.Marker;

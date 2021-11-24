@@ -21,7 +21,6 @@ import com.tencent.map.lssupport.bean.TLSDFetchedData;
 import com.tencent.map.lssupport.bean.TLSLatlng;
 import com.tencent.map.lssupport.protocol.BaseSyncProtocol;
 import com.tencent.map.lssupport.utils.ConvertUtil;
-import com.tencent.map.lssupport.utils.Util;
 import com.tencent.map.navi.car.CarNaviView;
 import com.tencent.map.navi.data.RouteData;
 import com.tencent.map.tools.Callback;
@@ -32,10 +31,10 @@ import com.tencent.mobility.mock.MockDriver;
 import com.tencent.mobility.mock.MockOrder;
 import com.tencent.mobility.mock.MockPassenger;
 import com.tencent.mobility.mock.MockSyncService;
-import com.tencent.mobility.synchro_v2.helper.ConvertHelper;
-import com.tencent.mobility.synchro_v2.helper.SHelper;
-import com.tencent.mobility.synchro_v2.helper.SingleHelper;
+import com.tencent.mobility.util.ConvertHelper;
+import com.tencent.mobility.util.SHelper;
 import com.tencent.mobility.ui.PanelView;
+import com.tencent.mobility.util.SingleHelper;
 import com.tencent.tencentmap.mapsdk.maps.MapView;
 import com.tencent.tencentmap.mapsdk.maps.TencentMap;
 import com.tencent.tencentmap.mapsdk.maps.model.BitmapDescriptorFactory;
@@ -64,8 +63,9 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
 
     private MockDriver mDriver;
     private MockPassenger mPassenger;
+    private MockSyncService mDriverSyncService;
+    private MockSyncService mPassengerSyncService;
 
-    private MockSyncService mMockSyncService;
     private boolean mPassengerDrawMultiRoutes;
     private boolean mPassengerDrawRoute;
 
@@ -81,8 +81,6 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
         mDriverPanel = findViewById(R.id.group_panel_driver);
         mPassengerPanel = findViewById(R.id.group_panel_passenger);
 
-        mMockSyncService = new MockSyncService(TLSConfigPreference.getGlobalKey(this));
-
         initPassengerPanel();
         initDriverPanel();
     }
@@ -90,13 +88,14 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
     private void initPassengerPanel() {
         mPassenger = MockSyncService.newRandomPassenger(mMapView.getMap());
         mPassengerSync = TSLPassengerManager.newInstance();
+        mPassengerSyncService = new MockSyncService(mPassengerSync);
         mPassengerSync.init(this, TLSConfigPreference.create()
                 .setAccountId(mPassenger.getId()));
         mPassengerPanel.init("乘客", "行前选路", "行中选路");
         mPassengerPanel.addAction("行前选路", new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
-                MockOrder order = mMockSyncService.newOrder(mMapView.getMap(), mPassenger);
+                MockOrder order = mPassengerSyncService.newOrder(mMapView.getMap(), mPassenger);
                 if (order != null && !TextUtils.isEmpty(order.getId())) {
 
                     mPassengerSync.addTLSPassengerListener(new SimplePsgDataListener() {
@@ -148,7 +147,7 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
         mPassengerPanel.addAction("行中选路", new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
-                MockOrder order = mMockSyncService.newOrder(mMapView.getMap(), mPassenger);
+                MockOrder order = mPassengerSyncService.newOrder(mMapView.getMap(), mPassenger);
                 if (order != null && !TextUtils.isEmpty(order.getId())) {
 
                     mPassengerSync.addTLSPassengerListener(new SimplePsgDataListener() {
@@ -198,7 +197,7 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
         mPassengerPanel.addAction("检索路线", new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
-                MockOrder order = mMockSyncService.getOrder(mPassenger);
+                MockOrder order = mPassengerSyncService.getOrder(mPassenger);
                 final CountDownLatch sync = new CountDownLatch(1);
                 TLSLatlng from = new TLSLatlng(order.getBegin().latitude, order.getBegin().longitude);
                 TLSLatlng to = new TLSLatlng(order.getEnd().latitude, order.getEnd().longitude);
@@ -292,6 +291,7 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
         MockCar car = MockSyncService.newRandomCar();
         mDriver = MockSyncService.newRandomDriver(mCarNaviView.getMap(), car);
         mDriverSync = TSLDExtendManager.newInstance();
+        mDriverSyncService = new MockSyncService(mDriverSync);
         mDriverSync.init(this,
                 TLSConfigPreference.create().setAccountId(mDriver.getId()));
         mDriverSync.setNaviManager(SingleHelper.getNaviManager(this));
@@ -301,12 +301,12 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
         mDriverPanel.addAction("绑定订单至接驾", new PanelView.Action<String>("") {
             @Override
             public String run() {
-                MockOrder order = mMockSyncService.getOrder(mPassenger);
+                MockOrder order = mDriverSyncService.getOrder(mPassenger);
                 mDriverSync.getTLSBOrder().setOrderId(order.getId());
                 if (order.isWaiting()) {
                     mDriverSync.getTLSBOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusNone);
                     mPassengerSync.getTLSPOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusNone);
-                    mMockSyncService.acceptPassenger(mDriver, mPassenger);
+                    mDriverSyncService.acceptPassenger(mDriver, mPassenger);
                     if (order.isAccepted()) {
                         mDriverSync.addTLSDriverListener(new SimpleDriDataListener() {
                             @Override
@@ -339,18 +339,18 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
         mDriverPanel.addAction("绑定订单至送驾", new PanelView.Action<String>("") {
             @Override
             public String run() {
-                MockOrder order = mMockSyncService.getOrder(mPassenger);
+                MockOrder order = mDriverSyncService.getOrder(mPassenger);
                 mDriverSync.getTLSBOrder().setOrderId(order.getId());
                 if (order.isWaiting()) {
                     mDriverSync.getTLSBOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusNone);
                     mPassengerSync.getTLSPOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusNone);
-                    mMockSyncService.acceptPassenger(mDriver, mPassenger);
+                    mDriverSyncService.acceptPassenger(mDriver, mPassenger);
                     if (order.isAccepted()) {
                         mDriverSync.getTLSBOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusPickUp);
                         mPassengerSync.getTLSPOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusPickUp);
                         mDriverPanel.print("当前订单接驾中");
 
-                        mMockSyncService.onTheWayPassenger(mDriver, mPassenger);
+                        mDriverSyncService.onTheWayPassenger(mDriver, mPassenger);
                         if (order.isOnTheWay()) {
                             mDriverSync.addTLSDriverListener(new SimpleDriDataListener() {
                                 @Override
@@ -396,7 +396,7 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
         mDriverPanel.addAction("请求路线", new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
-                final MockOrder order = mMockSyncService.getOrder(mPassenger);
+                final MockOrder order = mDriverSyncService.getOrder(mPassenger);
                 final CountDownLatch syncWaiting = new CountDownLatch(1);
                 final List<RouteData> routeData = new ArrayList<>();
                 // 当前送驾路线

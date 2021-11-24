@@ -1,22 +1,38 @@
 package com.tencent.mobility.mock;
 
+import android.text.TextUtils;
+
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class MockOrder {
 
+    private final MockCar mCar;
+    Set<MockOrder> subOrders = new HashSet<>();
     private String mId;
-    private final String mPassengerId;
-    private final MockPassenger mPassenger;
+    private String mPassengerId;
+    private MockPassenger mPassenger;
     private MockDriver mDriver;
     private LatLng mBegin;
     private LatLng mEnd;
     private Status mStatus = Status.Idle;
-    private final MockCar mCar;
+    private String mDriverId;
+    private boolean isDriverOrder;
+    private String mCarpoolOrderId;
 
-    public MockOrder(MockPassenger passenger, LatLng begin, LatLng end, MockCar car) {
-        mPassenger = passenger;
+    public MockOrder(MockUser user, LatLng begin, LatLng end, MockCar car) {
+        if (user instanceof MockPassenger) {
+            mPassenger = (MockPassenger) user;
+            mPassengerId = user.getId();
+            isDriverOrder = false;
+        } else if (user instanceof MockDriver) {
+            mDriver = (MockDriver) user;
+            mDriverId = user.getId();
+            isDriverOrder = true;
+        }
         mCar = car;
-        mPassengerId = passenger.getId();
         if (!begin.equals(end)) {
             mBegin = begin;
             mEnd = end;
@@ -25,10 +41,46 @@ public class MockOrder {
     }
 
     public String getId() {
+        if (isDriverOrder && !TextUtils.isEmpty(mCarpoolOrderId)) {
+            return mCarpoolOrderId;
+        }
         return mId;
     }
 
+    /**
+     * 原始创建ID
+     */
+    public String getOriginalId() {
+        return mId;
+    }
+
+    /**
+     * 拼车ID
+     */
+    public String getCarpoolOrderId() {
+        return mCarpoolOrderId;
+    }
+
+    public void setCarpoolOrderId(String carpoolOrderId) {
+        mCarpoolOrderId = carpoolOrderId;
+    }
+
+    public boolean isDriverOrder() {
+        return isDriverOrder;
+    }
+
+    public String getUserId() {
+        if (isDriverOrder) {
+            return getDriverId();
+        } else {
+            return getPassengerId();
+        }
+    }
+
     public String getPassengerId() {
+        if (mPassenger != null) {
+            return mPassenger.getId();
+        }
         return mPassengerId;
     }
 
@@ -36,19 +88,23 @@ public class MockOrder {
         if (mDriver != null) {
             return mDriver.getId();
         }
-        return "";
-    }
-
-    public void setDriver(MockDriver driver) {
-        mDriver = driver;
+        return mDriverId;
     }
 
     public MockPassenger getPassenger() {
         return mPassenger;
     }
 
+    public void setPassenger(MockPassenger passenger) {
+        mPassenger = passenger;
+    }
+
     public MockDriver getDriver() {
         return mDriver;
+    }
+
+    public void setDriver(MockDriver driver) {
+        mDriver = driver;
     }
 
     public MockCar getCar() {
@@ -63,12 +119,19 @@ public class MockOrder {
         return mEnd;
     }
 
+    public Status getStatus() {
+        return mStatus;
+    }
+
     public void setStatus(Status status) {
         this.mStatus = status;
     }
 
-    public Status getStatus() {
-        return mStatus;
+    /**
+     * 等待接单
+     */
+    public boolean isIdle() {
+        return mStatus == Status.Idle;
     }
 
     /**
@@ -106,6 +169,13 @@ public class MockOrder {
         return mStatus == Status.Canceled;
     }
 
+    public void addSubOrder(MockOrder order) {
+        subOrders.add(order);
+    }
+
+    public Set<MockOrder> getSubOrders() {
+        return subOrders;
+    }
 
     public enum Status {
         Idle(0),
@@ -117,6 +187,7 @@ public class MockOrder {
         ;
 
         private final int status;
+
         Status(int status) {
             this.status = status;
         }

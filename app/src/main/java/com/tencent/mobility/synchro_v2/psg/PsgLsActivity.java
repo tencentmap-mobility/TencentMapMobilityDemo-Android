@@ -19,7 +19,7 @@ import com.tencent.map.lssupport.bean.TLSDDrvierStatus;
 import com.tencent.map.lssupport.bean.TLSDFetchedData;
 import com.tencent.mobility.R;
 import com.tencent.mobility.location.GeoLocationAdapter;
-import com.tencent.mobility.synchro_v2.helper.ConvertHelper;
+import com.tencent.mobility.util.ConvertHelper;
 import com.tencent.mobility.util.ToastUtils;
 import com.tencent.navi.surport.utils.DeviceUtils;
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
@@ -183,7 +183,7 @@ public abstract class PsgLsActivity extends PsgBaseMapActivity {
      * @param view
      */
     public void finishOrder(View view) {
-        ToastUtils.INSTANCE().Toast("结束司乘!!");
+        ToastUtils.instance().toast("结束司乘!!");
         if(tlspManager != null)
             tlspManager.stop();
         clearUi();
@@ -194,7 +194,7 @@ public abstract class PsgLsActivity extends PsgBaseMapActivity {
      * @param view
      */
     public void startLs(View view) {
-        ToastUtils.INSTANCE().Toast("开启司乘");
+        ToastUtils.instance().toast("开启司乘");
         if(tlspManager != null)
             tlspManager.start();
     }
@@ -220,7 +220,7 @@ public abstract class PsgLsActivity extends PsgBaseMapActivity {
      * @param view
      */
     public void pushLocation(View view) {
-        ToastUtils.INSTANCE().Toast("上报定位点");
+        ToastUtils.instance().toast("上报定位点");
         if(tlspManager != null)
             tlspManager.uploadPassengerPositionsEnabled(true);
     }
@@ -230,7 +230,7 @@ public abstract class PsgLsActivity extends PsgBaseMapActivity {
      * @param view
      */
     public void stopPushLocation(View view) {
-        ToastUtils.INSTANCE().Toast("停止上报定位点!!");
+        ToastUtils.instance().toast("停止上报定位点!!");
         if(tlspManager != null)
             tlspManager.uploadPassengerPositionsEnabled(false);
     }
@@ -238,7 +238,7 @@ public abstract class PsgLsActivity extends PsgBaseMapActivity {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        ToastUtils.INSTANCE().destory();
+        ToastUtils.instance().destory();
         if(tlspManager != null)
             tlspManager.stop();
     }

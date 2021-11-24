@@ -16,9 +16,9 @@ import com.tencent.map.navi.data.TrafficItem;
 import com.tencent.map.navi.tlocation.ITNKLocationCallBack;
 import com.tencent.mobility.R;
 import com.tencent.mobility.location.GeoLocationAdapter;
-import com.tencent.mobility.synchro_v2.helper.SHelper;
-import com.tencent.mobility.synchro_v2.helper.SingleHelper;
+import com.tencent.mobility.util.SHelper;
 import com.tencent.mobility.util.CommonUtils;
+import com.tencent.mobility.util.SingleHelper;
 import com.tencent.mobility.util.ToastUtils;
 import com.tencent.navi.surport.utils.DeviceUtils;
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
@@ -64,7 +64,7 @@ public abstract class DriverBase extends DriverBaseMapActivity implements IHandl
     @Override
     public void onDestroy() {
         super.onDestroy();
-        ToastUtils.INSTANCE().destory();
+        ToastUtils.instance().destory();
     }
 
     /**
@@ -101,7 +101,7 @@ public abstract class DriverBase extends DriverBaseMapActivity implements IHandl
      * 开启司乘
      */
     public void startSync() {
-        ToastUtils.INSTANCE().Toast("开启司乘");
+        ToastUtils.instance().toast("开启司乘");
         if(lsManager != null) {
             lsManager.start();
         }
@@ -111,7 +111,7 @@ public abstract class DriverBase extends DriverBaseMapActivity implements IHandl
      * 结束司乘
      */
     public void stopSync() {
-        ToastUtils.INSTANCE().Toast("停止司乘");
+        ToastUtils.instance().toast("停止司乘");
         if(lsManager != null) {
             lsManager.stop();
         }
@@ -122,7 +122,7 @@ public abstract class DriverBase extends DriverBaseMapActivity implements IHandl
      * 拉取乘客定位点
      */
     public void startPullPsgPos() {
-        ToastUtils.INSTANCE().Toast("拉取乘客位置点");
+        ToastUtils.instance().toast("拉取乘客位置点");
         if(lsManager != null)
             lsManager.fetchPassengerPositionsEnabled(true);
     }
@@ -131,7 +131,7 @@ public abstract class DriverBase extends DriverBaseMapActivity implements IHandl
      * 停止拉取乘客位置
      */
     public void stopPullPsgPos() {
-        ToastUtils.INSTANCE().Toast("停止拉取!!");
+        ToastUtils.instance().toast("停止拉取!!");
         if(lsManager != null)
             lsManager.fetchPassengerPositionsEnabled(false);
     }
