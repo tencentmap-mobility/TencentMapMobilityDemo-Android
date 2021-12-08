@@ -195,8 +195,34 @@
         }
     });
 ```
+## 6. 顺风车/拼车
 
-## 6. 司乘同显乘客端回调
+截取子路线：
+
+```java
+    /**
+     * 截取子路线
+     *
+     * @param origin 原路线
+     * @param startIndex 起点位置
+     * @param endIndex 终点位置
+     * @return 子路线, 返回null如果参数计算错误
+     * @since 2.4.0
+     */
+    public static TLSBRoute subRouteByRange(final TLSBRoute origin, final int startIndex, final int endIndex);
+    /**
+     * 截取子路线
+     *
+     * @param origin 原路线
+     * @param startIndex 起点位置
+     * @param length 长度
+     * @return 子路线, 返回null如果参数计算错误
+     * @since 2.4.0
+     */
+    public static TLSBRoute subRouteByIndex(final TLSBRoute origin, final int startIndex, final int length);
+```
+
+## 7. 司乘同显乘客端回调
 
 ```java
     /**
