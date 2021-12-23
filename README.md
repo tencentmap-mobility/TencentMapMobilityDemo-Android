@@ -18,6 +18,6 @@ https://tencentmap-mobility.github.io/
 1. [出行周边车辆SDK](app/src/main/assets/readme/%E5%91%A8%E8%BE%B9%E8%BD%A6%E8%BE%86.md)
 2. [出行推荐上车点SDK](app/src/main/assets/readme/%E6%8E%A8%E8%8D%90%E4%B8%8A%E8%BD%A6%E7%82%B9.md)
 3. [出行检索SDK](app/src/main/assets/readme/%E6%A3%80%E7%B4%A2.md)
-4. [司乘同显SDK](docs/outline.md)
-5. [司乘同显司机端流程](docs/driver.md)
-6. [司乘同显乘客端流程](docs/passenger.md)
+
+## 司乘SDK版本变更说明
+已不在github维护，请到官网链接查看详细的版本发布和接入指南：https://lbs.qq.com/mobile/AndroidLSSDK/ReleaseNode
