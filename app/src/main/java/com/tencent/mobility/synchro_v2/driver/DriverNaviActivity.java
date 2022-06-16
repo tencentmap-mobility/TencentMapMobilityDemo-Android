@@ -18,6 +18,7 @@ import com.tencent.map.navi.car.CarNaviView;
 import com.tencent.map.navi.car.CarRouteSearchOptions;
 import com.tencent.map.navi.car.TencentCarNaviManager;
 import com.tencent.map.navi.data.AttachedLocation;
+import com.tencent.map.navi.data.CalcRouteResult;
 import com.tencent.map.navi.data.NaviPoi;
 import com.tencent.map.navi.data.NaviTts;
 import com.tencent.map.navi.data.ParallelRoadStatus;
@@ -242,6 +243,16 @@ public class DriverNaviActivity extends BaseActivity {
         }
 
         @Override
+        public void onRecalculateSuccess(CalcRouteResult calcRouteResult) {
+
+        }
+
+        @Override
+        public void onRecalculateFailure(CalcRouteResult calcRouteResult) {
+
+        }
+
+        @Override
         public void onRecalculateRouteStarted(int i) {
 
         }
@@ -302,14 +313,14 @@ public class DriverNaviActivity extends BaseActivity {
         }
 
         @Override
-        public void onRouteSearchFailure(int i, String s) {
-            Log.e(LOG_TAG, ">>>onRouteSearchFailure !!");
+        public void onCalcRouteSuccess(CalcRouteResult calcRouteResult) {
+            curRouteIndex = 0;
+            startSimulateNavi();// 开启模拟导航
         }
 
         @Override
-        public void onRouteSearchSuccess(ArrayList<RouteData> arrayList) {
-            curRouteIndex = 0;
-            startSimulateNavi();// 开启模拟导航
+        public void onCalcRouteFailure(CalcRouteResult calcRouteResult) {
+            Log.e(LOG_TAG, ">>>onRouteSearchFailure !!");
         }
     }
 

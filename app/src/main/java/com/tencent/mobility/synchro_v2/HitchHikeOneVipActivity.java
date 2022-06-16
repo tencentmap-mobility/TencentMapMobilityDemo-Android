@@ -10,6 +10,7 @@ import com.tencent.map.lssupport.bean.TLSBWayPointType;
 import com.tencent.map.lssupport.bean.TLSDWayPointInfo;
 import com.tencent.map.navi.car.CarNaviView;
 import com.tencent.map.navi.car.TencentCarNaviManager;
+import com.tencent.map.navi.data.CalcRouteResult;
 import com.tencent.map.navi.data.RouteData;
 import com.tencent.mobility.mock.MockCar;
 import com.tencent.mobility.mock.MockDriver;
@@ -135,20 +136,20 @@ public class HitchHikeOneVipActivity extends OneDriverOnePassengerActivity {
                                 .rejectWayPoint(ws.toArray(new TLSDWayPointInfo[0])),
                         new DriDataListener.ISearchCallBack() {
                             @Override
-                            public void onParamsInvalid(int errCode, String errMsg) {
-                                syncWaiting.countDown();
-                            }
-
-                            @Override
-                            public void onRouteSearchFailure(int i, String s) {
-                                syncWaiting.countDown();
-                            }
-
-                            @Override
-                            public void onRouteSearchSuccess(ArrayList<RouteData> arrayList) {
-                                if (arrayList != null && !arrayList.isEmpty()) {
-                                    routeData.addAll(arrayList);
+                            public void onCalcRouteSuccess(CalcRouteResult calcRouteResult) {
+                                if (calcRouteResult.getRoutes() != null && !calcRouteResult.getRoutes().isEmpty()) {
+                                    routeData.addAll(calcRouteResult.getRoutes());
                                 }
+                                syncWaiting.countDown();
+                            }
+
+                            @Override
+                            public void onCalcRouteFailure(CalcRouteResult calcRouteResult) {
+                                syncWaiting.countDown();
+                            }
+
+                            @Override
+                            public void onParamsInvalid(int errCode, String errMsg) {
                                 syncWaiting.countDown();
                             }
                         }

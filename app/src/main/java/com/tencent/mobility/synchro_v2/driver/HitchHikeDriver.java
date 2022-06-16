@@ -19,6 +19,7 @@ import com.tencent.map.lssupport.bean.TLSBWayPointType;
 import com.tencent.map.lssupport.bean.TLSDDrvierStatus;
 import com.tencent.map.lssupport.bean.TLSDWayPointInfo;
 import com.tencent.map.navi.car.CarRouteSearchOptions;
+import com.tencent.map.navi.data.CalcRouteResult;
 import com.tencent.map.navi.data.NaviPoi;
 import com.tencent.map.navi.data.RouteData;
 import com.tencent.map.navi.tlocation.ITNKLocationCallBack;
@@ -210,25 +211,25 @@ public class HitchHikeDriver extends DriverBase implements RadioGroup.OnCheckedC
         lsManager.searchCarRoutes(from, to, ws, CarRouteSearchOptions.create()
                 , new DriDataListener.ISearchCallBack() {
                     @Override
-                    public void onParamsInvalid(int errCode, String errMsg) {
-                        ToastUtils.instance().toast("参数不合法!!");
-                    }
-
-                    @Override
-                    public void onRouteSearchFailure(int i, String s) {
-                        ToastUtils.instance().toast("算路失败!!");
-                    }
-
-                    @Override
-                    public void onRouteSearchSuccess(ArrayList<RouteData> arrayList) {
+                    public void onCalcRouteSuccess(CalcRouteResult calcRouteResult) {
                         /**
                          * 算路成功回调
                          */
                         ToastUtils.instance().toast("算路成功");
-                        curRoute = arrayList.get(curRouteIndex);
+                        curRoute = calcRouteResult.getRoutes().get(curRouteIndex);
                         curRouteId = curRoute.getRouteId();
                         // 绘制路线
                         drawUi(curRoute, from, to, ws);
+                    }
+
+                    @Override
+                    public void onCalcRouteFailure(CalcRouteResult calcRouteResult) {
+                        ToastUtils.instance().toast("算路失败!!");
+                    }
+
+                    @Override
+                    public void onParamsInvalid(int errCode, String errMsg) {
+                        ToastUtils.instance().toast("参数不合法!!");
                     }
                 });
     }
@@ -300,7 +301,7 @@ public class HitchHikeDriver extends DriverBase implements RadioGroup.OnCheckedC
     }
 
     /**
-     * {@link com.tencent.map.navi.tlocation.TNKLocationManager}
+     * {@link com.tencent.map.navi.tlocation.ITNKLocationCallBack}
      * 是导航SDK内部对于腾讯定位SDK的一个封装
      * 用户可以通过{@code TNKLocationManager}非常方便的获取定位信息
      *

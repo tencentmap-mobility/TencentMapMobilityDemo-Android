@@ -12,6 +12,7 @@ import com.tencent.map.lssupport.bean.TLSBWayPointType;
 import com.tencent.map.lssupport.bean.TLSDWayPointInfo;
 import com.tencent.map.navi.car.CarNaviView;
 import com.tencent.map.navi.car.TencentCarNaviManager;
+import com.tencent.map.navi.data.CalcRouteResult;
 import com.tencent.map.navi.data.RouteData;
 import com.tencent.mobility.mock.MockCar;
 import com.tencent.mobility.mock.MockDriver;
@@ -212,20 +213,20 @@ public class CarpoolingNormalActivity extends OneDriverNPassengerActivity {
                         OrderRouteSearchOptions.create(order.getId()),
                         new DriDataListener.ISearchCallBack() {
                             @Override
-                            public void onParamsInvalid(int errCode, String errMsg) {
-                                syncWaiting.countDown();
-                            }
-
-                            @Override
-                            public void onRouteSearchFailure(int i, String s) {
-                                syncWaiting.countDown();
-                            }
-
-                            @Override
-                            public void onRouteSearchSuccess(ArrayList<RouteData> arrayList) {
-                                if (arrayList != null && !arrayList.isEmpty()) {
-                                    routeData.addAll(arrayList);
+                            public void onCalcRouteSuccess(CalcRouteResult calcRouteResult) {
+                                if (calcRouteResult.getRoutes() != null && !calcRouteResult.getRoutes().isEmpty()) {
+                                    routeData.addAll(calcRouteResult.getRoutes());
                                 }
+                                syncWaiting.countDown();
+                            }
+
+                            @Override
+                            public void onCalcRouteFailure(CalcRouteResult calcRouteResult) {
+                                syncWaiting.countDown();
+                            }
+
+                            @Override
+                            public void onParamsInvalid(int errCode, String errMsg) {
                                 syncWaiting.countDown();
                             }
                         }
@@ -262,24 +263,25 @@ public class CarpoolingNormalActivity extends OneDriverNPassengerActivity {
                             wayPoints, OrderRouteSearchOptions.create(order.getId()),
                             new DriDataListener.ISearchCallBack() {
                                 @Override
-                                public void onParamsInvalid(int errCode, String errMsg) {
-                                    Log.d(Configs.TAG, "onParamsInvalid:" + errCode + " " + errMsg);
-                                }
-
-                                @Override
-                                public void onRouteSearchFailure(int i, String s) {
-                                    Log.d(Configs.TAG, "onRouteSearchFailure:" + i + " " + s);
-                                }
-
-                                @Override
-                                public void onRouteSearchSuccess(ArrayList<RouteData> arrayList) {
+                                public void onCalcRouteSuccess(CalcRouteResult calcRouteResult) {
                                     Log.d(Configs.TAG,
-                                            "onRouteSearchSuccess:" + arrayList.get(0).getToWayPointInfos().size());
+                                            "onRouteSearchSuccess:" + calcRouteResult.getRoutes().get(0).getToWayPointInfos().size());
                                     try {
                                         manager.startSimulateNavi(0);
                                     } catch (Exception e) {
                                         e.printStackTrace();
                                     }
+                                }
+
+                                @Override
+                                public void onCalcRouteFailure(CalcRouteResult calcRouteResult) {
+                                    Log.d(Configs.TAG, "onRouteSearchFailure:" +
+                                            calcRouteResult.getErrorCode() + " " + calcRouteResult.getErrorMsg());
+                                }
+
+                                @Override
+                                public void onParamsInvalid(int errCode, String errMsg) {
+                                    Log.d(Configs.TAG, "onParamsInvalid:" + errCode + " " + errMsg);
                                 }
                             }
                     );

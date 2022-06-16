@@ -57,7 +57,7 @@ dependencies {
     // 大定位SDK，非官网版本。
     // 单独使用时，需配合 libmapbase.so 和 libOlRoute.so 使用
     // 与导航SDK 一起时，可以不加，导航内部已经包含了上述 so 文件
-    implementation Tencent_Fusion_Location_Verison
+//    implementation Tencent_Fusion_Location_Verison
 
     implementation Tencent_TLSD_Verison // 司乘SDK司机端
     implementation Tencent_TLSP_Verison // 司乘SDK乘客端

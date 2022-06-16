@@ -17,6 +17,7 @@ import com.tencent.map.lssupport.bean.TLSBPosition;
 import com.tencent.map.lssupport.bean.TLSDDrvierStatus;
 import com.tencent.map.lssupport.bean.TLSDWayPointInfo;
 import com.tencent.map.lssupport.protocol.OrderManager;
+import com.tencent.map.navi.data.CalcRouteResult;
 import com.tencent.map.navi.data.NaviPoi;
 import com.tencent.map.navi.data.RouteData;
 import com.tencent.map.navi.tlocation.ITNKLocationCallBack;
@@ -135,25 +136,25 @@ public class FastDriver extends DriverBase {
         lsManager.searchCarRoutes(from, to, ws, OrderRouteSearchOptions.create(orderId)
                 , new DriDataListener.ISearchCallBack() {
                     @Override
-                    public void onParamsInvalid(int errCode, String errMsg) {
-                        ToastUtils.instance().toast("参数不合法!!");
-                    }
-
-                    @Override
-                    public void onRouteSearchFailure(int i, String s) {
-                        ToastUtils.instance().toast("算路失败!!");
-                    }
-
-                    @Override
-                    public void onRouteSearchSuccess(ArrayList<RouteData> arrayList) {
+                    public void onCalcRouteSuccess(CalcRouteResult calcRouteResult) {
                         /**
                          * 算路成功回调
                          */
                         ToastUtils.instance().toast("算路成功");
-                        curRoute = arrayList.get(curRouteIndex);
+                        curRoute = calcRouteResult.getRoutes().get(curRouteIndex);
                         curRouteId = curRoute.getRouteId();
                         // 绘制路线
                         drawUi(curRoute, from, to, ws);
+                    }
+
+                    @Override
+                    public void onCalcRouteFailure(CalcRouteResult calcRouteResult) {
+                        ToastUtils.instance().toast("算路失败!!");
+                    }
+
+                    @Override
+                    public void onParamsInvalid(int errCode, String errMsg) {
+                        ToastUtils.instance().toast("参数不合法!!");
                     }
                 });
     }

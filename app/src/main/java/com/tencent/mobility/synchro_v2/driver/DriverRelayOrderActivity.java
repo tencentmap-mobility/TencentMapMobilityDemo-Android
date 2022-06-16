@@ -20,6 +20,7 @@ import com.tencent.map.lssupport.bean.TLSLatlng;
 import com.tencent.map.lssupport.protocol.BaseSyncProtocol;
 import com.tencent.map.lssupport.utils.ConvertUtil;
 import com.tencent.map.navi.car.CarNaviView;
+import com.tencent.map.navi.data.CalcRouteResult;
 import com.tencent.map.navi.data.RouteData;
 import com.tencent.mobility.BaseActivity;
 import com.tencent.mobility.R;
@@ -248,20 +249,20 @@ public class DriverRelayOrderActivity extends BaseActivity {
                         OrderRouteSearchOptions.create(orderA.getId()),
                         new DriDataListener.ISearchCallBack() {
                             @Override
-                            public void onParamsInvalid(int errCode, String errMsg) {
-                                syncWaiting.countDown();
-                            }
-
-                            @Override
-                            public void onRouteSearchFailure(int i, String s) {
-                                syncWaiting.countDown();
-                            }
-
-                            @Override
-                            public void onRouteSearchSuccess(ArrayList<RouteData> arrayList) {
-                                if (arrayList != null && !arrayList.isEmpty()) {
-                                    routeData.add(arrayList.get(0));
+                            public void onCalcRouteSuccess(CalcRouteResult calcRouteResult) {
+                                if (calcRouteResult.getRoutes() != null && !calcRouteResult.getRoutes().isEmpty()) {
+                                    routeData.add(calcRouteResult.getRoutes().get(0));
                                 }
+                                syncWaiting.countDown();
+                            }
+
+                            @Override
+                            public void onCalcRouteFailure(CalcRouteResult calcRouteResult) {
+                                syncWaiting.countDown();
+                            }
+
+                            @Override
+                            public void onParamsInvalid(int errCode, String errMsg) {
                                 syncWaiting.countDown();
                             }
                         }
@@ -286,20 +287,20 @@ public class DriverRelayOrderActivity extends BaseActivity {
                         OrderRouteSearchOptions.create(orderB.getId()),
                         new DriDataListener.ISearchCallBack() {
                             @Override
-                            public void onParamsInvalid(int errCode, String errMsg) {
-                                syncWaiting2.countDown();
-                            }
-
-                            @Override
-                            public void onRouteSearchFailure(int i, String s) {
-                                syncWaiting2.countDown();
-                            }
-
-                            @Override
-                            public void onRouteSearchSuccess(ArrayList<RouteData> arrayList) {
-                                if (arrayList != null && !arrayList.isEmpty()) {
-                                    routeData.add(arrayList.get(0));
+                            public void onCalcRouteSuccess(CalcRouteResult calcRouteResult) {
+                                if (calcRouteResult.getRoutes() != null && !calcRouteResult.getRoutes().isEmpty()) {
+                                    routeData.add(calcRouteResult.getRoutes().get(0));
                                 }
+                                syncWaiting2.countDown();
+                            }
+
+                            @Override
+                            public void onCalcRouteFailure(CalcRouteResult calcRouteResult) {
+                                syncWaiting2.countDown();
+                            }
+
+                            @Override
+                            public void onParamsInvalid(int errCode, String errMsg) {
                                 syncWaiting2.countDown();
                             }
                         }
