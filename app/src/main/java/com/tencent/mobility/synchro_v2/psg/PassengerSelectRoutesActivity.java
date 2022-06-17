@@ -10,6 +10,7 @@ import com.tencent.lbssearch.object.param.DrivingParam;
 import com.tencent.map.lsdriver.TSLDExtendManager;
 import com.tencent.map.lsdriver.lsd.listener.DriDataListener;
 import com.tencent.map.lsdriver.lsd.listener.SimpleDriDataListener;
+import com.tencent.map.lsdriver.protocol.NaviProtocol;
 import com.tencent.map.lsdriver.protocol.OrderRouteSearchOptions;
 import com.tencent.map.lspassenger.TSLPassengerManager;
 import com.tencent.map.lspassenger.lsp.listener.SimplePsgDataListener;
@@ -34,7 +35,7 @@ import com.tencent.mobility.mock.MockDriver;
 import com.tencent.mobility.mock.MockOrder;
 import com.tencent.mobility.mock.MockPassenger;
 import com.tencent.mobility.mock.MockSyncService;
-import com.tencent.mobility.util.ConvertUtils;
+import com.tencent.mobility.util.ConvertHelper;
 import com.tencent.mobility.util.SHelper;
 import com.tencent.mobility.ui.PanelView;
 import com.tencent.mobility.util.SingleHelper;
@@ -66,8 +67,9 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
 
     private MockDriver mDriver;
     private MockPassenger mPassenger;
+    private MockSyncService mDriverSyncService;
+    private MockSyncService mPassengerSyncService;
 
-    private MockSyncService mMockSyncService;
     private boolean mPassengerDrawMultiRoutes;
     private boolean mPassengerDrawRoute;
     private TencentCarNaviManager mNaviManager;
@@ -75,30 +77,30 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.one_driver_one_passenger_layout);
+        setContentView(R.layout.select_routes_layout);
 
         mCarNaviView = findViewById(R.id.navi_car_view);
         mMapView = findViewById(R.id.map_view1);
+
 
         mDriverPanel = findViewById(R.id.group_panel_driver);
         mPassengerPanel = findViewById(R.id.group_panel_passenger);
 
         initPassengerPanel();
         initDriverPanel();
-
-        mMockSyncService = new MockSyncService(mDriverSync);
     }
 
     private void initPassengerPanel() {
         mPassenger = MockSyncService.newRandomPassenger(mMapView.getMap());
         mPassengerSync = TSLPassengerManager.newInstance();
+        mPassengerSyncService = new MockSyncService(mPassengerSync);
         mPassengerSync.init(this, TLSConfigPreference.create()
-                .setAccountId(mPassenger.getId()).setDebuggable(true));
+                .setAccountId(mPassenger.getId()));
         mPassengerPanel.init("乘客", "行前选路", "行中选路");
         mPassengerPanel.addAction("行前选路", new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
-                MockOrder order = mMockSyncService.newOrder(mMapView.getMap(), mPassenger);
+                MockOrder order = mPassengerSyncService.newOrder(mMapView.getMap(), mPassenger);
                 if (order != null && !TextUtils.isEmpty(order.getId())) {
 
                     mPassengerSync.addTLSPassengerListener(new SimplePsgDataListener() {
@@ -150,7 +152,7 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
         mPassengerPanel.addAction("行中选路", new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
-                MockOrder order = mMockSyncService.newOrder(mMapView.getMap(), mPassenger);
+                MockOrder order = mPassengerSyncService.newOrder(mMapView.getMap(), mPassenger);
                 if (order != null && !TextUtils.isEmpty(order.getId())) {
 
                     mPassengerSync.addTLSPassengerListener(new SimplePsgDataListener() {
@@ -200,7 +202,7 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
         mPassengerPanel.addAction("检索路线", new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
-                MockOrder order = mMockSyncService.getOrder(mPassenger);
+                MockOrder order = mPassengerSyncService.getOrder(mPassenger);
                 final CountDownLatch sync = new CountDownLatch(1);
                 TLSLatlng from = new TLSLatlng(order.getBegin().latitude, order.getBegin().longitude);
                 TLSLatlng to = new TLSLatlng(order.getEnd().latitude, order.getEnd().longitude);
@@ -299,8 +301,9 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
         MockCar car = MockSyncService.newRandomCar();
         mDriver = MockSyncService.newRandomDriver(mCarNaviView.getMap(), car);
         mDriverSync = TSLDExtendManager.newInstance();
+        mDriverSyncService = new MockSyncService(mDriverSync);
         mDriverSync.init(this,
-                TLSConfigPreference.create().setAccountId(mDriver.getId()).setDebuggable(true));
+                TLSConfigPreference.create().setAccountId(mDriver.getId()));
         mDriverSync.setNaviManager(mNaviManager);
         mDriverSync.setCarNaviView(mCarNaviView);
         mCarNaviView.setNavigationPanelVisible(false);
@@ -308,13 +311,13 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
         mDriverPanel.addAction("绑定订单至接驾", new PanelView.Action<String>("") {
             @Override
             public String run() {
-                MockOrder order = mMockSyncService.getOrder(mPassenger);
+                MockOrder order = mDriverSyncService.getOrder(mPassenger);
                 order.setStatus(MockOrder.Status.Waiting);
                 mDriverSync.getTLSBOrder().setOrderId(order.getId());
                 if (order.isWaiting()) {
                     mDriverSync.getTLSBOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusNone);
                     mPassengerSync.getTLSPOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusNone);
-                    mMockSyncService.acceptPassenger(mDriver, mPassenger);
+                    order = mDriverSyncService.acceptPassenger(mDriver, mPassenger);
                     if (order.isAccepted()) {
                         mDriverSync.addTLSDriverListener(new SimpleDriDataListener() {
                             @Override
@@ -347,19 +350,19 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
         mDriverPanel.addAction("绑定订单至送驾", new PanelView.Action<String>("") {
             @Override
             public String run() {
-                MockOrder order = mMockSyncService.getOrder(mPassenger);
+                MockOrder order = mDriverSyncService.getOrder(mPassenger);
                 order.setStatus(MockOrder.Status.Waiting);
                 mDriverSync.getTLSBOrder().setOrderId(order.getId());
                 if (order.isWaiting()) {
                     mDriverSync.getTLSBOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusNone);
                     mPassengerSync.getTLSPOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusNone);
-                    order = mMockSyncService.acceptPassenger(mDriver, mPassenger);
+                    order = mDriverSyncService.acceptPassenger(mDriver, mPassenger);
                     if (order.isAccepted()) {
                         mDriverSync.getTLSBOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusPickUp);
                         mPassengerSync.getTLSPOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusPickUp);
                         mDriverPanel.print("当前订单接驾中");
 
-                        order = mMockSyncService.onTheWayPassenger(mDriver, mPassenger);
+                        order = mDriverSyncService.onTheWayPassenger(mDriver, mPassenger);
                         if (order.isOnTheWay()) {
                             mDriverSync.addTLSDriverListener(new SimpleDriDataListener() {
                                 @Override
@@ -406,45 +409,46 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
         mDriverPanel.addAction("请求路线", new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
-                final MockOrder order = mMockSyncService.getOrder(mPassenger);
+                final MockOrder order = mDriverSyncService.getOrder(mPassenger);
                 final CountDownLatch syncWaiting = new CountDownLatch(1);
                 final List<RouteData> routeData = new ArrayList<>();
-
-                mDriverSync.pullNaviSession((naviSession, usingRouteId) -> {
-
-                    mDriverPanel.print("导航会话ID[" + naviSession + "]");
-                    mDriverPanel.print("待选中路线ID[" + usingRouteId + "]");
-                    // 当前送驾路线
-                    mDriverSync.searchCarRoutes(
-                            ConvertUtils.toNaviPoi(order.getBegin()),
-                            ConvertUtils.toNaviPoi(order.getEnd()),
-                            new ArrayList<>(),
-                            OrderRouteSearchOptions
-                                    .create(order.getId())
-                                    .setInitialNaviSessionID(naviSession)
-                                    .setInitialRouteID(usingRouteId),
-                            new DriDataListener.ISearchCallBack() {
-                                @Override
-                                public void onCalcRouteSuccess(CalcRouteResult calcRouteResult) {
-                                    List<RouteData> arrayList = calcRouteResult.getRoutes();
-                                    if (arrayList != null && !arrayList.isEmpty()) {
-                                        routeData.addAll(arrayList);
+                // 当前送驾路线
+                mDriverSync.pullNaviSession(new NaviProtocol.NaviSessionDataCallback() {
+                    @Override
+                    public void onResult(String naviSession, String usingRouteId) {
+                        mDriverPanel.print("导航会话ID[" + naviSession + "]");
+                        mDriverPanel.print("待选中路线ID[" + usingRouteId + "]");
+                        mDriverSync.searchCarRoutes(
+                                ConvertHelper.toNaviPoi(order.getBegin()),
+                                ConvertHelper.toNaviPoi(order.getEnd()),
+                                new ArrayList<>(),
+                                OrderRouteSearchOptions
+                                        .create(order.getId())
+                                        .setInitialNaviSessionID(naviSession)
+                                        .setInitialRouteID(usingRouteId),
+                                new DriDataListener.ISearchCallBack() {
+                                    @Override
+                                    public void onCalcRouteSuccess(CalcRouteResult calcRouteResult) {
+                                        if (calcRouteResult.getRoutes() != null && !calcRouteResult.getRoutes().isEmpty()) {
+                                            routeData.addAll(calcRouteResult.getRoutes());
+                                        }
+                                        syncWaiting.countDown();
                                     }
-                                    syncWaiting.countDown();
-                                }
 
-                                @Override
-                                public void onCalcRouteFailure(CalcRouteResult calcRouteResult) {
-                                    syncWaiting.countDown();
-                                }
+                                    @Override
+                                    public void onCalcRouteFailure(CalcRouteResult calcRouteResult) {
+                                        syncWaiting.countDown();
+                                    }
 
-                                @Override
-                                public void onParamsInvalid(int errCode, String errMsg) {
-                                    syncWaiting.countDown();
+                                    @Override
+                                    public void onParamsInvalid(int errCode, String errMsg) {
+                                        syncWaiting.countDown();
+                                    }
                                 }
-                            }
-                    );
+                        );
+                    }
                 });
+
 
                 try {
                     syncWaiting.await();
@@ -656,6 +660,9 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        mNaviManager.stopSimulateNavi();
+        mNaviManager.stopNavi();
+        mNaviManager.removeNaviView(mCarNaviView);
         mCarNaviView.onDestroy();
         mMapView.onDestroy();
 
