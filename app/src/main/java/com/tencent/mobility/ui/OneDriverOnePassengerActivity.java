@@ -88,6 +88,7 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
     public static final String ACTION_NAVI_SIMULATOR_OPEN = "开启模拟导航";
     public static final String ACTION_NAVI_OPEN = "开启导航";
     public static final String ACTION_NAVI_SIMULATOR_CLOSE = "关闭模拟导航";
+    public static final String ACTION_NAVI_CLOSE = "关闭导航";
 
     public static final String ACTION_ARRIVED_GETON = "到达上车点";
     public static final String ACTION_ARRIVED_GETOFF = "到达下车点";
@@ -181,6 +182,7 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
                 if (fetchedData.getRoutes() != null && !fetchedData.getRoutes().isEmpty()) {
                     int startIndex = fetchedData.getDriverPosition() == null ? 0 : fetchedData.getDriverPosition()
                             .getPointIndex();
+                    startIndex = (startIndex == -1 ? 0 : startIndex);
                     if (fetchedData.getGetOffWayPoint() != null && mPassengerInfo.mMockSyncService.getOrder(mPassenger)
                             .isOnTheWay()) {
                         TLSBRoute subRoute = RouteManager.subRouteByIndex(fetchedData.getRoute(), startIndex,
@@ -286,6 +288,9 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
                     if (driverOrder != null) {
                         mPassengerSync.getTLSPOrder().setOrderId(driverOrder.getId())
                                 .setSubOrderId(order.getId())
+                                .setOrderStatus(TLSBOrderStatus.TLSDOrderStatusNone);
+                    } else {
+                        mPassengerSync.getTLSPOrder().setOrderId(order.getId())
                                 .setOrderStatus(TLSBOrderStatus.TLSDOrderStatusNone);
                     }
                     return true;
@@ -395,6 +400,10 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
         mPassengerPanel.addAction(ACTION_ARRIVED_GETON, new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
+                MockOrder mockOrder = mPassengerInfo.mMockSyncService.getOrder(mPassenger);
+                if (mockOrder == null) {
+                    return false;
+                }
                 mDriverSync.arrivedPassengerStartPoint(mPassengerInfo.mMockSyncService.getOrder(mPassenger).getId());
                 return true;
             }
@@ -403,6 +412,10 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
         mPassengerPanel.addAction(ACTION_ARRIVED_GETOFF, new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
+                MockOrder mockOrder = mPassengerInfo.mMockSyncService.getOrder(mPassenger);
+                if (mockOrder == null) {
+                    return false;
+                }
                 mDriverSync.arrivedPassengerEndPoint(mPassengerInfo.mMockSyncService.getOrder(mPassenger).getId());
                 return true;
             }
@@ -443,6 +456,10 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
             @Override
             public String run() {
                 MockOrder order = mPassengerInfo.mMockSyncService.getOrder(mPassenger);
+                if (order == null) {
+                    return "";
+                }
+                order.setStatus(MockOrder.Status.Accepted);
                 mDriverSync.getTLSBOrder().setOrderId(order.getId());
                 return order.getId();
             }
@@ -455,8 +472,8 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
 //                mDriverSync.getTLSBOrder().setOrderId(order.getId());
 //                mDriverSync.getTLSBOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusNone);
 //                mPassengerSync.getTLSPOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusNone);
-//                order = mMockSyncService.acceptPassenger(mDriver, mPassenger);
-                if (order.isAccepted()) {
+                order = mDriverInfo.mMockSyncService.acceptPassenger(mDriver, mPassenger);
+                if (order != null && order.isAccepted()) {
                     mDriverSync.getTLSBOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusPickUp);
                     mPassengerSync.getTLSPOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusPickUp);
                     mDriverPanel.print("当前订单接驾中");
@@ -471,6 +488,10 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
             @Override
             public Boolean run() {
                 MockOrder order = mDriverInfo.mMockSyncService.onTheWayPassenger(mDriver, mPassenger);
+                if (order == null) {
+                    mDriverPanel.print("当前订单送驾失败");
+                    return false;
+                }
                 mDriverSync.getTLSBOrder().setOrderId(order.getId());
                 if (order.isOnTheWay()) {
                     mDriverSync.getTLSBOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusTrip);
@@ -527,6 +548,20 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
             }
         });
 
+        mDriverPanel.addAction(ACTION_NAVI_CLOSE, new PanelView.Action<Boolean>(false) {
+            @Override
+            public Boolean run() {
+                try {
+                    gpsInfo.disableGps();
+                    mNaviManager.stopNavi();
+                    return true;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return false;
+            }
+        });
+
         mDriverPanel.addAction(ACTION_NAVI_SIMULATOR_CLOSE, new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
@@ -559,6 +594,9 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
             @Override
             public Boolean run() {
                 final MockOrder order = mPassengerInfo.mMockSyncService.getOrder(mPassenger);
+                if (order == null) {
+                    return false;
+                }
                 final CountDownLatch syncWaiting = new CountDownLatch(1);
                 final List<RouteData> routeData = new ArrayList<>();
                 // 当前送驾路线

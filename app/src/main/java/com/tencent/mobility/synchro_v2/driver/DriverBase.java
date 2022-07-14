@@ -73,6 +73,7 @@ public abstract class DriverBase extends DriverBaseMapActivity implements IHandl
      */
     public void initConfig(String driverId) {
         lsManager.init(getApplicationContext(), TLSConfigPreference.create()
+                .setDebuggable(true)
                 .setDeviceId(DeviceUtils.getImei(getApplicationContext()))// 设备id
                 .setAccountId(driverId));// 司机id
     }

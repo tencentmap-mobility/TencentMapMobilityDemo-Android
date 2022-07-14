@@ -43,7 +43,10 @@ public class HitchHikeNormalActivity extends OneDriverNPassengerActivity {
             case 1:
                 return new String[]{
                         ACTION_ORDER_CREATE,
-                        ACTION_SYNC_OPEN
+                        ACTION_SYNC_OPEN,
+                        ACTION_PULL,
+                        ACTION_ROUTES_DRAW,
+                        ACTION_SYNC_CLOSE
                 };
         }
         return new String[0];
@@ -51,14 +54,6 @@ public class HitchHikeNormalActivity extends OneDriverNPassengerActivity {
 
     @Override
     protected String[] getPassengerActionIndexes(int passengerNo) {
-        switch (passengerNo) {
-            case 0:
-            case 1:
-                return new String[]{
-                        "2",
-                        "8"
-                };
-        }
         return new String[0];
     }
 
@@ -66,25 +61,18 @@ public class HitchHikeNormalActivity extends OneDriverNPassengerActivity {
     protected String[] getDriverActions() {
         return new String[]{
                 ACTION_ORDER_CREATE,
+                ACTION_SYNC_OPEN,
                 ACTION_HITCHHIKE_ORDER_MERGE,
+                ACTION_ORDER_TO_TRIP,
+                ACTION_ORDER_TO_PICKUP,
                 ACTION_HITCHHIKE_ROUTE_PLAN,
                 ACTION_ROUTES_DRAW,
                 ACTION_ROUTES_UPLOAD,
-                ACTION_SYNC_OPEN,
-                ACTION_NAVI_SIMULATOR_OPEN
-        };
-    }
+                ACTION_PULL,
+                ACTION_SYNC_CLOSE,
+                ACTION_NAVI_SIMULATOR_OPEN,
+                ACTION_NAVI_SIMULATOR_CLOSE
 
-    @Override
-    protected String[] getDriverActionIndexes() {
-        return new String[] {
-                "1",
-                "3",
-                "4",
-                "5",
-                "6",
-                "7",
-                "9"
         };
     }
 

@@ -36,15 +36,10 @@ public class HitchHikeOneVipActivity extends OneDriverOnePassengerActivity {
     protected String[] getPassengerActions() {
         return new String[]{
                 ACTION_ORDER_CREATE,
-                ACTION_SYNC_OPEN
-        };
-    }
-
-    @Override
-    protected String[] getPassengerActionIndexes() {
-        return new String[]{
-                "2",
-                "3"
+                ACTION_SYNC_OPEN,
+                ACTION_PULL,
+                ACTION_ROUTES_DRAW,
+                ACTION_SYNC_CLOSE,
         };
     }
 
@@ -52,27 +47,19 @@ public class HitchHikeOneVipActivity extends OneDriverOnePassengerActivity {
     protected String[] getDriverActions() {
         return new String[]{
                 ACTION_ORDER_CREATE,
+                ACTION_SYNC_OPEN,
                 ACTION_HITCHHIKE_ORDER_MERGE,
+                ACTION_ORDER_TO_TRIP,
+                ACTION_ORDER_TO_PICKUP,
                 ACTION_HITCHHIKE_ROUTE_PLAN,
                 ACTION_ROUTES_DRAW,
                 ACTION_ROUTES_UPLOAD,
-                ACTION_SYNC_OPEN,
+                ACTION_PULL,
+                ACTION_SYNC_CLOSE,
+                ACTION_NAVI_OPEN,
                 ACTION_NAVI_SIMULATOR_OPEN,
-                ACTION_NAVI_SIMULATOR_CLOSE
-        };
-    }
-
-    @Override
-    protected String[] getDriverActionIndexes() {
-        return new String[]{
-                "1",
-                "4",
-                "5",
-                "6",
-                "7",
-                "8",
-                "9",
-                "退出"
+                ACTION_NAVI_SIMULATOR_CLOSE,
+                ACTION_NAVI_CLOSE,
         };
     }
 

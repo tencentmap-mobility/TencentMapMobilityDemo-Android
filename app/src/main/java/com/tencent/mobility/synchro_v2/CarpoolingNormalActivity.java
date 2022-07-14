@@ -48,8 +48,11 @@ public class CarpoolingNormalActivity extends OneDriverNPassengerActivity {
                 return new String[]{
                         ACTION_CARPOOLING_ORDER_CREATE,
                         ACTION_SYNC_OPEN,
+                        ACTION_PULL,
+                        ACTION_ROUTES_DRAW,
+                        ACTION_SYNC_CLOSE,
                         ACTION_ARRIVED_GETON,
-                        ACTION_ARRIVED_GETOFF,
+                        ACTION_ARRIVED_GETOFF
                 };
         }
         return new String[0];
@@ -57,16 +60,6 @@ public class CarpoolingNormalActivity extends OneDriverNPassengerActivity {
 
     @Override
     protected String[] getPassengerActionIndexes(int passengerNo) {
-        switch (passengerNo) {
-            case 0:
-            case 1:
-                return new String[]{
-                        "1",
-                        "2",
-                        "10",
-                        "11",
-                };
-        }
         return new String[0];
     }
 
@@ -74,27 +67,17 @@ public class CarpoolingNormalActivity extends OneDriverNPassengerActivity {
     protected String[] getDriverActions() {
         return new String[]{
                 ACTION_CARPOOLING_ORDER_CREATE,
+                ACTION_SYNC_OPEN,
                 ACTION_CARPOOLING_ORDER_MERGE,
+                ACTION_ORDER_TO_TRIP,
+                ACTION_ORDER_TO_PICKUP,
                 ACTION_CARPOOLING_ROUTE_PLAN,
                 ACTION_ROUTES_DRAW,
                 ACTION_ROUTES_UPLOAD,
-                ACTION_SYNC_OPEN,
+                ACTION_PULL,
+                ACTION_SYNC_CLOSE,
                 ACTION_NAVI_SIMULATOR_OPEN,
                 ACTION_NAVI_SIMULATOR_CLOSE
-        };
-    }
-
-    @Override
-    protected String[] getDriverActionIndexes() {
-        return new String[]{
-                "3",
-                "4",
-                "5",
-                "6",
-                "7",
-                "8",
-                "9",
-                "退出"
         };
     }
 
