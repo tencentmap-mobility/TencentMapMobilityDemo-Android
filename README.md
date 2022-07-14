@@ -8,10 +8,12 @@
 https://tencentmap-mobility.github.io/
 
 ## 依赖项
+司乘同显司机端依赖地图SDK+导航SDK。建议使用版本地图SDK v4.5.6.2，导航SDK v5.3.9.3
 
-`注意SDK间的版本搭配，防止冲突！！`
+注意:
+在导航SDK v5.3.9以及地图SDK v4.5.6以后需要调用相应接口告知用户已同意隐私协议，使用方式参考demo中的MyApplication中（在使用导航和地图功能前调用即可）。 隐私协议内容: https://lbs.qq.com/userAgreements/agreements/privacy
 
-### 腾讯地图SDK
+### 腾讯导航、地图SDK
 详细信息和使用方式可以在官网 https://lbs.qq.com 上获得。
 
 ## SDK文档列表
