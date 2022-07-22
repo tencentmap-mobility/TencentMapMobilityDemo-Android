@@ -107,13 +107,11 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
 
                     mPassengerPanel.postAction("开启同显");
                     mPassengerSync.addTLSPassengerListener(new SimplePsgDataListener() {
-                        @Override
-                        public void onRouteSelectSuccess() {
-                            super.onRouteSelectSuccess();
-                            mPassengerPanel.print("路线选择成功！");
-                            mPassengerPanel.postAction("上报路线数据");
 
-//                            mPassengerPanel.postAction("开启同显");
+                        @Override
+                        public void onPushRouteSuc() {
+                            super.onPushRouteSuc();
+                            mPassengerPanel.print("路线上报成功！");
                             mDriverPanel.postAction("绑定订单至接驾");
                         }
 
@@ -164,7 +162,6 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
                         public void onRouteSelectSuccess() {
                             super.onRouteSelectSuccess();
                             mPassengerPanel.print("路线选择成功！");
-//                            mPassengerPanel.postAction("上报路线数据");
                         }
 
                         @Override
@@ -257,7 +254,7 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
                 } else {
                     return drawRoutes(mMapView.getMap(), mTLSRoutes, integer -> {
                         mChosenRouteIndex = integer;
-                        mPassengerSync.routeSelectByRoute(mTLSRoutes.get(mChosenRouteIndex));
+                        mPassengerSync.uploadRoute(mTLSRoutes.get(mChosenRouteIndex));
                         mPassengerPanel.print("选择第" + integer + "条:" + mTLSRoutes.get(mChosenRouteIndex).getRouteId());
 
                     });
