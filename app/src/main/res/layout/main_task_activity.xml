@@ -141,6 +141,22 @@
             android:onClick="onFastPsg"
             />
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="#787878"
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="12dp"
+            />
+
+        <com.tencent.mobility.ui.ItemLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:itemTitle="快车场景"
+            app:itemContent="FastCarActivity"
+            android:onClick="onFastCar"
+            />
+
         <TextView
             android:id="@+id/tv_sync_txt"
             android:layout_width="wrap_content"

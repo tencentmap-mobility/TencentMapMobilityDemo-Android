@@ -56,6 +56,7 @@ public abstract class PsgLsActivity extends PsgBaseMapActivity {
 
         tlspManager = TSLPassengerManager.getInstance();// 初始化司乘
         tlspManager.init(getApplicationContext(), TLSConfigPreference.create()
+                .setDebuggable(true)
                 .setAccountId(psgId)
                 .setDeviceId(DeviceUtils.getImei(getApplicationContext())));
         tlspManager.addTLSPassengerListener(new MyPullDriverInfo());// 司乘回调

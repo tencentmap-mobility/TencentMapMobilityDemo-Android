@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import androidx.annotation.Nullable;
 
 import com.tencent.lbssearch.object.param.DrivingParam;
+import com.tencent.map.geolocation.TencentLocation;
 import com.tencent.map.lsdriver.TSLDExtendManager;
 import com.tencent.map.lsdriver.lsd.listener.DriDataListener;
 import com.tencent.map.lsdriver.lsd.listener.SimpleDriDataListener;
@@ -17,11 +18,13 @@ import com.tencent.map.lspassenger.lsp.listener.SimplePsgDataListener;
 import com.tencent.map.lspassenger.protocol.SearchProtocol;
 import com.tencent.map.lssupport.bean.TLSBDriverPosition;
 import com.tencent.map.lssupport.bean.TLSBOrderStatus;
+import com.tencent.map.lssupport.bean.TLSBOrderType;
 import com.tencent.map.lssupport.bean.TLSBPosition;
 import com.tencent.map.lssupport.bean.TLSBRoute;
 import com.tencent.map.lssupport.bean.TLSBWayPoint;
 import com.tencent.map.lssupport.bean.TLSBWayPointType;
 import com.tencent.map.lssupport.bean.TLSConfigPreference;
+import com.tencent.map.lssupport.bean.TLSDDrvierStatus;
 import com.tencent.map.lssupport.bean.TLSDFetchedData;
 import com.tencent.map.lssupport.bean.TLSLatlng;
 import com.tencent.map.lssupport.protocol.BaseSyncProtocol;
@@ -32,9 +35,11 @@ import com.tencent.map.navi.car.NaviMode;
 import com.tencent.map.navi.car.TencentCarNaviManager;
 import com.tencent.map.navi.data.CalcRouteResult;
 import com.tencent.map.navi.data.RouteData;
+import com.tencent.map.navi.tlocation.ITNKLocationCallBack;
 import com.tencent.map.tools.Callback;
 import com.tencent.mobility.BaseActivity;
 import com.tencent.mobility.R;
+import com.tencent.mobility.location.GeoLocationAdapter;
 import com.tencent.mobility.location.GpsNavi;
 import com.tencent.mobility.mock.MockCar;
 import com.tencent.mobility.mock.MockDriver;
@@ -93,6 +98,8 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
     public static final String ACTION_ARRIVED_GETON = "到达上车点";
     public static final String ACTION_ARRIVED_GETOFF = "到达下车点";
 
+    public static final String ACTION_START_LOCATION = "开启定位";
+    public static final String ACTION_DISPATCH_ORDER = "派单";
 
     private final GpsNavi gpsInfo = new GpsNavi();
     private final Map<String, Polyline> mPassengerLines = new HashMap<>();
@@ -108,6 +115,7 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
     private PanelView mDriverPanel;
     private PanelView mPassengerPanel;
     private TSLDExtendManager mDriverSync;
+    private MyLocListener mLocListener;
     private final SimpleDriDataListener driDataListener = new SimpleDriDataListener() {
 
         @Override
@@ -449,6 +457,36 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
                     return true;
                 }
                 return false;
+            }
+        });
+
+        mDriverPanel.addAction(ACTION_START_LOCATION, new PanelView.Action<Boolean>(false) {
+            @Override
+            public Boolean run() {
+                mLocListener = new MyLocListener();
+                GeoLocationAdapter.singleton.get().startGeoLocationAdapter(getApplicationContext());
+                GeoLocationAdapter.singleton.get().addGeoLocationListener(
+                        (tencentGeoLocation) ->
+                                mLocListener.onLocationChanged(tencentGeoLocation.getLocation()
+                                        , tencentGeoLocation.getStatus()
+                                        , tencentGeoLocation.getReason())
+                );
+                return true;
+            }
+        });
+
+        mDriverPanel.addAction(ACTION_DISPATCH_ORDER, new PanelView.Action<Boolean>(false) {
+            @Override
+            public Boolean run() {
+                MockOrder psgOrder = mDriverInfo.mMockSyncService.getOrder(mPassenger);
+                mDriverSync.getOrderManager().editCurrent()
+                        .setOrderId(psgOrder.getId())
+                        .setOrderStatus(TLSBOrderStatus.TLSDOrderStatusInit)
+                        .setDrvierStatus(TLSDDrvierStatus.TLSDDrvierStatusServing); // 服务中
+
+                mPassengerSync.getOrderManager().editCurrent()
+                        .setOrderStatus(TLSBOrderStatus.TLSDOrderStatusInit);
+                return true;
             }
         });
 
@@ -999,6 +1037,10 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
         mNaviManager.stopNavi();
         mNaviManager.removeNaviView(mCarNaviView);
         gpsInfo.disableGps();
+        if (mLocListener != null) {
+            GeoLocationAdapter.singleton.get().stopGeoLocationAdapter();
+            mLocListener = null;
+        }
         mCarNaviView.onDestroy();
 
         mPassengerSync.destroy();
@@ -1030,6 +1072,47 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
             mDriverManager = driverManager;
             mCar = driver.getCar();
             mMockSyncService = new MockSyncService(driverManager);
+        }
+    }
+
+    class MyLocListener implements ITNKLocationCallBack {
+        @Override
+        public void requestLocationUpdatesResult(int i) {
+
+        }
+
+        @Override
+        public void onLocationChanged(TencentLocation location, int i, String s) {
+            /**
+             * 在非导航态，上传定位点时，
+             * 也需要更新TLSBOrder信息。
+             */
+            if(mDriverSync != null && location != null) {
+                String orderId = mDriverSync.getOrderManager().getOrderId();
+                if (TextUtils.isEmpty(orderId)) {
+                    orderId = "-1";
+                }
+                mDriverSync.getOrderManager().editCurrent()
+                        .setOrderId(orderId) // SDK默认-1，不能为空
+                        .setOrderType(TLSBOrderType.TLSDOrderTypeNormal) // 默认快车
+                        .setDrvierStatus(TLSDDrvierStatus.TLSDDrvierStatusListening); // 听单中
+                mDriverSync.uploadPosition(ConvertHelper.tenPoToTLSDPo(location));
+            }
+        }
+
+        @Override
+        public void onStatusUpdate(String s, int i, String s1) {
+
+        }
+
+        @Override
+        public void onGnssInfoChanged(Object o) {
+
+        }
+
+        @Override
+        public void onNmeaMsgChanged(String s) {
+
         }
     }
 }
