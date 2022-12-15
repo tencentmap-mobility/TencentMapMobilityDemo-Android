@@ -59,11 +59,11 @@ dependencies {
     // 与导航SDK 一起时，可以不加，导航内部已经包含了上述 so 文件
 //    implementation Tencent_Fusion_Location_Verison
 
-    implementation Tencent_TLSD_Verison // 司乘SDK司机端
-    implementation Tencent_TLSP_Verison // 司乘SDK乘客端
-    implementation Tencent_TLSB_Verison // 司乘支持库
-
     implementation Tencent_Mobility_Search_Verison  // 出行检索SDK
     implementation Tencent_Boarding_Point_Verison   // 推荐上车点SDK
     implementation Tencent_NearBy_Car_Version       // 周边车辆SDK
+
+    implementation Tencent_LS_Driver
+    implementation Tencent_LS_Passenger
+    implementation Tencent_LS_Support
 }

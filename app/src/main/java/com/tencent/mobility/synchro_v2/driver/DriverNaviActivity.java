@@ -19,6 +19,7 @@ import com.tencent.map.navi.car.CarRouteSearchOptions;
 import com.tencent.map.navi.car.TencentCarNaviManager;
 import com.tencent.map.navi.data.AttachedLocation;
 import com.tencent.map.navi.data.CalcRouteResult;
+import com.tencent.map.navi.data.IdleRangeInfo;
 import com.tencent.map.navi.data.NaviPoi;
 import com.tencent.map.navi.data.NaviTts;
 import com.tencent.map.navi.data.ParallelRoadStatus;
@@ -265,6 +266,11 @@ public class DriverNaviActivity extends BaseActivity {
         @Override
         public int onVoiceBroadcast(NaviTts naviTts) {
             return 0;
+        }
+
+        @Override
+        public void onEnterIdleSection(IdleRangeInfo idleRangeInfo) {
+
         }
 
         @Override

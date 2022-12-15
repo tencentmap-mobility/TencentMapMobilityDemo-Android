@@ -21,6 +21,7 @@ import com.tencent.map.lssupport.bean.TLSBOrderStatus;
 import com.tencent.map.lssupport.bean.TLSBOrderType;
 import com.tencent.map.lssupport.bean.TLSBPosition;
 import com.tencent.map.lssupport.bean.TLSBRoute;
+import com.tencent.map.lssupport.bean.TLSBRouteTrafficItem;
 import com.tencent.map.lssupport.bean.TLSBWayPoint;
 import com.tencent.map.lssupport.bean.TLSBWayPointType;
 import com.tencent.map.lssupport.bean.TLSConfigPreference;
@@ -34,6 +35,7 @@ import com.tencent.map.navi.car.CarNaviView;
 import com.tencent.map.navi.car.NaviMode;
 import com.tencent.map.navi.car.TencentCarNaviManager;
 import com.tencent.map.navi.data.CalcRouteResult;
+import com.tencent.map.navi.data.RouteColors;
 import com.tencent.map.navi.data.RouteData;
 import com.tencent.map.navi.tlocation.ITNKLocationCallBack;
 import com.tencent.map.tools.Callback;
@@ -760,9 +762,42 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
 
     private boolean drawRoute(TencentMap map, BaseSyncProtocol manager, Map<String, Polyline> cache) {
         List<TLSLatlng> latlngs = manager.getRouteManager().getPoints();
+        List<TLSBRouteTrafficItem> trafficItems = manager.getRouteManager().getUsingRoute().getTrafficItems();
         clearNoUseLine(manager.getRouteManager(), cache);
-        if (latlngs == null || latlngs.isEmpty()) {
+        if (latlngs == null || latlngs.isEmpty() || trafficItems == null || trafficItems.isEmpty()) {
             return false;
+        }
+        int[] colors = new int[trafficItems.size()];
+        int[] indexes = new int[trafficItems.size()];
+        for (int i = 0; i < trafficItems.size(); i++) {
+            TLSBRouteTrafficItem item = trafficItems.get(i);
+            int colorInt = item.getColor();
+            int from = item.getFrom();
+            indexes[i] = from;
+            int color = 0xFFFFFFFF;
+            switch (colorInt) {
+                case 0:
+                    // 路况标签-畅通(绿色)
+                    color = RouteColors.COLOR_MAIN_DAY_SMOOTH;
+                    break;
+                case 1:
+                    // 路况标签-缓慢(黄色)
+                    color = RouteColors.COLOR_MAIN_DAY_SLOW;
+                    break;
+                case 2:
+                    // 路况标签-拥堵(红色)
+                    color = RouteColors.COLOR_MAIN_DAY_VERY_SLOW;
+                    break;
+                case 3:
+                    // 路况标签-无路况
+                    color = RouteColors.COLOR_MAIN_DAY_UNKNOWN;
+                    break;
+                case 4:
+                    // 路况标签-特别拥堵（猪肝红）
+                    color = RouteColors.COLOR_MAIN_DAY_JAM;
+                    break;
+            }
+            colors[i] = color;
         }
 
         List<LatLng> mapLatLngs = ConvertUtil.toLatLngList(latlngs);
@@ -771,7 +806,7 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
         if (main == null) {
             main = map.addPolyline(new PolylineOptions()
                     .width(25)
-                    .color(Color.argb(200, 0, 163, 255))
+                    .colors(colors, indexes)
                     .arrow(true)
                     .addAll(mapLatLngs));
             cache.put(manager.getRouteManager().getRouteId(), main);

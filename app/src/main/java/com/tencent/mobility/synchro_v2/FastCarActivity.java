@@ -50,8 +50,8 @@ public class FastCarActivity extends OneDriverOnePassengerActivity {
             PanelView passengerPanel, MapView mapView) {
 
         //设置乘客固定起终点
-        passenger.setStart(new LatLng(40.042879, 116.270723));
-        passenger.setEnd(new LatLng(40.098958, 116.27824));
+//        passenger.setStart(new LatLng(40.042879, 116.270723));
+//        passenger.setEnd(new LatLng(40.098958, 116.27824));
 
     }
 
@@ -64,7 +64,7 @@ public class FastCarActivity extends OneDriverOnePassengerActivity {
         driver.setBizType(MockCar.BizType.RealTime);
 
         //设置司机固定起终点
-        driver.setStart(new LatLng(40.002229, 116.323806));
-        driver.setEnd(new LatLng(40.103269, 116.269314));
+//        driver.setStart(new LatLng(40.002229, 116.323806));
+//        driver.setEnd(new LatLng(40.103269, 116.269314));
     }
 }
