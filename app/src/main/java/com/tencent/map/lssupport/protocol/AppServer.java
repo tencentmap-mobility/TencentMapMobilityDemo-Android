@@ -22,6 +22,9 @@ public class AppServer {
     public AppServer(BaseSyncProtocol syncServerDelegate) {mSyncServerDelegate = syncServerDelegate;}
 
     public boolean orderSync(MockOrder order, MockOrder.Status targetStatus) {
+        if (order == null) {
+            return false;
+        }
         MockDriver driver = order.getDriver();
         MockPassenger passenger = order.getPassenger();
         MockCar car = order.getCar();
@@ -79,16 +82,14 @@ public class AppServer {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
-        if (result[0] != null) {
-            return (int) result[0] == 0;
-        }
-
-        return false;
+        return (int) result[0] == 0;
     }
 
     public boolean carpoolOrderSync(final MockOrder driverOrder, MockOrder passengerOrder,
-                                     MockOrder.Status targetStatus) {
+                                    MockOrder.Status targetStatus) {
+        if (driverOrder == null || passengerOrder == null) {
+            return false;
+        }
         MockDriver driver = driverOrder.getDriver();
         MockPassenger passenger = passengerOrder.getPassenger();
         MockCar car = driverOrder.getCar();

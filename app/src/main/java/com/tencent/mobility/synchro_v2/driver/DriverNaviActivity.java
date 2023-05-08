@@ -24,6 +24,7 @@ import com.tencent.map.navi.data.NaviPoi;
 import com.tencent.map.navi.data.NaviTts;
 import com.tencent.map.navi.data.ParallelRoadStatus;
 import com.tencent.map.navi.data.RouteData;
+import com.tencent.map.navi.data.TollStationInfo;
 import com.tencent.map.navi.ui.car.CarNaviInfoPanel;
 import com.tencent.mobility.BaseActivity;
 import com.tencent.mobility.R;
@@ -270,6 +271,11 @@ public class DriverNaviActivity extends BaseActivity {
 
         @Override
         public void onEnterIdleSection(IdleRangeInfo idleRangeInfo) {
+
+        }
+
+        @Override
+        public void onTollStationInfoUpdate(TollStationInfo tollStationInfo) {
 
         }
 

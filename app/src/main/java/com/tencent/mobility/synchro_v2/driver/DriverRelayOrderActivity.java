@@ -40,6 +40,7 @@ import com.tencent.tencentmap.mapsdk.maps.TencentMap;
 import com.tencent.tencentmap.mapsdk.maps.model.BitmapDescriptorFactory;
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
 import com.tencent.tencentmap.mapsdk.maps.model.MarkerOptions;
+import com.tencent.tencentmap.mapsdk.maps.model.Polyline;
 import com.tencent.tencentmap.mapsdk.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
@@ -95,9 +96,10 @@ public class DriverRelayOrderActivity extends BaseActivity {
                 TLSConfigPreference.create().setDebuggable(true).setAccountId(mPassengerA.getId()));
         mPassengerSyncService = new MockSyncService(mPassengerSyncA);
         mPassengerAPanel.init("当前乘客", "创建订单");
-        mPassengerAPanel.postAction("创建订单", new PanelView.Action<String>("") {
+        mPassengerAPanel.addAction("创建订单", new PanelView.Action<String>("") {
             @Override
             public String run() {
+                mPassengerA.setPosition(MockSyncService.getRandomVisibleLatLng(mMapView1.getMap()));
                 MockOrder order = mPassengerSyncService.newOrder(mMapView1.getMap(), mPassengerA);
                 if (order != null && !TextUtils.isEmpty(order.getId())) {
                     mPassengerAPanel.postPrint("等待接驾");
@@ -116,7 +118,7 @@ public class DriverRelayOrderActivity extends BaseActivity {
                     @Override
                     public void onPullLsInfoSuc(TLSDFetchedData fetchedData) {
                         if (fetchedData != null) {
-                            boolean ret = drawRoutes(mMapView1.getMap(), mPassengerSyncA);
+                            boolean ret = drawRoutesA(mMapView1.getMap(), mPassengerSyncA);
                             mPassengerAPanel.print("绘制路线:" + ret);
                             if (ret) {
                                 mPassengerSyncA.removeTLSPassengerListener(this);
@@ -142,13 +144,14 @@ public class DriverRelayOrderActivity extends BaseActivity {
         mPassengerSyncB.init(DriverRelayOrderActivity.this,
                 TLSConfigPreference.create().setDebuggable(true).setAccountId(mPassengerB.getId()));
         mPassengerBPanel.init("接力单乘客", "创建订单");
-        mPassengerBPanel.postAction("创建订单", new PanelView.Action<String>("") {
+        mPassengerBPanel.addAction("创建订单", new PanelView.Action<String>("") {
             @Override
             public String run() {
+                mPassengerB.setPosition(MockSyncService.getRandomVisibleLatLng(mMapView2.getMap()));
                 MockOrder order = mPassengerSyncService.newOrder(mMapView2.getMap(), mPassengerB);
                 if (order != null && !TextUtils.isEmpty(order.getId())) {
                     mPassengerBPanel.postPrint("等待接驾");
-                    mPassengerSyncB.getOrderManager().editCurrent().setRelay(true).setOrderId(order.getId());
+                    mPassengerSyncB.getOrderManager().editCurrent().setOrderId(order.getId());
                     return order.getId();
                 }
 
@@ -163,7 +166,7 @@ public class DriverRelayOrderActivity extends BaseActivity {
                     @Override
                     public void onPullLsInfoSuc(TLSDFetchedData fetchedData) {
                         if (fetchedData != null && mPassengerSyncB.getOrderManager().getOrderStatus() == 2) {
-                            boolean ret = drawRoutes(mMapView2.getMap(), mPassengerSyncB);
+                            boolean ret = drawRoutesB(mMapView2.getMap(), mPassengerSyncB);
                             mPassengerBPanel.print("绘制路线:" + ret);
                             if (ret) {
                                 mPassengerSyncB.removeTLSPassengerListener(this);
@@ -198,6 +201,7 @@ public class DriverRelayOrderActivity extends BaseActivity {
         mDriverPanel.addAction("绑定订单", new PanelView.Action<String>("") {
             @Override
             public String run() {
+                mDriver.setPosition(MockSyncService.getRandomVisibleLatLng(mCarNaviView.getMap()));
                 MockOrder order = mDriverSyncService.getOrder(mPassengerA);
                 order.setStatus(MockOrder.Status.Waiting);
                 mDriverSync.getTLSBOrder().setOrderId(order.getId());
@@ -328,6 +332,55 @@ public class DriverRelayOrderActivity extends BaseActivity {
             }
         });
 
+        mDriverPanel.addAction("重新规划路线", new PanelView.Action<Boolean>(false) {
+            @Override
+            public Boolean run() {
+                final MockOrder orderA = mDriverSyncService.getOrder(mPassengerA);
+                final MockOrder orderB = mDriverSyncService.getOrder(mPassengerB);
+                final List<RouteData> routeData = new ArrayList<>();
+                final CountDownLatch syncWaiting = new CountDownLatch(1);
+                // 接力单路线
+                mDriverSync.searchCarRoutes(
+                        ConvertUtils.toNaviPoi(orderA.getEnd()),
+                        ConvertUtils.toNaviPoi(orderB.getBegin()),
+                        new ArrayList<>(),
+                        OrderRouteSearchOptions.create(orderB.getId()),
+                        new DriDataListener.ISearchCallBack() {
+                            @Override
+                            public void onParamsInvalid(int errCode, String errMsg) {
+                                syncWaiting.countDown();
+                            }
+
+                            @Override
+                            public void onCalcRouteSuccess(CalcRouteResult calcRouteResult) {
+                                List<RouteData> arrayList = calcRouteResult.getRoutes();
+                                if (arrayList != null && !arrayList.isEmpty()) {
+                                    routeData.addAll(arrayList);
+                                }
+                                syncWaiting.countDown();
+                            }
+
+                            @Override
+                            public void onCalcRouteFailure(CalcRouteResult calcRouteResult) {
+                                syncWaiting.countDown();
+                            }
+                        }
+                );
+                try {
+                    syncWaiting.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                mDriverPanel.print("路线总数：" + routeData.size());
+                mDriverSync.getRouteManager().useRouteIndex(0);
+                mDriverPanel.postAction("绘制路线");
+                mDriverPanel.postAction("上报路线");
+
+                return routeData.size() >= 1;
+            }
+        });
+
         mDriverPanel.addAction("上报路线", new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
@@ -399,9 +452,78 @@ public class DriverRelayOrderActivity extends BaseActivity {
                 // 司机端核心步骤：
                 mDriverSync.removeRelayOrder();
                 mDriverPanel.print("需重新规划接乘客路线");
+                mPassengerSyncA.destroy();
+                removed = true;
+
+                mDriverPanel.postAction("重新规划路线");
                 return true;
             }
         });
+    }
+
+    private boolean drawRoutesA(TencentMap map, BaseSyncProtocol manager) {
+        List<TLSLatlng> latlngs = manager.getRouteManager().getPoints();
+        if (latlngs == null || latlngs.isEmpty()) {
+            return false;
+        }
+
+        List<LatLng> mapLatLngs = ConvertUtil.toLatLngList(latlngs);
+        List<LatLng> all = new ArrayList<>(mapLatLngs);
+        map.addPolyline(new PolylineOptions()
+                .width(20)
+                .arrow(true)
+                .addAll(mapLatLngs));
+        MapUtils.fitsWithRoute(map, all,
+                25, 25, 25, 25);
+        return true;
+    }
+
+    boolean removed = false;
+    Polyline polylineB1 = null;
+    Polyline polylineB2 = null;
+
+    private boolean drawRoutesB(TencentMap map, BaseSyncProtocol manager) {
+        List<TLSLatlng> latlngs = manager.getRouteManager().getPoints();
+        if (latlngs == null || latlngs.isEmpty()) {
+            return false;
+        }
+
+        List<LatLng> mapLatLngs = ConvertUtil.toLatLngList(latlngs);
+        List<LatLng> all = new ArrayList<>(mapLatLngs);
+        if (polylineB1 != null && removed) {
+            polylineB1.remove();
+        }
+        polylineB1 = map.addPolyline(new PolylineOptions()
+                .width(20)
+                .arrow(true)
+                .addAll(mapLatLngs));
+        if (polylineB2 != null && removed) {
+            polylineB2.remove();
+            removed = false;
+        }
+        // 乘客端核心步骤：
+        if (!manager.getRouteManager().getRelayRoutes().isEmpty()) {
+            TLSBRoute route = manager.getRouteManager().getRelayRoutes().get(0);
+            List<LatLng> others = ConvertUtil.toLatLngList(route.getPoints());
+            all.addAll(others);
+            polylineB2 = map.addPolyline(new PolylineOptions()
+                    .width(10)
+                    .color(0xFF00FF00)
+                    .addAll(others));
+            if (route.getDestPosition() != null) {
+                map.addMarker(new MarkerOptions(ConvertUtil.toLatLng(route.getDestPosition()))
+                        .icon(BitmapDescriptorFactory.fromResource(R.mipmap.passenger))
+                        .anchor(0.5f, 1));
+            }
+            if (others.isEmpty()) {
+                return false;
+            }
+        }
+
+        MapUtils.fitsWithRoute(map, all,
+                25, 25, 25, 25);
+
+        return true;
     }
 
     private boolean drawRoutes(TencentMap map, BaseSyncProtocol manager) {
@@ -447,25 +569,6 @@ public class DriverRelayOrderActivity extends BaseActivity {
                 map.addMarker(new MarkerOptions(ConvertUtil.toLatLng(route.getDestPosition()))
                         .icon(BitmapDescriptorFactory.fromResource(R.mipmap.passenger))
                         .anchor(0.5f, 1));
-            }
-        }
-
-        // 乘客端核心步骤：
-        if (manager.getOrderManager().isRelay()) {
-            TLSBRoute route = manager.getRouteManager().getRouteByOrderId(manager.getOrderManager().getOrderId());
-            List<LatLng> others = ConvertUtil.toLatLngList(route.getPoints());
-            all.addAll(others);
-            map.addPolyline(new PolylineOptions()
-                    .width(10)
-                    .color(0xFF00FF00)
-                    .addAll(others));
-            if (route.getDestPosition() != null) {
-                map.addMarker(new MarkerOptions(ConvertUtil.toLatLng(route.getDestPosition()))
-                        .icon(BitmapDescriptorFactory.fromResource(R.mipmap.passenger))
-                        .anchor(0.5f, 1));
-            }
-            if (others.isEmpty()) {
-                return false;
             }
         }
 

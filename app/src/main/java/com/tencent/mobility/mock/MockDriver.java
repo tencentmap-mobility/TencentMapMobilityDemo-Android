@@ -7,7 +7,7 @@ public class MockDriver extends MockUser {
     private static final AtomicLong mDriverId = new AtomicLong(1);
 
     public MockDriver(MockCar car) {
-        super("mock-android-driver-" + (System.currentTimeMillis() / 1000 / 60 / 60 / 24)
+        super("mock-android-driver-" + (System.currentTimeMillis() / 1000)
                 + "-" + mDriverId.getAndIncrement(), car);
     }
 }

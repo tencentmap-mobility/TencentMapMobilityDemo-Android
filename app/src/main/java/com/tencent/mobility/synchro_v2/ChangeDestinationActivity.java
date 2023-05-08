@@ -74,6 +74,9 @@ public class ChangeDestinationActivity extends OneDriverOnePassengerActivity {
             public void onPullLsInfoSuc(final TLSDFetchedData fetchedData) {
                 super.onPullLsInfoSuc(fetchedData);
                 passengerSync.getRouteManager().useRouteIndex(0);
+                if (fetchedData.getRoutes().size() <= 0) {
+                    return;
+                }
                 passengerPanel.postAction(ACTION_ROUTES_DRAW);
             }
 
@@ -105,15 +108,20 @@ public class ChangeDestinationActivity extends OneDriverOnePassengerActivity {
     }
 
     @Override
-    protected void onCreateDriverAction(MockDriver driver, TSLDExtendManager driverSync,
-                                        PanelView driverPanel, CarNaviView carNaviView,
-                                        TencentCarNaviManager manager) {
+    protected void onCreateDriverAction(final MockDriver driver,
+                                        final TSLDExtendManager driverSync,
+                                        final PanelView driverPanel,
+                                        final CarNaviView carNaviView,
+                                        final TencentCarNaviManager manager) {
 
         driverSync.addTLSDriverListener(new SimpleDriDataListener() {
 
             @Override
             public void onPullLsInfoSuc(final String result) {
                 super.onPullLsInfoSuc(result);
+                if (driverSync.getRouteManager().getRoutes().size() <= 0) {
+                    return;
+                }
                 driverPanel.postAction(ACTION_ROUTES_DRAW);
             }
 
@@ -136,6 +144,10 @@ public class ChangeDestinationActivity extends OneDriverOnePassengerActivity {
                 driverPanel.print("更改目的地[" + status + "]:" + message);
                 if (status == 0) {
                     //触发偏航
+                    //标记更新
+                    driverSync.getRouteManager().editCurrent()
+                            .setDestPosition(driverNewDest)
+                            .setDestPositionChanged(true);
                     driverPanel.postAction(ACTION_ROUTES_RECTIFY_DEVIATION);
                 }
             }

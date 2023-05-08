@@ -29,7 +29,6 @@ public class FastCarActivity extends OneDriverOnePassengerActivity {
     protected String[] getDriverActions() {
         return new String[]{
                 ACTION_SYNC_OPEN,
-                ACTION_START_LOCATION,
                 ACTION_DISPATCH_ORDER,
                 ACTION_ORDER_TO_PICKUP,
                 ACTION_ORDER_TO_TRIP,

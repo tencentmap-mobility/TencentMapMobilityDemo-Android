@@ -33,7 +33,7 @@ public class MockOrder {
             isDriverOrder = true;
         }
         mCar = car;
-        if (!begin.equals(end)) {
+        if (begin != null && !begin.equals(end)) {
             mBegin = begin;
             mEnd = end;
             mId = "mc-order-" + System.currentTimeMillis();
@@ -52,6 +52,10 @@ public class MockOrder {
      */
     public String getOriginalId() {
         return mId;
+    }
+
+    public void setId(String orderId) {
+        this.mId = orderId;
     }
 
     /**
@@ -119,19 +123,20 @@ public class MockOrder {
         return mEnd;
     }
 
+    public void setBegin(LatLng begin) {
+        this.mBegin = begin;
+    }
+
+    public void setEnd(LatLng end) {
+        this.mEnd = end;
+    }
+
     public Status getStatus() {
         return mStatus;
     }
 
     public void setStatus(Status status) {
         this.mStatus = status;
-    }
-
-    /**
-     * 等待接单
-     */
-    public boolean isIdle() {
-        return mStatus == Status.Idle;
     }
 
     /**

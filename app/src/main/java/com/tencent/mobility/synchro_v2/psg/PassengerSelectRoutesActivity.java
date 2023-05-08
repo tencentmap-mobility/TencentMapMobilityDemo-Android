@@ -102,6 +102,7 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
             @Override
             public Boolean run() {
                 onTrip = false;
+                mPassenger.setPosition(MockSyncService.getRandomVisibleLatLng(mMapView.getMap()));
                 MockOrder order = mMockSyncService.newOrder(mMapView.getMap(), mPassenger);
                 if (order != null && !TextUtils.isEmpty(order.getId())) {
 
@@ -116,9 +117,9 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
                         }
 
                         @Override
-                        public void onRouteSelectFail(int status, String message) {
-                            super.onRouteSelectFail(status, message);
-                            mPassengerPanel.print("路线选择失败！" + message);
+                        public void onPushRouteFail(int errCode, String errStr) {
+                            super.onPushRouteFail(errCode, errStr);
+                            mPassengerPanel.print("路线上报失败：" + errStr);
                         }
 
                         @Override
@@ -154,6 +155,7 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
             @Override
             public Boolean run() {
                 onTrip = true;
+                mPassenger.setPosition(MockSyncService.getRandomVisibleLatLng(mMapView.getMap()));
                 MockOrder order = mMockSyncService.newOrder(mMapView.getMap(), mPassenger);
                 if (order != null && !TextUtils.isEmpty(order.getId())) {
 
@@ -248,8 +250,9 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
                 if (onTrip) {
                     mPassengerSync.getRouteManager().useRouteIndex(0);
                     return drawRoutes(mMapView.getMap(), mPassengerSync.getRouteManager().getRoutes(), integer -> {
-                        mPassengerSync.routeSelectByIndex(integer);
-                        mPassengerPanel.print("选择第" + integer + "条:" + mPassengerSync.getRouteManager().getRouteId());
+                        String routeId = mPassengerSync.getRouteManager().getRoutes().get(integer).getRouteId();
+                        mPassengerSync.routeSelectByRouteId(routeId);
+                        mPassengerPanel.print("选择第" + integer + "条:" + routeId);
                     });
                 } else {
                     return drawRoutes(mMapView.getMap(), mTLSRoutes, integer -> {
@@ -325,6 +328,7 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
         mDriverPanel.addAction("绑定订单至接驾", new PanelView.Action<String>("") {
             @Override
             public String run() {
+                mDriver.setPosition(MockSyncService.getRandomVisibleLatLng(mCarNaviView.getMap()));
                 MockOrder order = mMockSyncService.getOrder(mPassenger);
                 order.setStatus(MockOrder.Status.Waiting);
                 mDriverSync.getTLSBOrder().setOrderId(order.getId());
@@ -364,6 +368,7 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
         mDriverPanel.addAction("绑定订单至送驾", new PanelView.Action<String>("") {
             @Override
             public String run() {
+                mDriver.setPosition(MockSyncService.getRandomVisibleLatLng(mCarNaviView.getMap()));
                 MockOrder order = mMockSyncService.getOrder(mPassenger);
                 order.setStatus(MockOrder.Status.Waiting);
                 mDriverSync.getTLSBOrder().setOrderId(order.getId());
@@ -606,13 +611,13 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
 
         for (TLSBRoute route : routes) {
 //            if (manager.getOrderManager().getOrderById(route.getOrderId()) != null) {
-                List<LatLng> others = ConvertUtil.toLatLngList(route.getPoints());
-                all.addAll(others);
-                polylines.add(map.addPolyline(new PolylineOptions()
-                        .width(20)
-                        .arrow(true)
-                        .color(Color.argb(200, 50, 203, 255))
-                        .addAll(others)));
+            List<LatLng> others = ConvertUtil.toLatLngList(route.getPoints());
+            all.addAll(others);
+            polylines.add(map.addPolyline(new PolylineOptions()
+                    .width(20)
+                    .arrow(true)
+                    .color(Color.argb(200, 50, 203, 255))
+                    .addAll(others)));
 //            }
         }
 

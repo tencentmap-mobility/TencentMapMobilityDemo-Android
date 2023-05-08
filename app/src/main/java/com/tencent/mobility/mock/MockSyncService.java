@@ -127,6 +127,27 @@ public class MockSyncService {
         return mockOrder;
     }
 
+    public MockOrder newOrderLocal(TencentMap map, MockUser user) {
+        LatLng start = user.getStart() == null ? getRandomVisibleLatLng(map) : user.getStart();
+        LatLng end = user.getEnd() == null ? getRandomVisibleLatLng(map) : user.getEnd();
+        MockOrder oldOrder = getOrder(user);
+        if (oldOrder != null) {
+            mOrders.remove(oldOrder);
+        }
+        MockOrder mockOrder = new MockOrder(user, start, end, user.getCar());
+        mOrders.add(mockOrder);
+
+        return mockOrder;
+    }
+
+    /**
+     * 新增订单信息
+     * @param order
+     */
+    public void addPassenger(MockOrder order) {
+        mOrders.add(order);
+    }
+
     /**
      * 创建司机拼车订单
      *
@@ -152,6 +173,25 @@ public class MockSyncService {
         return mockOrder;
     }
 
+    public MockOrder newSameIdCarpoolOrder(TencentMap map, MockDriver driver, MockPassenger passenger) {
+        LatLng start = driver.getStart() == null ? getRandomVisibleLatLng(map) : driver.getStart();
+        LatLng end = driver.getEnd() == null ? getRandomVisibleLatLng(map) : driver.getEnd();
+        MockOrder oldOrder = getOrder(driver);
+        if (oldOrder != null) {
+            mOrders.remove(oldOrder);
+        }
+        MockOrder mockOrder = new MockOrder(driver, start, end, driver.getCar());
+        mockOrder.setPassenger(passenger);
+        MockOrder passengerOrder = getOrder(passenger);
+        mockOrder.setId(passengerOrder.getId());
+        if (acceptedCarpool(mockOrder, passengerOrder)) {
+            mOrders.add(mockOrder);
+            driver.setOrderId(mockOrder.getId());
+        }
+
+        return mockOrder;
+    }
+
     /**
      * 司机接多个乘客
      *
@@ -161,6 +201,9 @@ public class MockSyncService {
      */
     public MockOrder acceptPassengers(MockDriver driver, List<MockPassenger> passengers) {
         MockOrder driverOrder = getOrder(driver);
+        if (driverOrder == null) {
+            return null;
+        }
 
         accepted(driverOrder);
         for (MockPassenger passenger : passengers) {
@@ -270,6 +313,16 @@ public class MockSyncService {
         return null;
     }
 
+    public MockOrder getOrder(String orderId) {
+        for (MockOrder order : mOrders) {
+            String id = order.getId();
+            if (id.equals(orderId)) {
+                return order;
+            }
+        }
+        return null;
+    }
+
     private boolean created(MockOrder order, MockUser user) {
         if (mAppServer.orderSync(order, MockOrder.Status.Idle)) {
             order.setStatus(MockOrder.Status.Idle);
@@ -306,4 +359,6 @@ public class MockSyncService {
         }
     }
 
+
 }
+
