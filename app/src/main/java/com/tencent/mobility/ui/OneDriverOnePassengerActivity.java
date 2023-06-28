@@ -92,7 +92,6 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
     public static final String ACTION_ORDER_BIND = "绑定订单";
     public static final String ACTION_ORDER_TO_TRIP = "订单到送驾";
     public static final String ACTION_ORDER_TO_PICKUP = "订单到接驾";
-    public static final String ACTION_DISPATCH_ORDER = "派单";
 
     public static final String ACTION_NAVI_SIMULATOR_OPEN = "开启模拟导航";
     public static final String ACTION_NAVI_OPEN = "开启导航";
@@ -1174,21 +1173,6 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
             }
         });
 
-        mDriverPanel.addAction(ACTION_DISPATCH_ORDER, new PanelView.Action<Boolean>(false) {
-            @Override
-            public Boolean run() {
-                MockOrder psgOrder = mDriverInfo.mMockSyncService.getOrder(mPassenger);
-                mDriverSync.getOrderManager().editCurrent()
-                        .setOrderId(psgOrder.getId())
-                        .setOrderStatus(TLSBOrderStatus.TLSDOrderStatusInit)
-                        .setDrvierStatus(TLSDDrvierStatus.TLSDDrvierStatusServing); // 服务中
-
-                mPassengerSync.getOrderManager().editCurrent()
-                        .setOrderStatus(TLSBOrderStatus.TLSDOrderStatusInit);
-                return true;
-            }
-        });
-
         mDriverPanel.addAction(ACTION_ORDER_BIND, new PanelView.Action<String>("") {
             @Override
             public String run() {
@@ -1732,8 +1716,15 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
             psg.setTitle(temp.getRemainingDistance() / 1000.0 + "公里" + "  " +
                     temp.getRemainingTime() + "分钟");
         }
-        psg.setRotation(driPos.getMatchedCourse());
-        MarkerTranslateAnimator animator = new MarkerTranslateAnimator(psg, 4000, latLngs, true);
+        boolean rotateEnabled = false;
+        float currentMatchedCourse = driPos.getMatchedCourse();
+        for (TLSBDriverPosition position : positions) {
+            if (Math.abs(currentMatchedCourse - position.getMatchedCourse()) > 1.0f) {
+                rotateEnabled = true;
+            }
+        }
+        psg.setRotation(currentMatchedCourse);
+        MarkerTranslateAnimator animator = new MarkerTranslateAnimator(psg, 4000, latLngs, rotateEnabled);
         animator.startAnimation();
         return true;
     }

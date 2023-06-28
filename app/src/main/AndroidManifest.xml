@@ -42,6 +42,7 @@
         <activity android:name=".synchro_v2.HitchHikeNormalActivity"/>
         <activity android:name=".synchro_v2.HitchHikeOneVipActivity"/>
         <activity android:name=".synchro_v2.FastCarActivity"/>
+        <activity android:name=".synchro_v2.FastCarNormalActivity"/>
     </application>
 
     <!-- 导航 SDK permission start -->

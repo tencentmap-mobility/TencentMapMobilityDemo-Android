@@ -149,12 +149,12 @@ public class DriverRelayOrderActivity extends BaseActivity {
         mPassengerBPanel.addAction("创建订单", new PanelView.Action<String>("") {
             @Override
             public String run() {
-                mPassengerBPanel.postAction("开启同显");
                 mPassengerB.setPosition(MockSyncService.getRandomVisibleLatLng(mMapView2.getMap()));
                 MockOrder order = mPassengerSyncService.newOrder(mMapView2.getMap(), mPassengerB);
                 if (order != null && !TextUtils.isEmpty(order.getId())) {
                     mPassengerBPanel.postPrint("等待接驾");
                     mPassengerSyncB.getOrderManager().editCurrent().setOrderId(order.getId());
+                    mDriverPanel.postAction("绑定接力订单");
                     return order.getId();
                 }
                 return "";
@@ -248,7 +248,6 @@ public class DriverRelayOrderActivity extends BaseActivity {
                             mPassengerSyncA.getTLSPOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusTrip);
                             mDriverPanel.print("当前订单送驾中");
                             mDriverPanel.postAction("开启同显");
-                            mDriverPanel.postAction("绑定接力订单");
                             return order.getId();
                         } else {
                             mDriverPanel.print("当前订单送驾失败");
@@ -265,6 +264,7 @@ public class DriverRelayOrderActivity extends BaseActivity {
             @Override
             public Boolean run() {
                 mDriverSync.start();
+                mDriverPanel.postAction("请求路线");
                 return true;
             }
         });
@@ -320,7 +320,15 @@ public class DriverRelayOrderActivity extends BaseActivity {
                 }
                 MapUtils.fitsWithRoute(mCarNaviView.getMap(), ConvertUtils.transformLatLngs(mDriverSync.getRouteManager().getPoints()),
                         25, 25, 25, 25);
+                return routeData.size() == 1;
+            }
+        });
 
+        mDriverPanel.addAction("请求接力单路线", new PanelView.Action<Boolean>(false) {
+            @Override
+            public Boolean run() {
+                final MockOrder orderA = mDriverSyncService.getOrder(mPassengerA);
+                final List<RouteData> routeData = new ArrayList<>();
                 final MockOrder orderB = mDriverSyncService.getOrder(mPassengerB);
                 final CountDownLatch syncWaiting2 = new CountDownLatch(1);
                 // 接力单路线
@@ -362,10 +370,9 @@ public class DriverRelayOrderActivity extends BaseActivity {
                     e.printStackTrace();
                 }
 
-                mDriverPanel.print("接力单线路:" + routeData.get(1).getRouteId());
+                mDriverPanel.print("接力单线路:" + routeData.get(0).getRouteId());
                 mDriverPanel.postAction("上报路线");
-
-                return routeData.size() == 2;
+                return routeData.size() == 1;
             }
         });
 
@@ -503,6 +510,9 @@ public class DriverRelayOrderActivity extends BaseActivity {
                     e.printStackTrace();
                 }
 
+                if (mDriverSync.getOrderManager().getRelayOrder() != null) {
+                    mPassengerBPanel.postAction("开启同显");
+                }
                 return result[0] == 1;
             }
         });
@@ -519,8 +529,7 @@ public class DriverRelayOrderActivity extends BaseActivity {
                             .setOrderId(order.getId())
                             .setOrderStatus(TLSBOrderStatus.TLSDOrderStatusPickUp);
                     mDriverPanel.print("接力单接驾中");
-
-                    mDriverPanel.postAction("请求路线");
+                    mDriverPanel.postAction("请求接力单路线");
                     return order.getId();
                 } else {
                     mDriverPanel.print("接力单接驾失败");

@@ -152,9 +152,25 @@
         <com.tencent.mobility.ui.ItemLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:itemTitle="快车场景"
+            app:itemTitle="快车场景-接口触发版"
             app:itemContent="FastCarActivity"
             android:onClick="onFastCar"
+            />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="#787878"
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="12dp"
+            />
+
+        <com.tencent.mobility.ui.ItemLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:itemTitle="快车场景-常规"
+            app:itemContent="FastCarNormalActivity"
+            android:onClick="onFastNormalCar"
             />
 
         <TextView
