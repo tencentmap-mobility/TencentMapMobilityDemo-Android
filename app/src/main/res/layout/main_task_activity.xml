@@ -1,232 +1,222 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:background="#fff">
+    android:background="#fff"
+    android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        >
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/tv_mobility_txt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="移动出行"
+            android:layout_marginLeft="12dp"
             android:layout_marginTop="12dp"
-            android:layout_marginLeft="12dp"
-            android:textColor="#0090FF"
-            />
+            android:text="移动出行"
+            android:textColor="#0090FF" />
 
         <com.tencent.mobility.ui.ItemLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:itemTitle="修改目的地"
-            app:itemContent="ChangeDestinationActivity"
             android:onClick="onChangeDestination"
-            />
+            app:itemContent="ChangeDestinationActivity"
+            app:itemTitle="修改目的地" />
+
         <View
             android:layout_width="match_parent"
             android:layout_height="0.5dp"
-            android:background="#787878"
             android:layout_marginLeft="12dp"
             android:layout_marginRight="12dp"
-            />
+            android:background="#787878" />
 
         <com.tencent.mobility.ui.ItemLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:itemTitle="乘客选路"
-            app:itemContent="PassengerSelectRoutesActivity"
             android:onClick="onSelectRoutes"
-            />
+            app:itemContent="PassengerSelectRoutesActivity"
+            app:itemTitle="乘客选路" />
 
         <View
             android:layout_width="match_parent"
             android:layout_height="0.5dp"
-            android:background="#787878"
             android:layout_marginLeft="12dp"
             android:layout_marginRight="12dp"
-            />
+            android:background="#787878" />
 
         <com.tencent.mobility.ui.ItemLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:itemTitle="司机接力单"
-            app:itemContent="DriverRelayOrderActivity"
             android:onClick="onRelayOrder"
-            />
+            app:itemContent="DriverRelayOrderActivity"
+            app:itemTitle="司机接力单" />
+
         <View
             android:layout_width="match_parent"
             android:layout_height="0.5dp"
-            android:background="#787878"
             android:layout_marginLeft="12dp"
             android:layout_marginRight="12dp"
-            />
+            android:background="#787878" />
+
         <com.tencent.mobility.ui.ItemLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:itemTitle="周边车辆展示"
-            app:itemContent="NearbyCarUi"
+            android:onClick="onRelayOrderAsync"
+            app:itemContent="DriverRelayOrderAsyncActivity"
+            app:itemTitle="司机接力单-支持异步" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="12dp"
+            android:background="#787878" />
+
+        <com.tencent.mobility.ui.ItemLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:onClick="onNearbyCar"
-            />
+            app:itemContent="NearbyCarUi"
+            app:itemTitle="周边车辆展示" />
 
         <View
             android:layout_width="match_parent"
             android:layout_height="0.5dp"
-            android:background="#787878"
             android:layout_marginLeft="12dp"
             android:layout_marginRight="12dp"
-            />
+            android:background="#787878" />
 
         <com.tencent.mobility.ui.ItemLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:itemTitle="推荐上车点展示"
-            app:itemContent="SpotList"
             android:onClick="onCarPoi"
-            />
+            app:itemContent="SpotList"
+            app:itemTitle="推荐上车点展示" />
 
         <View
             android:layout_width="match_parent"
             android:layout_height="0.5dp"
-            android:background="#787878"
             android:layout_marginLeft="12dp"
             android:layout_marginRight="12dp"
-            />
+            android:background="#787878" />
 
         <com.tencent.mobility.ui.ItemLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:itemTitle="出行检索"
-            app:itemContent="SearchActivity"
             android:onClick="onSearch"
-            />
+            app:itemContent="SearchActivity"
+            app:itemTitle="出行检索" />
 
         <TextView
             android:id="@+id/tv_fast_txt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="司乘同显-快车"
+            android:layout_marginLeft="12dp"
             android:layout_marginTop="24dp"
-            android:layout_marginLeft="12dp"
-            android:textColor="#0090FF"
-            />
+            android:text="司乘同显-快车"
+            android:textColor="#0090FF" />
 
         <com.tencent.mobility.ui.ItemLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:itemTitle="司机端"
-            app:itemContent="FastDriver"
             android:onClick="onFastDri"
-            />
+            app:itemContent="FastDriver"
+            app:itemTitle="司机端" />
 
         <View
             android:layout_width="match_parent"
             android:layout_height="0.5dp"
-            android:background="#787878"
             android:layout_marginLeft="12dp"
             android:layout_marginRight="12dp"
-            />
+            android:background="#787878" />
 
         <com.tencent.mobility.ui.ItemLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:itemTitle="乘客端"
-            app:itemContent="PsgActivity"
             android:onClick="onFastPsg"
-            />
+            app:itemContent="PsgActivity"
+            app:itemTitle="乘客端" />
 
         <View
             android:layout_width="match_parent"
             android:layout_height="0.5dp"
-            android:background="#787878"
             android:layout_marginLeft="12dp"
             android:layout_marginRight="12dp"
-            />
+            android:background="#787878" />
 
         <com.tencent.mobility.ui.ItemLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:itemTitle="快车场景-接口触发版"
-            app:itemContent="FastCarActivity"
             android:onClick="onFastCar"
-            />
+            app:itemContent="FastCarActivity"
+            app:itemTitle="快车场景-接口触发版" />
 
         <View
             android:layout_width="match_parent"
             android:layout_height="0.5dp"
-            android:background="#787878"
             android:layout_marginLeft="12dp"
             android:layout_marginRight="12dp"
-            />
+            android:background="#787878" />
 
         <com.tencent.mobility.ui.ItemLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:itemTitle="快车场景-常规"
-            app:itemContent="FastCarNormalActivity"
             android:onClick="onFastNormalCar"
-            />
+            app:itemContent="FastCarNormalActivity"
+            app:itemTitle="快车场景-常规" />
 
         <TextView
             android:id="@+id/tv_sync_txt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="司乘同显-顺风车"
-            android:layout_marginTop="12dp"
             android:layout_marginLeft="12dp"
-            android:textColor="#0090FF"
-            />
+            android:layout_marginTop="12dp"
+            android:text="司乘同显-顺风车"
+            android:textColor="#0090FF" />
 
         <com.tencent.mobility.ui.ItemLayout
             android:id="@+id/hitch_hike_dri_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:itemTitle="单人顺风"
-            app:itemContent="HitchHikeOneVipActivity"
             android:onClick="OnHitchHikeSingle"
-            />
+            app:itemContent="HitchHikeOneVipActivity"
+            app:itemTitle="单人顺风" />
 
         <View
             android:layout_width="match_parent"
             android:layout_height="0.5dp"
-            android:background="#787878"
             android:layout_marginLeft="12dp"
             android:layout_marginRight="12dp"
-            />
+            android:background="#787878" />
 
         <com.tencent.mobility.ui.ItemLayout
             android:id="@+id/hitch_hike_psg_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:itemTitle="多人顺风"
-            app:itemContent="HitchHikeNormalActivity"
             android:onClick="OnHitchHikeMulti"
-            />
+            app:itemContent="HitchHikeNormalActivity"
+            app:itemTitle="多人顺风" />
 
         <TextView
             android:id="@+id/tv_carpooling_txt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="司乘同显-拼车"
-            android:layout_marginTop="12dp"
             android:layout_marginLeft="12dp"
-            android:textColor="#0090FF"
-            />
+            android:layout_marginTop="12dp"
+            android:text="司乘同显-拼车"
+            android:textColor="#0090FF" />
 
         <com.tencent.mobility.ui.ItemLayout
             android:id="@+id/carpooling_dri_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:itemTitle="至少2人拼车"
-            app:itemContent="CarpoolingNormalActivity"
             android:onClick="OnCarpooling"
-            />
+            app:itemContent="CarpoolingNormalActivity"
+            app:itemTitle="至少2人拼车" />
 
     </LinearLayout>
 

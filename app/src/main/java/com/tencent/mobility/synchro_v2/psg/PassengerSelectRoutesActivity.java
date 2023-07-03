@@ -20,12 +20,14 @@ import com.tencent.map.lssupport.bean.TLSConfigPreference;
 import com.tencent.map.lssupport.bean.TLSDFetchedData;
 import com.tencent.map.lssupport.bean.TLSLatlng;
 import com.tencent.map.lssupport.protocol.BaseSyncProtocol;
+import com.tencent.map.lssupport.protocol.SyncProtocol;
 import com.tencent.map.lssupport.utils.ConvertUtil;
 import com.tencent.map.navi.car.CarNaviView;
 import com.tencent.map.navi.car.NaviMode;
 import com.tencent.map.navi.car.TencentCarNaviManager;
 import com.tencent.map.navi.data.CalcRouteResult;
 import com.tencent.map.navi.data.RouteData;
+import com.tencent.map.navi.ui.car.CarNaviInfoPanel;
 import com.tencent.map.tools.Callback;
 import com.tencent.mobility.BaseActivity;
 import com.tencent.mobility.R;
@@ -35,6 +37,7 @@ import com.tencent.mobility.mock.MockOrder;
 import com.tencent.mobility.mock.MockPassenger;
 import com.tencent.mobility.mock.MockSyncService;
 import com.tencent.mobility.ui.PanelView;
+import com.tencent.mobility.util.CommonUtils;
 import com.tencent.mobility.util.ConvertUtils;
 import com.tencent.mobility.util.MapUtils;
 import com.tencent.mobility.util.SingleHelper;
@@ -68,7 +71,6 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
     private MockPassenger mPassenger;
 
     private MockSyncService mMockSyncService;
-    private boolean mPassengerDrawMultiRoutes;
     private boolean mPassengerDrawRoute;
     private TencentCarNaviManager mNaviManager;
     private List<TLSBRoute> mTLSRoutes;
@@ -176,7 +178,6 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
                         public void onPullLsInfoSuc(TLSDFetchedData fetchedData) {
                             super.onPullLsInfoSuc(fetchedData);
                             if (fetchedData.getRoute() != null
-                                    && !mPassengerDrawMultiRoutes
                                     && fetchedData.getRoute().getPoints() != null
                                     && !fetchedData.getRoute().getPoints().isEmpty()) {
                                 mMapView.getMap().clearAllOverlays();
@@ -186,8 +187,13 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
                                 }
                                 mPassengerPanel.print("拉取的路线总数：" + routeSize);
                                 mPassengerPanel.postAction("绘制路线");
-                                mPassengerDrawMultiRoutes = true;
                             }
+                        }
+
+                        @Override
+                        public void onRealSelectRouteResult(String routeId, int time, int result) {
+                            super.onRealSelectRouteResult(routeId, time, result);
+                            mPassengerPanel.print("路线真正选择结果：" + routeId + ", " + time + ", " + result);
                         }
                     });
 
@@ -213,7 +219,7 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
                         new DrivingParam.Preference[]{
                                 DrivingParam.Preference.REAL_TRAFFIC,
                                 DrivingParam.Preference.NAV_POINT_FIRST,
-                        }, new SearchProtocol.OnSearchResultListener() {
+                        }, new SyncProtocol.OnSearchResultListener() {
                             @Override
                             public void onSuccess(List<TLSBRoute> routeList) {
                                 mTLSRoutes = routeList;
@@ -315,7 +321,20 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
         mNaviManager.setMulteRoutes(true);
         mNaviManager.addNaviView(mCarNaviView);
         mCarNaviView.setNaviMapActionCallback(mNaviManager);
-        mCarNaviView.setNaviMode(NaviMode.MODE_OVERVIEW);
+        mCarNaviView.setNaviMode(NaviMode.MODE_REMAINING_OVERVIEW);
+        mCarNaviView.setAutoScaleEnabled(true);
+        // 使用默认UI
+        CarNaviInfoPanel carNaviInfoPanel = mCarNaviView.showNaviInfoPanel();
+        // 控制默认 UI 内的控件的显示和隐藏
+        if (carNaviInfoPanel != null) {
+            CarNaviInfoPanel.NaviInfoPanelConfig config = new CarNaviInfoPanel.NaviInfoPanelConfig();
+            config.setRerouteViewEnable(true);
+            carNaviInfoPanel.setNaviInfoPanelConfig(config);
+        }
+        int margin = CommonUtils.getWidth(this) / 3;
+        mCarNaviView.setEnlargedIntersectionRegionMargin(margin, 0, margin);
+        mCarNaviView.setNavigationPanelVisible(false);
+
         MockCar car = MockSyncService.newRandomCar();
         mDriver = MockSyncService.newRandomDriver(mCarNaviView.getMap(), car);
         mDriverSync = TSLDExtendManager.newInstance();
@@ -323,7 +342,6 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
                 TLSConfigPreference.create().setAccountId(mDriver.getId()).setDebuggable(true));
         mDriverSync.setNaviManager(mNaviManager);
         mDriverSync.setCarNaviView(mCarNaviView);
-        mCarNaviView.setNavigationPanelVisible(false);
         mDriverPanel.init("司机");
         mDriverPanel.addAction("绑定订单至接驾", new PanelView.Action<String>("") {
             @Override
@@ -419,8 +437,8 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
         mDriverPanel.addAction("开启同显", new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
-                mDriverPanel.postAction("请求路线");
                 mDriverSync.start();
+                mDriverPanel.postAction("请求路线");
                 return true;
             }
         });
@@ -479,15 +497,14 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
                 if (mDriverSync.getOrderManager().getUsingOrder().isTripStatus() && !routeData.isEmpty()) {
                     //送驾路线，默认选择0路线
                     mDriverSync.getRouteManager().useRouteIndex(0);
+                    mDriverSync.uploadUsingRoute();
                     try {
                         mNaviManager.startSimulateNavi(0);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
-                if (TextUtils.isEmpty(mDriverSync.getRouteManager().getRouteId())) {
-                    mDriverPanel.postPrint("没有命中乘客选择的路线");
-                } else {
+                if (mDriverSync.getOrderManager().getUsingOrder().isPickUpStatus() && !routeData.isEmpty()) {
                     mDriverPanel.print("当前线路：" + mDriverSync.getRouteManager().getRouteId());
                     mDriverPanel.postAction("绘制路线");
                     mDriverPanel.postAction("上报路线");
@@ -526,7 +543,7 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
                         mDriverSync.removeTLSDriverListener(this);
                     }
                 });
-                mDriverSync.uploadRoutes();
+                mDriverSync.uploadUsingRoute();
                 try {
                     syncWaiting.await();
                 } catch (InterruptedException e) {

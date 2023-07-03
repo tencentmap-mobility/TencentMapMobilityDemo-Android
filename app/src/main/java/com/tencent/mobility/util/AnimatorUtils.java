@@ -112,7 +112,11 @@ public class AnimatorUtils {
                     rotateEnabled = true;
                 }
             }
-            carMarker.setRotation(currentMatchedCourse);
+            if (currentMatchedCourse < 1e-7) {
+                rotateEnabled = true;
+            } else {
+                carMarker.setRotation(currentMatchedCourse);
+            }
 
             LinkedList<LatLng> latLngs = new LinkedList<>(Arrays.asList(getLatLngsBySynchroLocation(allPositions)));
             LatLng[] ls = latLngs.toArray(new LatLng[0]);
@@ -303,7 +307,11 @@ public class AnimatorUtils {
         eraseInfo.setLatLng(latLng);
         // 防止数组越界
         int pointIndex =  Math.max(0, Math.min(route.getPoints().size() - 2, eraseInfo.getCurEraseIndex()));
-        int[] result = calcPointIndexWithCoord(latLng, route, pointIndex, route.getPoints().size() - 1, 7, true);
+        int to = route.getPoints().size() - 1;
+        if (route.getWayPoints() != null && route.getWayPoints().size() > 0) {
+            to = route.getWayPoints().get(0).getPointIndex();
+        }
+        int[] result = calcPointIndexWithCoord(latLng, route, pointIndex, to, 7, true);
         if (result[0] == 1) {
             // 找到匹配的pointIndex
             eraseInfo.setCurEraseIndex(result[1]);

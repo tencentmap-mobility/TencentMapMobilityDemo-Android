@@ -16,6 +16,7 @@ import com.tencent.map.lspassenger.TSLPassengerManager;
 import com.tencent.map.lspassenger.anima.MarkerTranslateAnimator;
 import com.tencent.map.lspassenger.lsp.listener.SimplePsgDataListener;
 import com.tencent.map.lspassenger.protocol.SearchProtocol;
+import com.tencent.map.lssupport.bean.TLSAccount;
 import com.tencent.map.lssupport.bean.TLSBDriverPosition;
 import com.tencent.map.lssupport.bean.TLSBOrderStatus;
 import com.tencent.map.lssupport.bean.TLSBOrderType;
@@ -240,7 +241,9 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
                     if (fetchedData.getGetOffWayPoint() != null) {
                         TLSBRoute subRoute = RouteManager.subRouteByRange(fetchedData.getRoute(), startIndex,
                                 fetchedData.getGetOffWayPoint().getPointIndex());
-                        mPassengerSync.getRouteManager().editCurrent().copy(subRoute);
+                        if (subRoute != null) {
+                            drawRoute(mMapView.getMap(), subRoute, mPassengerSync.getRouteManager().getRoutes(), TLSAccount.PASSENGER, mPassengerLines);
+                        }
                         Log.d(Configs.TAG, "下车点：" + fetchedData.getGetOffWayPoint().getPointIndex() + "  " +
                                 fetchedData.getGetOffWayPoint().getRemainingDistance() / 1000.0 + "公里" + "  " +
                                 fetchedData.getGetOffWayPoint().getRemainingTime() + "分钟");
@@ -253,7 +256,9 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
                     if (fetchedData.getGetInWayPoint() != null) {
                         TLSBRoute subRoute = RouteManager.subRouteByRange(fetchedData.getRoute(), startIndex,
                                 fetchedData.getGetInWayPoint().getPointIndex());
-                        mPassengerSync.getRouteManager().editCurrent().copy(subRoute);
+                        if (subRoute != null) {
+                            drawRoute(mMapView.getMap(), subRoute, mPassengerSync.getRouteManager().getRoutes(), TLSAccount.PASSENGER, mPassengerLines);
+                        }
                         Log.d(Configs.TAG, "上车点：" + fetchedData.getGetInWayPoint().getPointIndex() + "  " +
                                 fetchedData.getGetInWayPoint().getRemainingDistance() / 1000.0 + "公里" + "  " +
                                 fetchedData.getGetInWayPoint().getRemainingTime() + "分钟");
@@ -263,7 +268,6 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
                                     + mPassengerInfo.mMockSyncService.getOrder(mPassenger).getBegin().toString());
                         }
                     }
-                    mPassengerPanel.postAction(ACTION_ROUTES_DRAW);
                 }
             } else {
                 Log.d(Configs.TAG, "乘客拉取数据为空");
@@ -403,7 +407,7 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
                 requestMap.put("passenger_orderid", order.getId());
                 final CountDownLatch sync = new CountDownLatch(1);
                 final Boolean[] result = new Boolean[1];
-                mPassengerSync.orderStatusSync(requestMap, new SyncProtocol.OrderResultListener() {
+                mPassengerSync.orderStatusSync("", requestMap, new SyncProtocol.OrderResultListener() {
                     @Override
                     public void onResult(int status, String message) {
                         result[0] = true;
@@ -434,7 +438,7 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
                 requestMap.put("status", 1);
                 final CountDownLatch sync = new CountDownLatch(1);
                 final Boolean[] result = new Boolean[1];
-                mPassengerSync.orderStatusSync(requestMap, new SyncProtocol.OrderResultListener() {
+                mPassengerSync.orderStatusSync(order.getId(), requestMap, new SyncProtocol.OrderResultListener() {
                     @Override
                     public void onResult(int status, String message) {
                         result[0] = true;
@@ -462,7 +466,7 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
                         new DrivingParam.Preference[]{
                                 DrivingParam.Preference.REAL_TRAFFIC,
                                 DrivingParam.Preference.NAV_POINT_FIRST,
-                        }, new SearchProtocol.OnSearchResultListener() {
+                        }, new SyncProtocol.OnSearchResultListener() {
                             @Override
                             public void onSuccess(List<TLSBRoute> routeList) {
                                 sync.countDown();
@@ -489,7 +493,8 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
         mPassengerPanel.addAction(ACTION_ROUTES_DRAW, new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
-                return drawRoute(mMapView.getMap(), mPassengerSync, mPassengerLines);
+                return drawRoute(mMapView.getMap(), mPassengerSync.getRouteManager().getUsingRoute(),
+                        mPassengerSync.getRouteManager().getRoutes(), TLSAccount.PASSENGER, mPassengerLines);
             }
         });
 
@@ -576,7 +581,7 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
         mPassengerPanel.addAction(ACTION_ORDER_STATUS_SYNC, new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
-                mPassengerSync.orderStatusSync(new HashMap<>(), new SyncProtocol.OrderResultListener() {
+                mPassengerSync.orderStatusSync("", new HashMap<>(), new SyncProtocol.OrderResultListener() {
                     @Override
                     public void onResult(int status, String message) {
                         Log.i(Configs.TAG, "status: " + status + ", message: " + message);
@@ -653,7 +658,7 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
         mDriverPanel.addAction(ACTION_ORDER_STATUS_SYNC, new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
-                mDriverSync.orderStatusSync(new HashMap<>(), new SyncProtocol.OrderResultListener() {
+                mDriverSync.orderStatusSync("", new HashMap<>(), new SyncProtocol.OrderResultListener() {
                     @Override
                     public void onResult(int status, String message) {
                         Log.i(Configs.TAG, "status: " + status + ", message: " + message);
@@ -690,7 +695,7 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
                 requestMap.put("status", 2);
                 final CountDownLatch sync = new CountDownLatch(1);
                 final Boolean[] result = new Boolean[1];
-                mDriverSync.orderStatusSync(requestMap, new SyncProtocol.OrderResultListener() {
+                mDriverSync.orderStatusSync(fastCarOrderId, requestMap, new SyncProtocol.OrderResultListener() {
                     @Override
                     public void onResult(int status, String message) {
                         result[0] = true;
@@ -719,7 +724,7 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
                 requestMap.put("status", 3);
                 final CountDownLatch sync = new CountDownLatch(1);
                 final Boolean[] result = new Boolean[1];
-                mDriverSync.orderStatusSync(requestMap, new SyncProtocol.OrderResultListener() {
+                mDriverSync.orderStatusSync(fastCarOrderId, requestMap, new SyncProtocol.OrderResultListener() {
                     @Override
                     public void onResult(int status, String message) {
                         result[0] = true;
@@ -748,7 +753,7 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
                 requestMap.put("status", 6);
                 final CountDownLatch sync = new CountDownLatch(1);
                 final Boolean[] result = new Boolean[1];
-                mDriverSync.orderStatusSync(requestMap, new SyncProtocol.OrderResultListener() {
+                mDriverSync.orderStatusSync(fastCarOrderId, requestMap, new SyncProtocol.OrderResultListener() {
                     @Override
                     public void onResult(int status, String message) {
                         result[0] = true;
@@ -777,7 +782,7 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
                 requestMap.put("status", 4);
                 final CountDownLatch sync = new CountDownLatch(1);
                 final Boolean[] result = new Boolean[1];
-                mDriverSync.orderStatusSync(requestMap, new SyncProtocol.OrderResultListener() {
+                mDriverSync.orderStatusSync(fastCarOrderId, requestMap, new SyncProtocol.OrderResultListener() {
                     @Override
                     public void onResult(int status, String message) {
                         result[0] = true;
@@ -810,7 +815,7 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
                 requestMap.put("passenger_orderid", carpoolingOrderIds.get(0));
                 final CountDownLatch sync = new CountDownLatch(1);
                 final Boolean[] result = new Boolean[1];
-                mDriverSync.orderStatusSync(requestMap, new SyncProtocol.OrderResultListener() {
+                mDriverSync.orderStatusSync(order.getId(), requestMap, new SyncProtocol.OrderResultListener() {
                     @Override
                     public void onResult(int status, String message) {
                         result[0] = true;
@@ -843,14 +848,15 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
                 requestMap.put("passenger_orderid", carpoolingOrderIds.get(1));
                 final CountDownLatch sync = new CountDownLatch(1);
                 final Boolean[] result = new Boolean[1];
-                mDriverSync.orderStatusSync(requestMap, new SyncProtocol.OrderResultListener() {
-                    @Override
-                    public void onResult(int status, String message) {
-                        result[0] = true;
-                        Log.i(Configs.TAG, "status: " + status + ", message: " + message);
-                        sync.countDown();
-                    }
-                });
+                mDriverSync.orderStatusSync(mDriverSync.getOrderManager().getOrderId(), requestMap,
+                        new SyncProtocol.OrderResultListener() {
+                            @Override
+                            public void onResult(int status, String message) {
+                                result[0] = true;
+                                Log.i(Configs.TAG, "status: " + status + ", message: " + message);
+                                sync.countDown();
+                            }
+                        });
                 try {
                     sync.await();
                 } catch (InterruptedException e) {
@@ -873,14 +879,15 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
                 requestMap.put("passenger_orderid", carpoolingOrderIds.get(0));
                 final CountDownLatch sync = new CountDownLatch(1);
                 final Boolean[] result = new Boolean[1];
-                mDriverSync.orderStatusSync(requestMap, new SyncProtocol.OrderResultListener() {
-                    @Override
-                    public void onResult(int status, String message) {
-                        result[0] = true;
-                        Log.i(Configs.TAG, "status: " + status + ", message: " + message);
-                        sync.countDown();
-                    }
-                });
+                mDriverSync.orderStatusSync(mDriverSync.getOrderManager().getOrderId(), requestMap,
+                        new SyncProtocol.OrderResultListener() {
+                            @Override
+                            public void onResult(int status, String message) {
+                                result[0] = true;
+                                Log.i(Configs.TAG, "status: " + status + ", message: " + message);
+                                sync.countDown();
+                            }
+                        });
                 try {
                     sync.await();
                 } catch (InterruptedException e) {
@@ -903,14 +910,15 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
                 requestMap.put("passenger_orderid", carpoolingOrderIds.get(0));
                 final CountDownLatch sync = new CountDownLatch(1);
                 final Boolean[] result = new Boolean[1];
-                mDriverSync.orderStatusSync(requestMap, new SyncProtocol.OrderResultListener() {
-                    @Override
-                    public void onResult(int status, String message) {
-                        result[0] = true;
-                        Log.i(Configs.TAG, "status: " + status + ", message: " + message);
-                        sync.countDown();
-                    }
-                });
+                mDriverSync.orderStatusSync(mDriverSync.getOrderManager().getOrderId(), requestMap,
+                        new SyncProtocol.OrderResultListener() {
+                            @Override
+                            public void onResult(int status, String message) {
+                                result[0] = true;
+                                Log.i(Configs.TAG, "status: " + status + ", message: " + message);
+                                sync.countDown();
+                            }
+                        });
                 try {
                     sync.await();
                 } catch (InterruptedException e) {
@@ -933,14 +941,15 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
                 requestMap.put("passenger_orderid", carpoolingOrderIds.get(0));
                 final CountDownLatch sync = new CountDownLatch(1);
                 final Boolean[] result = new Boolean[1];
-                mDriverSync.orderStatusSync(requestMap, new SyncProtocol.OrderResultListener() {
-                    @Override
-                    public void onResult(int status, String message) {
-                        result[0] = true;
-                        Log.i(Configs.TAG, "status: " + status + ", message: " + message);
-                        sync.countDown();
-                    }
-                });
+                mDriverSync.orderStatusSync(mDriverSync.getOrderManager().getOrderId(), requestMap,
+                        new SyncProtocol.OrderResultListener() {
+                            @Override
+                            public void onResult(int status, String message) {
+                                result[0] = true;
+                                Log.i(Configs.TAG, "status: " + status + ", message: " + message);
+                                sync.countDown();
+                            }
+                        });
                 try {
                     sync.await();
                 } catch (InterruptedException e) {
@@ -963,14 +972,15 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
                 requestMap.put("passenger_orderid", carpoolingOrderIds.get(0));
                 final CountDownLatch sync = new CountDownLatch(1);
                 final Boolean[] result = new Boolean[1];
-                mDriverSync.orderStatusSync(requestMap, new SyncProtocol.OrderResultListener() {
-                    @Override
-                    public void onResult(int status, String message) {
-                        result[0] = true;
-                        Log.i(Configs.TAG, "status: " + status + ", message: " + message);
-                        sync.countDown();
-                    }
-                });
+                mDriverSync.orderStatusSync(mDriverSync.getOrderManager().getOrderId(), requestMap,
+                        new SyncProtocol.OrderResultListener() {
+                            @Override
+                            public void onResult(int status, String message) {
+                                result[0] = true;
+                                Log.i(Configs.TAG, "status: " + status + ", message: " + message);
+                                sync.countDown();
+                            }
+                        });
                 try {
                     sync.await();
                 } catch (InterruptedException e) {
@@ -992,14 +1002,15 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
                 requestMap.put("status", 8);
                 final CountDownLatch sync = new CountDownLatch(1);
                 final Boolean[] result = new Boolean[1];
-                mDriverSync.orderStatusSync(requestMap, new SyncProtocol.OrderResultListener() {
-                    @Override
-                    public void onResult(int status, String message) {
-                        result[0] = true;
-                        Log.i(Configs.TAG, "status: " + status + ", message: " + message);
-                        sync.countDown();
-                    }
-                });
+                mDriverSync.orderStatusSync(mDriverSync.getOrderManager().getOrderId(), requestMap,
+                        new SyncProtocol.OrderResultListener() {
+                            @Override
+                            public void onResult(int status, String message) {
+                                result[0] = true;
+                                Log.i(Configs.TAG, "status: " + status + ", message: " + message);
+                                sync.countDown();
+                            }
+                        });
                 try {
                     sync.await();
                 } catch (InterruptedException e) {
@@ -1021,14 +1032,15 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
                 requestMap.put("status", 9);
                 final CountDownLatch sync = new CountDownLatch(1);
                 final Boolean[] result = new Boolean[1];
-                mDriverSync.orderStatusSync(requestMap, new SyncProtocol.OrderResultListener() {
-                    @Override
-                    public void onResult(int status, String message) {
-                        result[0] = true;
-                        Log.i(Configs.TAG, "status: " + status + ", message: " + message);
-                        sync.countDown();
-                    }
-                });
+                mDriverSync.orderStatusSync(mDriverSync.getOrderManager().getOrderId(), requestMap,
+                        new SyncProtocol.OrderResultListener() {
+                            @Override
+                            public void onResult(int status, String message) {
+                                result[0] = true;
+                                Log.i(Configs.TAG, "status: " + status + ", message: " + message);
+                                sync.countDown();
+                            }
+                        });
                 try {
                     sync.await();
                 } catch (InterruptedException e) {
@@ -1373,7 +1385,8 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
         mDriverPanel.addAction(ACTION_ROUTES_DRAW, new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
-                return drawRoute(mCarNaviView.getMap(), mDriverSync, mDriverLines);
+                return drawRoute(mCarNaviView.getMap(), mDriverSync.getRouteManager().getUsingRoute(),
+                        mDriverSync.getRouteManager().getRoutes(), TLSAccount.DRIVER, mDriverLines);
             }
         });
 
@@ -1442,18 +1455,18 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
         initDriverPanel();
     }
 
-    private boolean drawRoute(TencentMap map, BaseSyncProtocol manager, Map<String, Polyline> cache) {
-        List<TLSLatlng> latlngs = manager.getRouteManager().getPoints();
-        clearNoUseLine(manager.getRouteManager(), cache);
+    private boolean drawRoute(TencentMap map, TLSBRoute usingRoute, List<TLSBRoute> routes, TLSAccount account, Map<String, Polyline> cache) {
+        List<TLSLatlng> latlngs = usingRoute.getPoints();
+        clearNoUseLine(routes, cache);
         if (latlngs == null || latlngs.isEmpty()) {
             return false;
         }
 
         List<LatLng> mapLatLngs = ConvertUtil.toLatLngList(latlngs);
         List<LatLng> all = new ArrayList<>(mapLatLngs);
-        Polyline main = cache.get(manager.getRouteManager().getRouteId());
+        Polyline main = cache.get(usingRoute.getRouteId());
 
-        List<TLSBRouteTrafficItem> trafficItems = manager.getRouteManager().getTrafficItemsWithInternalRoute();
+        List<TLSBRouteTrafficItem> trafficItems = usingRoute.getTrafficItemsWithInternalRoute();
         int[] colors = new int[trafficItems.size()];
         int[] indexes = new int[trafficItems.size()];
 
@@ -1464,15 +1477,15 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
                     .colors(colors, indexes)
                     .arrow(true)
                     .addAll(mapLatLngs));
-            cache.put(manager.getRouteManager().getRouteId(), main);
+            cache.put(usingRoute.getRouteId(), main);
+            MapUtils.fitsWithRoute(map, all,
+                    25, 25, 25, 25);
         } else {
             setRouteTraffic(trafficItems, indexes, colors);
             main.setColors(colors, indexes);
             main.setPoints(mapLatLngs);
         }
-        updateStartAndEndPosition(map, manager, all);
-        MapUtils.fitsWithRoute(map, all,
-                25, 25, 25, 25);
+        updateStartAndEndPosition(map, usingRoute, account, all);
         return true;
     }
 
@@ -1509,38 +1522,38 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
         }
     }
 
-    private void updateStartAndEndPosition(TencentMap map, BaseSyncProtocol manager, List<LatLng> all) {
-        TLSLatlng startPosition = manager.getRouteManager().getStartPosition();
-        TLSLatlng destPosition = manager.getRouteManager().getDestPosition();
-        List<TLSBWayPoint> wayPoints = manager.getRouteManager().getWayPoints();
+    private void updateStartAndEndPosition(TencentMap map, TLSBRoute route, TLSAccount account, List<LatLng> all) {
+        TLSLatlng startPosition = route.getStartPosition();
+        TLSLatlng destPosition = route.getDestPosition();
+        List<TLSBWayPoint> wayPoints = route.getWayPoints();
 
         if (startPosition != null) {
-            Marker startMarker = getStartMarker(manager);
+            Marker startMarker = getStartMarker(account);
             if (startMarker != null) {
                 startMarker.setPosition(ConvertUtil.toLatLng(startPosition));
             } else {
                 startMarker = map.addMarker(new MarkerOptions(ConvertUtil.toLatLng(startPosition))
                         .icon(BitmapDescriptorFactory.fromResource(R.mipmap.line_start_point)));
-                setStartMarker(manager, startMarker);
+                setStartMarker(account, startMarker);
             }
             all.add(ConvertUtil.toLatLng(startPosition));
         }
 
         if (destPosition != null) {
-            Marker endMarker = getEndMarker(manager);
+            Marker endMarker = getEndMarker(account);
             if (endMarker != null) {
                 endMarker.setPosition(ConvertUtil.toLatLng(destPosition));
             } else {
                 endMarker = map.addMarker(new MarkerOptions(ConvertUtil.toLatLng(destPosition))
                         .icon(BitmapDescriptorFactory.fromResource(R.mipmap.line_end_point)));
-                setEndMarker(manager, endMarker);
+                setEndMarker(account, endMarker);
             }
 
             all.add(ConvertUtil.toLatLng(destPosition));
         }
 
         if (wayPoints != null && wayPoints.size() > 0) {
-            List<Marker> wayMarkers = getWayMarkers(manager);
+            List<Marker> wayMarkers = getWayMarkers(account);
             if (wayMarkers != null && wayMarkers.size() > 0) {
                 for (Marker marker : wayMarkers) {
                     marker.remove();
@@ -1559,37 +1572,37 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
         }
     }
 
-    private void setStartMarker(BaseSyncProtocol manager, Marker startMarker) {
-        if (manager instanceof TSLPassengerManager) {
+    private void setStartMarker(TLSAccount account, Marker startMarker) {
+        if (account.getType() == TLSAccount.PASSENGER.getType()) {
             mPassengerStartMarker = startMarker;
         } else {
             mDriverStartMarker = startMarker;
         }
     }
 
-    private Marker getStartMarker(BaseSyncProtocol manager) {
-        return manager instanceof TSLPassengerManager ? mPassengerStartMarker : mDriverStartMarker;
+    private Marker getStartMarker(TLSAccount account) {
+        return account.getType() == TLSAccount.PASSENGER.getType() ? mPassengerStartMarker : mDriverStartMarker;
     }
 
-    private void setEndMarker(BaseSyncProtocol manager, Marker endMarker) {
-        if (manager instanceof TSLPassengerManager) {
+    private void setEndMarker(TLSAccount account, Marker endMarker) {
+        if (account.getType() == TLSAccount.PASSENGER.getType()) {
             mPassengerEndMarker = endMarker;
         } else {
             mDriverEndMarker = endMarker;
         }
     }
 
-    private Marker getEndMarker(BaseSyncProtocol manager) {
-        return manager instanceof TSLPassengerManager ? mPassengerEndMarker : mDriverEndMarker;
+    private Marker getEndMarker(TLSAccount account) {
+        return account.getType() == TLSAccount.PASSENGER.getType() ? mPassengerStartMarker : mDriverStartMarker;
     }
 
-    private List<Marker> getWayMarkers(BaseSyncProtocol manager) {
-        return manager instanceof TSLPassengerManager ? mPassengerWayMarkers : mDriverWayMarkers;
+    private List<Marker> getWayMarkers(TLSAccount account) {
+        return account.getType() == TLSAccount.PASSENGER.getType() ? mPassengerWayMarkers : mDriverWayMarkers;
     }
 
     private boolean drawRoutes(TencentMap map, BaseSyncProtocol manager, Map<String, Polyline> cache,
                                Callback<Integer> selectCallback) {
-        clearNoUseLine(manager.getRouteManager(), cache);
+        clearNoUseLine(manager.getRouteManager().getRoutes(), cache);
 
         List<TLSLatlng> latlngs = manager.getRouteManager().getPoints();
         if (latlngs == null || latlngs.isEmpty()) {
@@ -1615,7 +1628,7 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
 
         polylines.add(mainline);
 
-        updateStartAndEndPosition(map, manager, allLatLngs);
+        updateStartAndEndPosition(map, manager.getRouteManager().getUsingRoute(), manager.getRouteManager().getAccount(), allLatLngs);
 
         List<TLSBRoute> routes = new ArrayList<>(manager.getRouteManager().getRoutes());
         if (routes.size() > 0) {
@@ -1660,9 +1673,7 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
         return true;
     }
 
-    private void clearNoUseLine(RouteManager routeManager, Map<String, Polyline> cache) {
-        List<TLSBRoute> routes = routeManager.getRoutes();
-
+    private void clearNoUseLine(List<TLSBRoute> routes, Map<String, Polyline> cache) {
         Set<String> usingIds = new HashSet<>();
         for (TLSBRoute route : routes) {
             usingIds.add(route.getRouteId());

@@ -78,7 +78,7 @@ public class AppServer {
                 });
 
         try {
-            latch.await(2000, TimeUnit.MILLISECONDS);
+            latch.await(3000, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

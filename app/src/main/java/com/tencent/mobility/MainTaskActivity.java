@@ -13,6 +13,7 @@ import com.tencent.mobility.synchro_v2.FastCarNormalActivity;
 import com.tencent.mobility.synchro_v2.HitchHikeNormalActivity;
 import com.tencent.mobility.synchro_v2.HitchHikeOneVipActivity;
 import com.tencent.mobility.synchro_v2.driver.DriverRelayOrderActivity;
+import com.tencent.mobility.synchro_v2.driver.DriverRelayOrderAsyncActivity;
 import com.tencent.mobility.synchro_v2.driver.FastDriver;
 import com.tencent.mobility.synchro_v2.psg.PassengerSelectRoutesActivity;
 import com.tencent.mobility.synchro_v2.psg.PsgActivity;
@@ -78,6 +79,10 @@ public class MainTaskActivity extends BaseActivity {
 
     public void onRelayOrder(View view) {
         CommonUtils.toIntent(this, DriverRelayOrderActivity.class);
+    }
+
+    public void onRelayOrderAsync(View view) {
+        CommonUtils.toIntent(this, DriverRelayOrderAsyncActivity.class);
     }
 
     public void onSelectRoutes(View view) {
