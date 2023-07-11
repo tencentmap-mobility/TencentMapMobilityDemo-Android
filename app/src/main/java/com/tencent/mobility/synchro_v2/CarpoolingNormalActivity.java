@@ -18,6 +18,7 @@ import com.tencent.mobility.mock.MockCar;
 import com.tencent.mobility.mock.MockDriver;
 import com.tencent.mobility.mock.MockOrder;
 import com.tencent.mobility.mock.MockPassenger;
+import com.tencent.mobility.mock.MockSyncService;
 import com.tencent.mobility.ui.OneDriverNPassengerActivity;
 import com.tencent.mobility.ui.PanelView;
 import com.tencent.mobility.util.Configs;
@@ -89,6 +90,7 @@ public class CarpoolingNormalActivity extends OneDriverNPassengerActivity {
         passengerPanel.addAction(ACTION_CARPOOLING_ORDER_CREATE, new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
+                passenger.setPosition(MockSyncService.getRandomVisibleLatLng(mapView.getMap()));
                 MockOrder order = mPassengerInfo.mMockSyncService.newOrder(mapView.getMap(), passenger);
                 if (order != null && !TextUtils.isEmpty(order.getId())) {
                     passengerPanel.print("创建订单：" + order.getId());
@@ -112,6 +114,7 @@ public class CarpoolingNormalActivity extends OneDriverNPassengerActivity {
         driverPanel.addAction(ACTION_CARPOOLING_ORDER_CREATE, new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
+                driver.setPosition(MockSyncService.getRandomVisibleLatLng(carNaviView.getMap()));
                 MockOrder order = mDriverInfo.mMockSyncService
                         .newCarpoolOrder(carNaviView.getMap(), driver,
                                 getPassenger());
