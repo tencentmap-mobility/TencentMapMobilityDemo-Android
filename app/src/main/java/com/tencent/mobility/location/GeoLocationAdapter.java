@@ -10,8 +10,8 @@ import com.tencent.map.fusionlocation.observer.TencentGeoLocationObserver;
 import com.tencent.map.geolocation.TencentLocationRequest;
 import com.tencent.map.geolocation.internal.TencentExtraKeys;
 import com.tencent.map.geolocation.routematch.bean.init.LocationPreference;
-import com.tencent.map.navi.TencentNavi;
 import com.tencent.mobility.util.Singleton;
+import com.tencent.navix.api.NavigatorZygote;
 
 import java.util.ArrayList;
 
@@ -19,29 +19,6 @@ import java.util.ArrayList;
  * 定位SDK管理方法。
  */
 public class GeoLocationAdapter implements IGeoLocation {
-
-    private ArrayList<IGeoLocationListeners> geoLists = new ArrayList<>();
-    private TencentLocationAdapter mGeoAdapter;
-
-    public interface IGeoLocationListeners {
-        void onGeoLocationChanged(TencentGeoLocation tencentGeoLocation);
-    }
-
-    // 普适定位回调
-    private TencentGeoLocationObserver mTencentGeoLocationObserver = new TencentGeoLocationObserver() {
-        @Override
-        public void onGeoLocationChanged(TencentGeoLocation tencentGeoLocation) {
-            for (IGeoLocationListeners listener : geoLists) {
-                listener.onGeoLocationChanged(tencentGeoLocation);
-            }
-        }
-
-        @Override
-        public void onNmeaMsgChanged(String s) { }
-
-        @Override
-        public void onGNSSInfoChanged(TencentGnssInfo tencentGnssInfo) { }
-    };
 
     // 单例方法
     public static final Singleton<GeoLocationAdapter> singleton =
@@ -51,11 +28,31 @@ public class GeoLocationAdapter implements IGeoLocation {
                     return new GeoLocationAdapter();
                 }
             };
+    private final ArrayList<IGeoLocationListeners> geoLists = new ArrayList<>();
+    private TencentLocationAdapter mGeoAdapter;
+    // 普适定位回调
+    private final TencentGeoLocationObserver mTencentGeoLocationObserver = new TencentGeoLocationObserver() {
+        @Override
+        public void onGeoLocationChanged(TencentGeoLocation tencentGeoLocation) {
+            for (IGeoLocationListeners listener : geoLists) {
+                listener.onGeoLocationChanged(tencentGeoLocation);
+            }
+        }
+
+        @Override
+        public void onNmeaMsgChanged(String s) {
+        }
+
+        @Override
+        public void onGNSSInfoChanged(TencentGnssInfo tencentGnssInfo) {
+        }
+    };
 
     /**
      * 开启定位sdk。
      */
-    @Override public void startGeoLocationAdapter(Context context) {
+    @Override
+    public void startGeoLocationAdapter(Context context) {
         // 避免多次开启
         if (null != mGeoAdapter) {
             return;
@@ -66,7 +63,7 @@ public class GeoLocationAdapter implements IGeoLocation {
 
         // 2.配置设备ID
         final Pair<String, String> deviceID = new Pair<>(TencentLocationAdapter.TYPE_QIMEI
-                , TencentNavi.getDeviceId(context));
+                , NavigatorZygote.with(context).context().getConfig().getDeviceId());
         TencentLocationAdapter.setDeviceId(context, deviceID);
 
         final TencentLocationRequest request = TencentLocationRequest.create()
@@ -87,12 +84,11 @@ public class GeoLocationAdapter implements IGeoLocation {
     /**
      * 结束定位sdk。
      */
-    @Override public void stopGeoLocationAdapter() {
-        if (null != mGeoAdapter) {
-            mGeoAdapter.stopCommonLocation();
-            mGeoAdapter.destroyAdapter();
-            mGeoAdapter = null;
-        }
+    @Override
+    public void stopGeoLocationAdapter() {
+        mGeoAdapter.stopCommonLocation();
+        mGeoAdapter.destroyAdapter();
+        mGeoAdapter = null;
         if (null != geoLists) {
             geoLists.clear();
         }
@@ -103,7 +99,8 @@ public class GeoLocationAdapter implements IGeoLocation {
      *
      * @param listener 定位监听
      */
-    @Override public void addGeoLocationListener(IGeoLocationListeners listener) {
+    @Override
+    public void addGeoLocationListener(IGeoLocationListeners listener) {
         if (null != listener && !geoLists.contains(listener)) {
             geoLists.add(listener);
         }
@@ -114,9 +111,15 @@ public class GeoLocationAdapter implements IGeoLocation {
      *
      * @param listener 定位监听
      */
-    @Override public void removeGeoLocationListener(IGeoLocationListeners listener) {
+    @Override
+    public void removeGeoLocationListener(IGeoLocationListeners listener) {
         if (null != listener && -1 != geoLists.indexOf(listener)) {
             geoLists.remove(listener);
         }
+    }
+
+    public interface IGeoLocationListeners {
+
+        void onGeoLocationChanged(TencentGeoLocation tencentGeoLocation);
     }
 }

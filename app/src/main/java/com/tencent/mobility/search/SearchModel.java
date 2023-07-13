@@ -17,7 +17,6 @@ import com.tencent.map.navi.agent.routes.interfaces.DrivingRouteListener;
 import com.tencent.map.navi.agent.routes.interfaces.WalkingRouteListener;
 import com.tencent.map.navi.agent.sug.SugOptions;
 import com.tencent.map.navi.agent.sug.interfaces.SugListener;
-import com.tencent.map.navi.data.NaviPoi;
 import com.tencent.mobility.search.helper.SearchConvertHelper;
 import com.tencent.mobility.util.RouteUtils;
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng;

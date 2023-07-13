@@ -1,7 +1,8 @@
 package com.tencent.mobility.util;
 
 import com.tencent.map.lssupport.bean.TLSBPosition;
-import com.tencent.map.navi.data.NaviPoi;
+import com.tencent.navix.api.map.MapApi;
+import com.tencent.navix.api.model.NavSearchPoint;
 import com.tencent.tencentmap.mapsdk.maps.TencentMap;
 import com.tencent.tencentmap.mapsdk.maps.model.BitmapDescriptor;
 import com.tencent.tencentmap.mapsdk.maps.model.BitmapDescriptorFactory;
@@ -14,7 +15,7 @@ import java.util.Random;
 public class RandomMethods {
 
     private static final RandomMethods single = new RandomMethods();
-    private TencentMap mMap;
+    private MapApi mMap;
 
     private RandomMethods() {
     }
@@ -23,16 +24,19 @@ public class RandomMethods {
         return single;
     }
 
-    public void initCases(TencentMap map) {
+    public void initCases(MapApi map) {
         mMap = map;
     }
 
     public TLSBPosition getRandTLSBPosition(String info) {
         LatLng latLng = getVisibleLatLng();
+        if (latLng == null) {
+            return null;
+        }
         TLSBPosition position = new TLSBPosition();
         position.setLatitude(latLng.getLatitude());
         position.setLongitude(latLng.getLongitude());
-        position.setProvider("gps");
+        position.setProvider(1);
         position.setVelocity(getFloat(15, 5));
         position.setBearing(getInt(360));
         position.setCityCode("100101");
@@ -40,12 +44,12 @@ public class RandomMethods {
         return position;
     }
 
-    public NaviPoi getVisibleNaviPoi() {
+    public NavSearchPoint getVisibleNaviPoi() {
         LatLng latLng = getVisibleLatLng();
         if (latLng == null) {
             return null;
         }
-        return new NaviPoi(latLng.getLatitude(), latLng.getLongitude());
+        return new NavSearchPoint(latLng.getLatitude(), latLng.getLongitude());
     }
 
     public LatLng getVisibleLatLng() {

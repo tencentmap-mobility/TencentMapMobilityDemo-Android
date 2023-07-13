@@ -6,7 +6,8 @@ import com.tencent.map.lssupport.bean.TLSBPosition;
 import com.tencent.map.lssupport.bean.TLSBRouteTrafficItem;
 import com.tencent.map.lssupport.bean.TLSDWayPointInfo;
 import com.tencent.map.lssupport.bean.TLSLatlng;
-import com.tencent.map.navi.data.NaviPoi;
+import com.tencent.map.lssupport.utils.ConvertUtil;
+import com.tencent.navix.api.model.NavSearchPoint;
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
 
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ public class ConvertUtils {
         driverPosition.setBearing(tenLo.getBearing());
         driverPosition.setVelocity(tenLo.getSpeed());
         driverPosition.setAltitude(tenLo.getAltitude());
-        driverPosition.setProvider(tenLo.getProvider());
+        driverPosition.setProvider(ConvertUtil.providerTypeByProvider(tenLo.getProvider()));
         driverPosition.setCityCode(tenLo.getCityCode());
         return driverPosition;
     }
@@ -37,25 +38,11 @@ public class ConvertUtils {
         TLSBPosition position = new TLSBPosition();
         position.setLatitude(location.getLatitude());
         position.setLongitude(location.getLongitude());
-        position.setProvider(location.getProvider());
+        position.setProvider(ConvertUtil.providerTypeByProvider(location.getProvider()));
         position.setVelocity(location.getSpeed());
         position.setBearing(location.getBearing());
         position.setCityCode(location.getCityCode());
         return position;
-    }
-
-    public static NaviPoi convertToNaviPoi(TLSDWayPointInfo point) {
-        if (point == null) {
-            return null;
-        }
-        return new NaviPoi(point.getLat(), point.getLng(), point.getPoiId());
-    }
-
-    public static NaviPoi convertToNaviPoi(TLSLatlng point) {
-        if (point == null) {
-            return null;
-        }
-        return new NaviPoi(point.getLatitude(), point.getLongitude(), point.getPoiId());
     }
 
     public static ArrayList<TLSLatlng> convertLatLngToTLS(ArrayList<LatLng> latLngs) {
@@ -111,8 +98,8 @@ public class ConvertUtils {
         return latLngs;
     }
 
-    public static NaviPoi toNaviPoi(LatLng latLng) {
-        return new NaviPoi(latLng.latitude, latLng.longitude);
+    public static NavSearchPoint toNaviPoi(LatLng latLng) {
+        return new NavSearchPoint(latLng.latitude, latLng.longitude);
     }
 
     public static LatLng toLatLng(TLSLatlng latLng) {

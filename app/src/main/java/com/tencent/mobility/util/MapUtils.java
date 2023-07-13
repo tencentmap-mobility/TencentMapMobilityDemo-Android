@@ -5,6 +5,7 @@ import android.os.Looper;
 
 import com.tencent.map.lssupport.bean.TLSBDriverPosition;
 import com.tencent.map.lssupport.bean.TLSBWayPoint;
+import com.tencent.navix.api.map.MapApi;
 import com.tencent.tencentmap.mapsdk.maps.CameraUpdateFactory;
 import com.tencent.tencentmap.mapsdk.maps.TencentMap;
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
@@ -25,20 +26,20 @@ public class MapUtils {
      * @param rightMargin 右边距
      * @param bottomMargin 下边距
      */
-    public static void fitsWithRoute(final TencentMap map,
-            final List<LatLng> routePoints,
-            final int leftMargin,
-            final int topMargin,
-            final int rightMargin,
-            final int bottomMargin) {
-        if ((routePoints == null) || map == null) {
+    public static void fitsWithRoute(final MapApi map,
+                                     final List<LatLng> routePoints,
+                                     final int leftMargin,
+                                     final int topMargin,
+                                     final int rightMargin,
+                                     final int bottomMargin) {
+        if ((routePoints == null) || map == null || routePoints.size() < 2) {
             return;
         }
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             LatLngBounds.Builder builder = new LatLngBounds.Builder();
             builder.include(routePoints);
             LatLngBounds bounds = builder.build();
-            map.animateCamera(CameraUpdateFactory.newLatLngBoundsRect(bounds,
+            map.moveCamera(CameraUpdateFactory.newLatLngBoundsRect(bounds,
                     leftMargin, rightMargin, topMargin, bottomMargin));
         }, 100);
     }

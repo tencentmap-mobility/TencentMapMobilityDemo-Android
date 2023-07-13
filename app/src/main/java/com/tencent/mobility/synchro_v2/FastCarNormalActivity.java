@@ -8,7 +8,6 @@ import androidx.annotation.Nullable;
 import com.tencent.map.lsdriver.TSLDExtendManager;
 import com.tencent.map.lsdriver.lsd.listener.DriDataListener;
 import com.tencent.map.lsdriver.lsd.listener.SimpleDriDataListener;
-import com.tencent.map.lsdriver.protocol.OrderRouteSearchOptions;
 import com.tencent.map.lspassenger.TSLPassengerManager;
 import com.tencent.map.lspassenger.lsp.listener.SimplePsgDataListener;
 import com.tencent.map.lssupport.bean.TLSBOrderStatus;
@@ -17,12 +16,6 @@ import com.tencent.map.lssupport.bean.TLSDFetchedData;
 import com.tencent.map.lssupport.bean.TLSLatlng;
 import com.tencent.map.lssupport.protocol.BaseSyncProtocol;
 import com.tencent.map.lssupport.utils.ConvertUtil;
-import com.tencent.map.navi.car.CarNaviView;
-import com.tencent.map.navi.car.NaviMode;
-import com.tencent.map.navi.car.TencentCarNaviManager;
-import com.tencent.map.navi.data.CalcRouteResult;
-import com.tencent.map.navi.data.RouteData;
-import com.tencent.map.navi.ui.car.CarNaviInfoPanel;
 import com.tencent.mobility.BaseActivity;
 import com.tencent.mobility.R;
 import com.tencent.mobility.mock.MockCar;
@@ -30,12 +23,26 @@ import com.tencent.mobility.mock.MockDriver;
 import com.tencent.mobility.mock.MockOrder;
 import com.tencent.mobility.mock.MockPassenger;
 import com.tencent.mobility.mock.MockSyncService;
+import com.tencent.mobility.synchro_v2.view.RouteInfoView;
 import com.tencent.mobility.ui.PanelView;
 import com.tencent.mobility.util.AnimatorUtils;
 import com.tencent.mobility.util.CommonUtils;
 import com.tencent.mobility.util.ConvertUtils;
 import com.tencent.mobility.util.MapUtils;
 import com.tencent.mobility.util.SingleHelper;
+import com.tencent.navix.api.config.MultiRouteConfig;
+import com.tencent.navix.api.config.RouteElementConfig;
+import com.tencent.navix.api.layer.NavigatorLayerRootDrive;
+import com.tencent.navix.api.layer.NavigatorViewStub;
+import com.tencent.navix.api.map.MapApi;
+import com.tencent.navix.api.model.NavDriveRoute;
+import com.tencent.navix.api.model.NavError;
+import com.tencent.navix.api.model.NavMode;
+import com.tencent.navix.api.model.NavRoutePlan;
+import com.tencent.navix.api.navigator.NavigatorDrive;
+import com.tencent.navix.api.plan.DriveRoutePlanOptions;
+import com.tencent.navix.ui.NavigatorLayerViewDrive;
+import com.tencent.navix.ui.api.config.UIComponentConfig;
 import com.tencent.tencentmap.mapsdk.maps.MapView;
 import com.tencent.tencentmap.mapsdk.maps.TencentMap;
 import com.tencent.tencentmap.mapsdk.maps.model.BitmapDescriptorFactory;
@@ -49,8 +56,9 @@ import java.util.concurrent.CountDownLatch;
 
 public class FastCarNormalActivity extends BaseActivity {
 
-    private CarNaviView mCarNaviView;
-    private MapView mMapView;
+    private NavigatorLayerRootDrive mCarNaviView;
+    private NavigatorLayerViewDrive mLayerDriverView;
+    private NavigatorLayerRootDrive mMapView;
 
     private PanelView mDriverPanel;
     private PanelView mPassengerPanel;
@@ -64,15 +72,41 @@ public class FastCarNormalActivity extends BaseActivity {
     private MockSyncService mDriverSyncService;
     private MockSyncService mPassengerSyncService;
 
-    private TencentCarNaviManager mNaviManager;
+    private NavigatorDrive mNaviManager;
+
+    private RouteInfoView mRouteOneView;
+    private RouteInfoView mRouteTwoView;
+    private RouteInfoView mRouteThreeView;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.normal_fast_car_layout);
 
-        mCarNaviView = findViewById(R.id.driver_navi_car_view);
-        mMapView = findViewById(R.id.psg_map_view);
+        NavigatorViewStub navigatorViewStub = findViewById(R.id.driver_navi_car_view);
+        navigatorViewStub.inflate();
+        mCarNaviView = navigatorViewStub.getNavigatorView();
+        mLayerDriverView = new NavigatorLayerViewDrive(this);
+        mLayerDriverView.setUIComponentConfig(UIComponentConfig.builder()
+                .setComponentVisibility(UIComponentConfig.UIComponent.ENLARGE_INFO_VIEW, false)
+                .setComponentVisibility(UIComponentConfig.UIComponent.GUIDE_LANE_VIEW, false)
+                .setComponentVisibility(UIComponentConfig.UIComponent.MAP_TRAFFIC_SWITCH_VIEW, false)
+                .setComponentVisibility(UIComponentConfig.UIComponent.INFO_VIEW, false)
+                .setComponentVisibility(UIComponentConfig.UIComponent.ZOOM_CONTROLLER_VIEW, false)
+                .setComponentVisibility(UIComponentConfig.UIComponent.TTS_MUTE_SWITCH_VIEW, false)
+                .setComponentVisibility(UIComponentConfig.UIComponent.ROAD_LIMIT_VIEW, false)
+                .setComponentVisibility(UIComponentConfig.UIComponent.TRAFFIC_BAR_VIEW, false)
+                .setComponentVisibility(UIComponentConfig.UIComponent.BOTTOM_PANEL_VIEW, false)
+                .build());
+        mCarNaviView.addViewLayer(mLayerDriverView);
+
+        NavigatorViewStub navigatorViewStub1 = findViewById(R.id.psg_map_view);
+        navigatorViewStub1.inflate();
+        mMapView = navigatorViewStub1.getNavigatorView();
+
+        mRouteOneView = findViewById(R.id.route_info_one_view);
+        mRouteTwoView = findViewById(R.id.route_info_two_view);
+        mRouteThreeView = findViewById(R.id.route_info_three_view);
 
         mDriverPanel = findViewById(R.id.group_panel_driver);
         mPassengerPanel = findViewById(R.id.group_panel_passenger);
@@ -84,7 +118,7 @@ public class FastCarNormalActivity extends BaseActivity {
     }
 
     private void initPassengerPanel() {
-        mPassenger = MockSyncService.newRandomPassenger(mMapView.getMap());
+        mPassenger = MockSyncService.newRandomPassenger(mMapView.getMapApi());
         mPassengerSync = TSLPassengerManager.newInstance();
         mPassengerSync.init(FastCarNormalActivity.this,
                 TLSConfigPreference.create().setDebuggable(true).setAccountId(mPassenger.getId()));
@@ -95,8 +129,8 @@ public class FastCarNormalActivity extends BaseActivity {
             @Override
             public String run() {
                 mPassengerPanel.postAction("开启同显");
-                mPassenger.setPosition(MockSyncService.getRandomVisibleLatLng(mMapView.getMap()));
-                MockOrder order = mPassengerSyncService.newOrder(mMapView.getMap(), mPassenger);
+                mPassenger.setPosition(MockSyncService.getRandomVisibleLatLng(mMapView.getMapApi().getProjection()));
+                MockOrder order = mPassengerSyncService.newOrder(mMapView.getMapApi(), mPassenger);
                 if (order != null && !TextUtils.isEmpty(order.getId())) {
                     mPassengerPanel.postPrint("等待接驾");
                     mPassengerSync.getOrderManager().editCurrent().setOrderId(order.getId());
@@ -113,10 +147,52 @@ public class FastCarNormalActivity extends BaseActivity {
                 mPassengerSync.addTLSPassengerListener(new SimplePsgDataListener() {
                     @Override
                     public void onPullLsInfoSuc(TLSDFetchedData fetchedData) {
-                        mPassengerPanel.postPrint("拉取成功");
-                        if (fetchedData != null) {
-                            drawMarker(mMapView.getMap(), mPassengerSync);
-                            AnimatorUtils.updateDriverInfo(mMapView.getMap(), fetchedData.getRoute(), fetchedData.getOrder(), fetchedData.getPositions());
+                        mPassengerPanel.postPrint("拉取成功: " + fetchedData.getRoutes().size());
+                        drawMarker(mMapView.getMapApi(), mPassengerSync);
+                        AnimatorUtils.updateDriverInfo(mMapView.getMapApi(), fetchedData.getRoute(), fetchedData.getOrder(), fetchedData.getPositions());
+
+                        mRouteOneView.reset();
+                        mRouteTwoView.reset();
+                        mRouteThreeView.reset();
+                        int mainIndex = mPassengerSync.getRouteManager().getRouteIndexByRouteId(fetchedData.getRoute().getRouteId());
+                        for (int i = 0; i < fetchedData.getRoutes().size(); i++) {
+                            if (i == 0) {
+                                mRouteOneView.setData(fetchedData.getRoutes().get(i).getRemainingTime(),
+                                        fetchedData.getRoutes().get(i).getRemainingDistance(),
+                                        fetchedData.getRoutes().get(i).getRemainingTrafficCount());
+                                if (mainIndex == 0) {
+                                    mRouteOneView.isMain(true);
+                                }
+
+                            } else if (i == 1) {
+                                mRouteTwoView.setData(fetchedData.getRoutes().get(i).getRemainingTime(),
+                                        fetchedData.getRoutes().get(i).getRemainingDistance(),
+                                        fetchedData.getRoutes().get(i).getRemainingTrafficCount());
+                                if (mainIndex == 0) {
+                                    mRouteOneView.isMain(true);
+                                    mRouteTwoView.isMain(false);
+                                } else if (mainIndex == 1) {
+                                    mRouteOneView.isMain(false);
+                                    mRouteTwoView.isMain(true);
+                                }
+                            } else if (i == 2) {
+                                mRouteThreeView.setData(fetchedData.getRoutes().get(i).getRemainingTime(),
+                                        fetchedData.getRoutes().get(i).getRemainingDistance(),
+                                        fetchedData.getRoutes().get(i).getRemainingTrafficCount());
+                                if (mainIndex == 0) {
+                                    mRouteOneView.isMain(true);
+                                    mRouteTwoView.isMain(false);
+                                    mRouteThreeView.isMain(false);
+                                } else if (mainIndex == 1) {
+                                    mRouteOneView.isMain(false);
+                                    mRouteTwoView.isMain(true);
+                                    mRouteThreeView.isMain(false);
+                                } else if (mainIndex == 2) {
+                                    mRouteOneView.isMain(false);
+                                    mRouteTwoView.isMain(false);
+                                    mRouteThreeView.isMain(true);
+                                }
+                            }
                         }
                     }
 
@@ -134,36 +210,33 @@ public class FastCarNormalActivity extends BaseActivity {
 
     private void initDriverPanel() {
         mNaviManager = SingleHelper.getNaviManager(this);
-        mNaviManager.setMulteRoutes(true);
-        mNaviManager.addNaviView(mCarNaviView);
-        mCarNaviView.setNaviMapActionCallback(mNaviManager);
-        mCarNaviView.setNaviMode(NaviMode.MODE_REMAINING_OVERVIEW);
-        // 使用默认UI
-        CarNaviInfoPanel carNaviInfoPanel = mCarNaviView.showNaviInfoPanel();
-        // 控制默认 UI 内的控件的显示和隐藏
-        if (carNaviInfoPanel != null) {
-            CarNaviInfoPanel.NaviInfoPanelConfig config = new CarNaviInfoPanel.NaviInfoPanelConfig();
-            config.setRerouteViewEnable(true);
-            carNaviInfoPanel.setNaviInfoPanelConfig(config);
-        }
-        int margin = CommonUtils.getWidth(this) / 3;
-        mCarNaviView.setEnlargedIntersectionRegionMargin(margin, 0, margin);
-        mCarNaviView.setNavigationPanelVisible(false);
+        mNaviManager.setMultiRouteConfig(MultiRouteConfig.builder()
+                .setMultiRouteEnable(true)
+                .setShowMultiRouteOnNavStart(false)
+                .build());
+        mNaviManager.bindView(mCarNaviView);
+        mCarNaviView.setNavMode(NavMode.MODE_OVERVIEW);
+        mCarNaviView.setRouteElementConfig(RouteElementConfig.builder()
+                .setTurnArrowEnable(false)
+//                .setTrafficBubbleEnable(false)
+//                .setTrafficLightEnable(false)
+                .setCameraDistanceEnable(false)
+                .setCameraMarkerEnable(false)
+                .build());
 
         MockCar car = MockSyncService.newRandomCar();
-        mDriver = MockSyncService.newRandomDriver(mCarNaviView.getMap(), car);
+        mDriver = MockSyncService.newRandomDriver(mCarNaviView.getMapApi(), car);
         mDriverSync = TSLDExtendManager.newInstance();
         mDriverSyncService = new MockSyncService(mDriverSync);
         mDriverSync.init(FastCarNormalActivity.this,
                 TLSConfigPreference.create().setDebuggable(true).setAccountId(mDriver.getId()));
         mDriverSync.setNaviManager(mNaviManager);
-        mDriverSync.setCarNaviView(mCarNaviView);
         mDriverPanel.init("司机");
 
         mDriverPanel.addAction("绑定订单", new PanelView.Action<String>("") {
             @Override
             public String run() {
-                mDriver.setPosition(MockSyncService.getRandomVisibleLatLng(mCarNaviView.getMap()));
+                mDriver.setPosition(MockSyncService.getRandomVisibleLatLng(mCarNaviView.getMapApi().getProjection()));
                 MockOrder order = mDriverSyncService.getOrder(mPassenger);
                 if (order == null) {
                     return "";
@@ -202,31 +275,28 @@ public class FastCarNormalActivity extends BaseActivity {
             public Boolean run() {
                 final MockOrder orderA = mDriverSyncService.getOrder(mPassenger);
                 final CountDownLatch syncWaiting = new CountDownLatch(1);
-                final List<RouteData> routeData = new ArrayList<>();
+                final List<NavDriveRoute> routeData = new ArrayList<>();
 
                 // 当前送驾路线
-                mDriverSync.searchCarRoutes(
+                mDriverSync.searchCarRoutes(orderA.getId(),
                         ConvertUtils.toNaviPoi(orderA.getBegin()),
                         ConvertUtils.toNaviPoi(orderA.getEnd()),
                         new ArrayList<>(),
-                        OrderRouteSearchOptions.create(orderA.getId()),
+                        DriveRoutePlanOptions.Companion.newBuilder().build(),
                         new DriDataListener.ISearchCallBack() {
                             @Override
-                            public void onParamsInvalid(int errCode, String errMsg) {
-                                syncWaiting.countDown();
-                            }
-
-                            @Override
-                            public void onCalcRouteSuccess(CalcRouteResult calcRouteResult) {
-                                List<RouteData> arrayList = calcRouteResult.getRoutes();
-                                if (arrayList != null && !arrayList.isEmpty()) {
-                                    routeData.add(arrayList.get(0));
+                            public void onResultCallback(NavRoutePlan navRoutePlan, NavError navError) {
+                                if (navRoutePlan != null) {
+                                    List<NavDriveRoute> arrayList = navRoutePlan.getRoutes();
+                                    if (arrayList != null && !arrayList.isEmpty()) {
+                                        routeData.add(arrayList.get(0));
+                                    }
                                 }
                                 syncWaiting.countDown();
                             }
 
                             @Override
-                            public void onCalcRouteFailure(CalcRouteResult calcRouteResult) {
+                            public void onInternalError(int errCode, String errMsg) {
                                 syncWaiting.countDown();
                             }
                         }
@@ -243,11 +313,12 @@ public class FastCarNormalActivity extends BaseActivity {
                 mDriverPanel.postAction("上报路线");
 
                 try {
-                    mNaviManager.startSimulateNavi(0);
+                    mNaviManager.simulator().setEnable(true);
+                    mNaviManager.startNavigation(mDriverSync.getRouteManager().getRouteId());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                MapUtils.fitsWithRoute(mCarNaviView.getMap(), ConvertUtils.transformLatLngs(mDriverSync.getRouteManager().getPoints()),
+                MapUtils.fitsWithRoute(mCarNaviView.getMapApi(), ConvertUtils.transformLatLngs(mDriverSync.getRouteManager().getPoints()),
                         25, 25, 25, 25);
                 return routeData.size() == 1;
             }
@@ -286,7 +357,7 @@ public class FastCarNormalActivity extends BaseActivity {
 
     Marker aMarkerStart = null;
     Marker aMarkerEnd = null;
-    private void drawMarker(TencentMap map, BaseSyncProtocol manager) {
+    private void drawMarker(MapApi map, BaseSyncProtocol manager) {
         List<TLSLatlng> latlngs = manager.getRouteManager().getPoints();
         if (latlngs == null || latlngs.isEmpty()) {
             return;
@@ -343,9 +414,9 @@ public class FastCarNormalActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mNaviManager.stopSimulateNavi();
-        mNaviManager.stopNavi();
-        mNaviManager.removeNaviView(mCarNaviView);
+        mNaviManager.stopNavigation();
+        mNaviManager.unbindView(mCarNaviView);
+        mCarNaviView.removeViewLayer(mLayerDriverView);
         mCarNaviView.onDestroy();
         mMapView.onDestroy();
         AnimatorUtils.clearUi();

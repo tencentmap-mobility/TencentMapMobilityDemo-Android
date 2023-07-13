@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
 
     <FrameLayout
@@ -9,15 +10,15 @@
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <com.tencent.map.navi.car.CarNaviView
+        <com.tencent.navix.api.layer.NavigatorViewStub
             android:id="@+id/driver_navi_car_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" >
+            android:layout_height="match_parent"
+            app:travel_mode="Driving" />
 
-            <include
-                android:id="@+id/group_panel_driver"
-                layout="@layout/panel_layout" />
-        </com.tencent.map.navi.car.CarNaviView>
+        <include
+            android:id="@+id/group_panel_driver"
+            layout="@layout/panel_layout" />
 
     </FrameLayout>
 
@@ -31,14 +32,54 @@
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <com.tencent.tencentmap.mapsdk.maps.MapView
+        <com.tencent.navix.api.layer.NavigatorViewStub
             android:id="@+id/psg_map_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            app:travel_mode="Driving" />
 
         <include
             android:id="@+id/group_panel_passenger"
             layout="@layout/panel_layout" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_gravity="bottom"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:background="@color/white">
+
+            <include
+                android:layout_height="match_parent"
+                android:layout_width="wrap_content"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toLeftOf="@+id/route_info_two_view"
+                android:id="@+id/route_info_one_view"
+                layout="@layout/route_info_layout"/>
+
+            <include
+                android:layout_height="match_parent"
+                android:layout_width="wrap_content"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toRightOf="@+id/route_info_one_view"
+                app:layout_constraintRight_toLeftOf="@+id/route_info_three_view"
+                android:id="@+id/route_info_two_view"
+                layout="@layout/route_info_layout"/>
+
+            <include
+                android:layout_height="match_parent"
+                android:layout_width="wrap_content"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toRightOf="@+id/route_info_two_view"
+                app:layout_constraintRight_toRightOf="parent"
+                android:id="@+id/route_info_three_view"
+                layout="@layout/route_info_layout" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
     </FrameLayout>
 
 </LinearLayout>

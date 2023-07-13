@@ -2,6 +2,8 @@ package com.tencent.mobility.mock;
 
 import com.tencent.map.lssupport.protocol.BaseSyncProtocol;
 import com.tencent.map.lssupport.protocol.AppServer;
+import com.tencent.navix.api.map.MapApi;
+import com.tencent.tencentmap.mapsdk.maps.Projection;
 import com.tencent.tencentmap.mapsdk.maps.TencentMap;
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
 import com.tencent.tencentmap.mapsdk.maps.model.VisibleRegion;
@@ -26,9 +28,9 @@ public class MockSyncService {
      *
      * @return 乘客
      */
-    public static MockPassenger newRandomPassenger(TencentMap map) {
+    public static MockPassenger newRandomPassenger(MapApi map) {
         MockPassenger passenger = new MockPassenger();
-        passenger.setPosition(getRandomVisibleLatLng(map));
+        passenger.setPosition(getRandomVisibleLatLng(map.getProjection()));
         return passenger;
     }
 
@@ -65,9 +67,9 @@ public class MockSyncService {
      * @param car 车
      * @return 司机
      */
-    public static MockDriver newRandomDriver(TencentMap map, MockCar car) {
+    public static MockDriver newRandomDriver(MapApi map, MockCar car) {
         MockDriver driver = new MockDriver(car);
-        driver.setPosition(getRandomVisibleLatLng(map));
+        driver.setPosition(getRandomVisibleLatLng(map.getProjection()));
         return driver;
     }
 
@@ -87,12 +89,12 @@ public class MockSyncService {
     /**
      * 在地图可视区域内随机位置
      *
-     * @param map 地图对象
+     * @param projection 地图对象
      * @return 坐标位置
      */
-    public static LatLng getRandomVisibleLatLng(TencentMap map) {
-        if (map != null) {
-            VisibleRegion visibleRegion = map.getProjection().getVisibleRegion();
+    public static LatLng getRandomVisibleLatLng(Projection projection) {
+        if (projection != null) {
+            VisibleRegion visibleRegion = projection.getVisibleRegion();
             LatLng nearLeft = visibleRegion.nearLeft;
             LatLng farRight = visibleRegion.farRight;
             double lat = nearLeft.latitude + (farRight.latitude - nearLeft.latitude) * Math
@@ -112,9 +114,9 @@ public class MockSyncService {
      * @param user 乘客
      * @return 订单
      */
-    public MockOrder newOrder(TencentMap map, MockUser user) {
-        LatLng start = user.getStart() == null ? getRandomVisibleLatLng(map) : user.getStart();
-        LatLng end = user.getEnd() == null ? getRandomVisibleLatLng(map) : user.getEnd();
+    public MockOrder newOrder(MapApi map, MockUser user) {
+        LatLng start = user.getStart() == null ? getRandomVisibleLatLng(map.getProjection()) : user.getStart();
+        LatLng end = user.getEnd() == null ? getRandomVisibleLatLng(map.getProjection()) : user.getEnd();
         MockOrder oldOrder = getOrder(user);
         if (oldOrder != null) {
             mOrders.remove(oldOrder);
@@ -127,9 +129,9 @@ public class MockSyncService {
         return mockOrder;
     }
 
-    public MockOrder newOrderLocal(TencentMap map, MockUser user) {
-        LatLng start = user.getStart() == null ? getRandomVisibleLatLng(map) : user.getStart();
-        LatLng end = user.getEnd() == null ? getRandomVisibleLatLng(map) : user.getEnd();
+    public MockOrder newOrderLocal(MapApi map, MockUser user) {
+        LatLng start = user.getStart() == null ? getRandomVisibleLatLng(map.getProjection()) : user.getStart();
+        LatLng end = user.getEnd() == null ? getRandomVisibleLatLng(map.getProjection()) : user.getEnd();
         MockOrder oldOrder = getOrder(user);
         if (oldOrder != null) {
             mOrders.remove(oldOrder);
@@ -155,9 +157,9 @@ public class MockSyncService {
      * @param driver
      * @return
      */
-    public MockOrder newCarpoolOrder(TencentMap map, MockDriver driver, MockPassenger passenger) {
-        LatLng start = driver.getStart() == null ? getRandomVisibleLatLng(map) : driver.getStart();
-        LatLng end = driver.getEnd() == null ? getRandomVisibleLatLng(map) : driver.getEnd();
+    public MockOrder newCarpoolOrder(MapApi map, MockDriver driver, MockPassenger passenger) {
+        LatLng start = driver.getStart() == null ? getRandomVisibleLatLng(map.getProjection()) : driver.getStart();
+        LatLng end = driver.getEnd() == null ? getRandomVisibleLatLng(map.getProjection()) : driver.getEnd();
         MockOrder oldOrder = getOrder(driver);
         if (oldOrder != null) {
             mOrders.remove(oldOrder);
@@ -173,9 +175,9 @@ public class MockSyncService {
         return mockOrder;
     }
 
-    public MockOrder newSameIdCarpoolOrder(TencentMap map, MockDriver driver, MockPassenger passenger) {
-        LatLng start = driver.getStart() == null ? getRandomVisibleLatLng(map) : driver.getStart();
-        LatLng end = driver.getEnd() == null ? getRandomVisibleLatLng(map) : driver.getEnd();
+    public MockOrder newSameIdCarpoolOrder(MapApi map, MockDriver driver, MockPassenger passenger) {
+        LatLng start = driver.getStart() == null ? getRandomVisibleLatLng(map.getProjection()) : driver.getStart();
+        LatLng end = driver.getEnd() == null ? getRandomVisibleLatLng(map.getProjection()) : driver.getEnd();
         MockOrder oldOrder = getOrder(driver);
         if (oldOrder != null) {
             mOrders.remove(oldOrder);

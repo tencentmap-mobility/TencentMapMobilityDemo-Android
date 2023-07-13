@@ -4,14 +4,9 @@ import android.text.TextUtils;
 
 import com.tencent.map.lsdriver.TSLDExtendManager;
 import com.tencent.map.lsdriver.lsd.listener.DriDataListener;
-import com.tencent.map.lsdriver.protocol.OrderRouteSearchOptions;
 import com.tencent.map.lspassenger.TSLPassengerManager;
 import com.tencent.map.lssupport.bean.TLSBWayPointType;
 import com.tencent.map.lssupport.bean.TLSDWayPointInfo;
-import com.tencent.map.navi.car.CarNaviView;
-import com.tencent.map.navi.car.TencentCarNaviManager;
-import com.tencent.map.navi.data.CalcRouteResult;
-import com.tencent.map.navi.data.RouteData;
 import com.tencent.mobility.mock.MockCar;
 import com.tencent.mobility.mock.MockDriver;
 import com.tencent.mobility.mock.MockOrder;
@@ -19,6 +14,12 @@ import com.tencent.mobility.mock.MockPassenger;
 import com.tencent.mobility.ui.OneDriverNPassengerActivity;
 import com.tencent.mobility.ui.PanelView;
 import com.tencent.mobility.util.ConvertUtils;
+import com.tencent.navix.api.layer.NavigatorLayerRootDrive;
+import com.tencent.navix.api.model.NavDriveRoute;
+import com.tencent.navix.api.model.NavError;
+import com.tencent.navix.api.model.NavRoutePlan;
+import com.tencent.navix.api.navigator.NavigatorDrive;
+import com.tencent.navix.api.plan.DriveRoutePlanOptions;
 import com.tencent.tencentmap.mapsdk.maps.MapView;
 
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ public class HitchHikeNormalActivity extends OneDriverNPassengerActivity {
 
     @Override
     protected int getPassengerSize() {
-        return 2;
+        return 3;
     }
 
     @Override
@@ -41,12 +42,13 @@ public class HitchHikeNormalActivity extends OneDriverNPassengerActivity {
         switch (passengerNo) {
             case 0:
             case 1:
+            case 2:
                 return new String[]{
                         ACTION_ORDER_CREATE,
                         ACTION_SYNC_OPEN,
                         ACTION_PULL,
                         ACTION_ROUTES_DRAW,
-                        ACTION_SYNC_CLOSE
+                        ACTION_SYNC_CLOSE,
                 };
         }
         return new String[0];
@@ -78,15 +80,15 @@ public class HitchHikeNormalActivity extends OneDriverNPassengerActivity {
 
     @Override
     protected void onCreatePassengerAction(int number, MockPassenger passenger, TSLPassengerManager passengerSync,
-            PanelView passengerPanel, MapView mapView) {
+                                           PanelView passengerPanel, NavigatorLayerRootDrive mapView) {
         passenger.setCarType(MockCar.CarType.All);
         passenger.setBizType(MockCar.BizType.HitchHikeDriver);
     }
 
     @Override
     protected void onCreateDriverAction(MockDriver driver, TSLDExtendManager driverSync,
-            PanelView driverPanel, CarNaviView carNaviView,
-            TencentCarNaviManager manager) {
+                                        PanelView driverPanel, NavigatorLayerRootDrive carNaviView,
+                                        NavigatorDrive manager) {
         driver.setCarType(MockCar.CarType.All);
         driver.setBizType(MockCar.BizType.HitchHikeDriver);
 
@@ -102,6 +104,8 @@ public class HitchHikeNormalActivity extends OneDriverNPassengerActivity {
             @Override
             public Boolean run() {
                 final MockOrder order = mDriverInfo.mMockSyncService.getOrder(driver);
+                if (order == null)
+                    return false;
                 List<TLSDWayPointInfo> ws = new ArrayList<>();
                 Set<MockOrder> subOrders = order.getSubOrders();
                 for (MockOrder subOrder : subOrders) {
@@ -143,28 +147,26 @@ public class HitchHikeNormalActivity extends OneDriverNPassengerActivity {
                 }
 
                 final CountDownLatch syncWaiting = new CountDownLatch(1);
-                final List<RouteData> routeData = new ArrayList<>();
-                driverSync.searchCarRoutes(
+                final List<NavDriveRoute> routeData = new ArrayList<>();
+                driverSync.searchCarRoutes(order.getId(),
                         ConvertUtils.toNaviPoi(order.getBegin()),
                         ConvertUtils.toNaviPoi(order.getEnd()),
                         ws,
-                        OrderRouteSearchOptions.create(order.getId()),
+                        DriveRoutePlanOptions.Companion.newBuilder().build(),
                         new DriDataListener.ISearchCallBack() {
                             @Override
-                            public void onCalcRouteSuccess(CalcRouteResult calcRouteResult) {
-                                if (calcRouteResult.getRoutes() != null && !calcRouteResult.getRoutes().isEmpty()) {
-                                    routeData.addAll(calcRouteResult.getRoutes());
+                            public void onResultCallback(NavRoutePlan navRoutePlan, NavError navError) {
+                                if (navRoutePlan != null) {
+                                    List<NavDriveRoute> arrayList = navRoutePlan.getRoutes();
+                                    if (arrayList != null && !arrayList.isEmpty()) {
+                                        routeData.addAll(arrayList);
+                                    }
                                 }
                                 syncWaiting.countDown();
                             }
 
                             @Override
-                            public void onCalcRouteFailure(CalcRouteResult calcRouteResult) {
-                                syncWaiting.countDown();
-                            }
-
-                            @Override
-                            public void onParamsInvalid(int errCode, String errMsg) {
+                            public void onInternalError(int errCode, String errMsg) {
                                 syncWaiting.countDown();
                             }
                         }

@@ -5,11 +5,11 @@ import android.util.SparseArray;
 
 import com.tencent.map.lsdriver.TSLDExtendManager;
 import com.tencent.map.lspassenger.TSLPassengerManager;
-import com.tencent.map.navi.car.CarNaviView;
-import com.tencent.map.navi.car.TencentCarNaviManager;
 import com.tencent.mobility.R;
 import com.tencent.mobility.mock.MockDriver;
 import com.tencent.mobility.mock.MockPassenger;
+import com.tencent.navix.api.layer.NavigatorLayerRootDrive;
+import com.tencent.navix.api.navigator.NavigatorDrive;
 import com.tencent.tencentmap.mapsdk.maps.MapView;
 
 import java.util.ArrayList;
@@ -17,6 +17,7 @@ import java.util.List;
 
 public abstract class OneDriverNPassengerActivity extends OneDriverOnePassengerActivity {
 
+    public static final String ACTION_DRIVER_ORDER_CREATE_CARPOOLING = "创建拼车单";
     public static final String ACTION_PASSENGER_ACCOUNT_CHANGE = "切换账户";
     private final SparseArray<PassengerInfo> mPassengers = new SparseArray<>();
     private int mCurrentPassengerNo;
@@ -52,16 +53,7 @@ public abstract class OneDriverNPassengerActivity extends OneDriverOnePassengerA
 
     @Override
     protected final String[] getPassengerActionIndexes() {
-        String[] actionIndexes = getPassengerActionIndexes(getPassengerNumber());
-
-        if (actionIndexes != null) {
-            String[] newActionIndexes = new String[actionIndexes.length + 1];
-            newActionIndexes[0] = "功能";
-            System.arraycopy(actionIndexes, 0, newActionIndexes, 1, actionIndexes.length);
-            return newActionIndexes;
-        }
-
-        return super.getPassengerActionIndexes();
+        return getPassengerActionIndexes(getPassengerNumber());
     }
 
     public List<MockPassenger> getPassengers() {
@@ -95,7 +87,7 @@ public abstract class OneDriverNPassengerActivity extends OneDriverOnePassengerA
 
     @Override
     protected final void onCreatePassengerAction(MockPassenger passenger, TSLPassengerManager passengerSync,
-            PanelView passengerPanel, MapView mapView) {
+                                                 PanelView passengerPanel, NavigatorLayerRootDrive mapView) {
         passengerPanel.addAction(ACTION_PASSENGER_ACCOUNT_CHANGE, new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
@@ -120,13 +112,13 @@ public abstract class OneDriverNPassengerActivity extends OneDriverOnePassengerA
     }
 
     protected abstract void onCreatePassengerAction(int number, MockPassenger passenger,
-            TSLPassengerManager passengerSync,
-            PanelView passengerPanel, MapView mapView);
+                                                    TSLPassengerManager passengerSync,
+                                                    PanelView passengerPanel, NavigatorLayerRootDrive mapView);
 
     @Override
     protected void onCreateDriverAction(MockDriver driver, TSLDExtendManager driverSync,
-            PanelView driverPanel, CarNaviView carNaviView,
-            TencentCarNaviManager manager) {
+                                        PanelView driverPanel, NavigatorLayerRootDrive carNaviView,
+                                        NavigatorDrive manager) {
 
     }
 

@@ -26,14 +26,8 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".synchro_v2.driver.HitchHikeDriver"/>
-        <activity android:name=".synchro_v2.driver.FastDriver"/>
-        <activity android:name=".synchro_v2.driver.DriverNaviActivity"/>
-        <activity android:name=".synchro_v2.psg.PsgActivity"/>
         <activity android:name=".synchro_v2.psg.PassengerSelectRoutesActivity"/>
-        <activity android:name=".synchro_v2.driver.DriverRelayOrderActivity"/>
         <activity android:name=".search.SearchActivity"/>
-        <activity android:name=".synchro_v2.driver.CarpoolingDriver"/>
         <activity android:name=".spot.SpotActivity"/>
         <activity android:name=".spot.PoiSearchActivity"/>
         <activity android:name=".nearbycar.NearbyCarActivity"/>
@@ -43,7 +37,6 @@
         <activity android:name=".synchro_v2.HitchHikeOneVipActivity"/>
         <activity android:name=".synchro_v2.FastCarActivity"/>
         <activity android:name=".synchro_v2.FastCarNormalActivity"/>
-        <activity android:name=".synchro_v2.driver.DriverRelayOrderAsyncActivity"/>
     </application>
 
     <!-- 导航 SDK permission start -->

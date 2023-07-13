@@ -1,5 +1,7 @@
 package com.tencent.mobility.synchro_v2.driver;
 
+import static com.tencent.mobility.util.AnimatorUtils.setRouteTraffic;
+
 import android.os.Bundle;
 import android.text.TextUtils;
 
@@ -8,22 +10,16 @@ import androidx.annotation.Nullable;
 import com.tencent.map.lsdriver.TSLDExtendManager;
 import com.tencent.map.lsdriver.lsd.listener.DriDataListener;
 import com.tencent.map.lsdriver.lsd.listener.SimpleDriDataListener;
-import com.tencent.map.lsdriver.protocol.OrderRouteSearchOptions;
 import com.tencent.map.lspassenger.TSLPassengerManager;
 import com.tencent.map.lspassenger.lsp.listener.SimplePsgDataListener;
 import com.tencent.map.lssupport.bean.TLSBOrderStatus;
 import com.tencent.map.lssupport.bean.TLSBRoute;
+import com.tencent.map.lssupport.bean.TLSBRouteTrafficItem;
 import com.tencent.map.lssupport.bean.TLSConfigPreference;
 import com.tencent.map.lssupport.bean.TLSDFetchedData;
 import com.tencent.map.lssupport.bean.TLSLatlng;
 import com.tencent.map.lssupport.protocol.BaseSyncProtocol;
 import com.tencent.map.lssupport.utils.ConvertUtil;
-import com.tencent.map.navi.car.CarNaviView;
-import com.tencent.map.navi.car.NaviMode;
-import com.tencent.map.navi.car.TencentCarNaviManager;
-import com.tencent.map.navi.data.CalcRouteResult;
-import com.tencent.map.navi.data.RouteData;
-import com.tencent.map.navi.ui.car.CarNaviInfoPanel;
 import com.tencent.mobility.BaseActivity;
 import com.tencent.mobility.R;
 import com.tencent.mobility.mock.MockCar;
@@ -36,6 +32,19 @@ import com.tencent.mobility.util.CommonUtils;
 import com.tencent.mobility.util.ConvertUtils;
 import com.tencent.mobility.util.MapUtils;
 import com.tencent.mobility.util.SingleHelper;
+import com.tencent.navix.api.config.MultiRouteConfig;
+import com.tencent.navix.api.config.RouteElementConfig;
+import com.tencent.navix.api.layer.NavigatorLayerRootDrive;
+import com.tencent.navix.api.layer.NavigatorViewStub;
+import com.tencent.navix.api.map.MapApi;
+import com.tencent.navix.api.model.NavDriveRoute;
+import com.tencent.navix.api.model.NavError;
+import com.tencent.navix.api.model.NavMode;
+import com.tencent.navix.api.model.NavRoutePlan;
+import com.tencent.navix.api.navigator.NavigatorDrive;
+import com.tencent.navix.api.plan.DriveRoutePlanOptions;
+import com.tencent.navix.ui.NavigatorLayerViewDrive;
+import com.tencent.navix.ui.api.config.UIComponentConfig;
 import com.tencent.tencentmap.mapsdk.maps.MapView;
 import com.tencent.tencentmap.mapsdk.maps.TencentMap;
 import com.tencent.tencentmap.mapsdk.maps.model.BitmapDescriptorFactory;
@@ -54,9 +63,10 @@ import java.util.concurrent.CountDownLatch;
  */
 public class DriverRelayOrderActivity extends BaseActivity {
 
-    private CarNaviView mCarNaviView;
-    private MapView mMapView1;
-    private MapView mMapView2;
+    private NavigatorLayerRootDrive mCarNaviView;
+    private NavigatorLayerViewDrive mLayerDriverView;
+    private NavigatorLayerRootDrive mMapView1;
+    private NavigatorLayerRootDrive mMapView2;
 
     private PanelView mDriverPanel;
     private PanelView mPassengerAPanel;
@@ -73,16 +83,37 @@ public class DriverRelayOrderActivity extends BaseActivity {
     private MockSyncService mDriverSyncService;
     private MockSyncService mPassengerSyncService;
 
-    private TencentCarNaviManager mNaviManager;
+    private NavigatorDrive mNaviManager;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.relay_layout);
 
-        mCarNaviView = findViewById(R.id.navi_car_view);
-        mMapView1 = findViewById(R.id.map_view1);
-        mMapView2 = findViewById(R.id.map_view2);
+        NavigatorViewStub navigatorViewStub = findViewById(R.id.navi_car_view);
+        navigatorViewStub.inflate();
+        mCarNaviView = navigatorViewStub.getNavigatorView();
+        mLayerDriverView = new NavigatorLayerViewDrive(this);
+        mLayerDriverView.setUIComponentConfig(UIComponentConfig.builder()
+                .setComponentVisibility(UIComponentConfig.UIComponent.ENLARGE_INFO_VIEW, false)
+                .setComponentVisibility(UIComponentConfig.UIComponent.GUIDE_LANE_VIEW, false)
+                .setComponentVisibility(UIComponentConfig.UIComponent.MAP_TRAFFIC_SWITCH_VIEW, false)
+                .setComponentVisibility(UIComponentConfig.UIComponent.INFO_VIEW, false)
+                .setComponentVisibility(UIComponentConfig.UIComponent.ZOOM_CONTROLLER_VIEW, false)
+                .setComponentVisibility(UIComponentConfig.UIComponent.TTS_MUTE_SWITCH_VIEW, false)
+                .setComponentVisibility(UIComponentConfig.UIComponent.ROAD_LIMIT_VIEW, false)
+                .setComponentVisibility(UIComponentConfig.UIComponent.TRAFFIC_BAR_VIEW, false)
+                .setComponentVisibility(UIComponentConfig.UIComponent.BOTTOM_PANEL_VIEW, false)
+                .build());
+        mCarNaviView.addViewLayer(mLayerDriverView);
+
+        NavigatorViewStub navigatorViewStub1 = findViewById(R.id.map_view1);
+        navigatorViewStub1.inflate();
+        mMapView1 = navigatorViewStub1.getNavigatorView();
+
+        NavigatorViewStub navigatorViewStub2 = findViewById(R.id.map_view2);
+        navigatorViewStub2.inflate();
+        mMapView2 = navigatorViewStub2.getNavigatorView();
 
         mDriverPanel = findViewById(R.id.group_panel_driver);
         mPassengerAPanel = findViewById(R.id.group_panel_passenger_a);
@@ -94,18 +125,19 @@ public class DriverRelayOrderActivity extends BaseActivity {
     }
 
     private void initCurrentPassengerPanel() {
-        mPassengerA = MockSyncService.newRandomPassenger(mMapView1.getMap());
+        mPassengerA = MockSyncService.newRandomPassenger(mMapView1.getMapApi());
         mPassengerSyncA = TSLPassengerManager.newInstance();
         mPassengerSyncA.init(DriverRelayOrderActivity.this,
                 TLSConfigPreference.create().setDebuggable(true).setAccountId(mPassengerA.getId()));
+        mPassengerSyncA.setPullTimeInterval(3);
         mPassengerSyncService = new MockSyncService(mPassengerSyncA);
         mPassengerAPanel.init("当前乘客", "创建订单");
         mPassengerAPanel.addAction("创建订单", new PanelView.Action<String>("") {
             @Override
             public String run() {
                 mPassengerAPanel.postAction("开启同显");
-                mPassengerA.setPosition(MockSyncService.getRandomVisibleLatLng(mMapView1.getMap()));
-                MockOrder order = mPassengerSyncService.newOrder(mMapView1.getMap(), mPassengerA);
+                mPassengerA.setPosition(MockSyncService.getRandomVisibleLatLng(mMapView1.getMapApi().getProjection()));
+                MockOrder order = mPassengerSyncService.newOrder(mMapView1.getMapApi(), mPassengerA);
                 if (order != null && !TextUtils.isEmpty(order.getId())) {
                     mPassengerAPanel.postPrint("等待接驾");
                     mPassengerSyncA.getTLSPOrder().setOrderId(order.getId());
@@ -123,7 +155,7 @@ public class DriverRelayOrderActivity extends BaseActivity {
                     @Override
                     public void onPullLsInfoSuc(TLSDFetchedData fetchedData) {
                         if (fetchedData != null) {
-                            boolean ret = drawRoutesA(mMapView1.getMap(), mPassengerSyncA);
+                            boolean ret = drawRoutesA(mMapView1.getMapApi(), mPassengerSyncA);
                             mPassengerAPanel.print("绘制路线:" + ret);
                         }
                     }
@@ -141,16 +173,17 @@ public class DriverRelayOrderActivity extends BaseActivity {
     }
 
     private void initRelayPassengerPanel() {
-        mPassengerB = MockSyncService.newRandomPassenger(mMapView2.getMap());
+        mPassengerB = MockSyncService.newRandomPassenger(mMapView2.getMapApi());
         mPassengerSyncB = TSLPassengerManager.newInstance();
         mPassengerSyncB.init(DriverRelayOrderActivity.this,
                 TLSConfigPreference.create().setDebuggable(true).setAccountId(mPassengerB.getId()));
+        mPassengerSyncB.setPullTimeInterval(3);
         mPassengerBPanel.init("接力单乘客", "创建订单", "修改上车点");
         mPassengerBPanel.addAction("创建订单", new PanelView.Action<String>("") {
             @Override
             public String run() {
-                mPassengerB.setPosition(MockSyncService.getRandomVisibleLatLng(mMapView2.getMap()));
-                MockOrder order = mPassengerSyncService.newOrder(mMapView2.getMap(), mPassengerB);
+                mPassengerB.setPosition(MockSyncService.getRandomVisibleLatLng(mMapView2.getMapApi().getProjection()));
+                MockOrder order = mPassengerSyncService.newOrder(mMapView2.getMapApi(), mPassengerB);
                 if (order != null && !TextUtils.isEmpty(order.getId())) {
                     mPassengerBPanel.postPrint("等待接驾");
                     mPassengerSyncB.getOrderManager().editCurrent().setOrderId(order.getId());
@@ -168,7 +201,7 @@ public class DriverRelayOrderActivity extends BaseActivity {
                     @Override
                     public void onPullLsInfoSuc(TLSDFetchedData fetchedData) {
                         if (fetchedData != null && mPassengerSyncB.getOrderManager().getOrderStatus() == 2) {
-                            boolean ret = drawRoutesB(mMapView2.getMap(), mPassengerSyncB);
+                            boolean ret = drawRoutesB(mMapView2.getMapApi(), mPassengerSyncB);
                             mPassengerBPanel.print("绘制路线:" + ret);
                         }
                     }
@@ -191,7 +224,7 @@ public class DriverRelayOrderActivity extends BaseActivity {
                 if (orderB == null) {
                     return false;
                 }
-                orderB.setBegin(MockSyncService.getRandomVisibleLatLng(mMapView2.getMap()));
+                orderB.setBegin(MockSyncService.getRandomVisibleLatLng(mMapView2.getMapApi().getProjection()));
                 mPassengerBPanel.print("修改上车点");
                 mDriverPanel.postAction("修改起点重新规划路线");
                 return true;
@@ -201,46 +234,39 @@ public class DriverRelayOrderActivity extends BaseActivity {
 
     private void initDriverPanel() {
         mNaviManager = SingleHelper.getNaviManager(this);
-        mNaviManager.setMulteRoutes(true);
-        mNaviManager.addNaviView(mCarNaviView);
-        mCarNaviView.setNaviMapActionCallback(mNaviManager);
-        mCarNaviView.setNaviMode(NaviMode.MODE_REMAINING_OVERVIEW);
-        // 使用默认UI
-        CarNaviInfoPanel carNaviInfoPanel = mCarNaviView.showNaviInfoPanel();
-        // 控制默认 UI 内的控件的显示和隐藏
-        if (carNaviInfoPanel != null) {
-            CarNaviInfoPanel.NaviInfoPanelConfig config = new CarNaviInfoPanel.NaviInfoPanelConfig();
-            config.setRerouteViewEnable(true);
-            carNaviInfoPanel.setNaviInfoPanelConfig(config);
-        }
-        int margin = CommonUtils.getWidth(this) / 3;
-        mCarNaviView.setEnlargedIntersectionRegionMargin(margin, 0, margin);
-        mCarNaviView.setNavigationPanelVisible(false);
+        mNaviManager.setMultiRouteConfig(MultiRouteConfig.builder()
+                .setMultiRouteEnable(true)
+                .setShowMultiRouteOnNavStart(false)
+                .build());
+        mNaviManager.bindView(mCarNaviView);
+        mCarNaviView.setNavMode(NavMode.MODE_OVERVIEW);
+        mCarNaviView.setRouteElementConfig(RouteElementConfig.builder()
+                .setTurnArrowEnable(false)
+                .setTrafficBubbleEnable(false)
+                .setTrafficLightEnable(false)
+                .setCameraDistanceEnable(false)
+                .setCameraMarkerEnable(false)
+                .build());
 
         MockCar car = MockSyncService.newRandomCar();
-        mDriver = MockSyncService.newRandomDriver(mCarNaviView.getMap(), car);
+        mDriver = MockSyncService.newRandomDriver(mCarNaviView.getMapApi(), car);
         mDriverSync = TSLDExtendManager.newInstance();
         mDriverSyncService = new MockSyncService(mDriverSync);
         mDriverSync.init(DriverRelayOrderActivity.this,
                 TLSConfigPreference.create().setDebuggable(true).setAccountId(mDriver.getId()));
         mDriverSync.setNaviManager(mNaviManager);
-        mDriverSync.setCarNaviView(mCarNaviView);
-        mDriverPanel.init("司机","乘客送达");
+        mDriverPanel.init("司机", "乘客送达");
 
         mDriverPanel.addAction("绑定订单", new PanelView.Action<String>("") {
             @Override
             public String run() {
-                mDriver.setPosition(MockSyncService.getRandomVisibleLatLng(mCarNaviView.getMap()));
+                mDriver.setPosition(MockSyncService.getRandomVisibleLatLng(mCarNaviView.getMapApi().getProjection()));
                 MockOrder order = mDriverSyncService.getOrder(mPassengerA);
                 order.setStatus(MockOrder.Status.Waiting);
                 mDriverSync.getTLSBOrder().setOrderId(order.getId());
                 if (order.isWaiting()) {
-                    mDriverSync.getTLSBOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusNone);
-                    mPassengerSyncA.getTLSPOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusNone);
                     order = mDriverSyncService.acceptPassenger(mDriver, mPassengerA);
                     if (order.isAccepted()) {
-                        mDriverSync.getTLSBOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusPickUp);
-                        mPassengerSyncA.getTLSPOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusPickUp);
                         mDriverPanel.print("当前订单接驾中");
                         order = mDriverSyncService.onTheWayPassenger(mDriver, mPassengerA);
                         if (order.isOnTheWay()) {
@@ -274,35 +300,31 @@ public class DriverRelayOrderActivity extends BaseActivity {
             public Boolean run() {
                 final MockOrder orderA = mDriverSyncService.getOrder(mPassengerA);
                 final CountDownLatch syncWaiting = new CountDownLatch(1);
-                final List<RouteData> routeData = new ArrayList<>();
+                final List<NavDriveRoute> routeData = new ArrayList<>();
 
                 // 当前送驾路线
-                mDriverSync.searchCarRoutes(
+                mDriverSync.searchCarRoutes(orderA.getId(),
                         ConvertUtils.toNaviPoi(orderA.getBegin()),
                         ConvertUtils.toNaviPoi(orderA.getEnd()),
                         new ArrayList<>(),
-                        OrderRouteSearchOptions.create(orderA.getId()),
+                        DriveRoutePlanOptions.Companion.newBuilder().build(),
                         new DriDataListener.ISearchCallBack() {
                             @Override
-                            public void onParamsInvalid(int errCode, String errMsg) {
+                            public void onInternalError(int errCode, String errMsg) {
                                 syncWaiting.countDown();
                             }
 
                             @Override
-                            public void onCalcRouteSuccess(CalcRouteResult calcRouteResult) {
-                                List<RouteData> arrayList = calcRouteResult.getRoutes();
-                                if (arrayList != null && !arrayList.isEmpty()) {
-                                    routeData.add(arrayList.get(0));
+                            public void onResultCallback(NavRoutePlan navRoutePlan, NavError navError) {
+                                if (navRoutePlan != null) {
+                                    List<NavDriveRoute> arrayList = navRoutePlan.getRoutes();
+                                    if (arrayList != null && !arrayList.isEmpty()) {
+                                        routeData.addAll(arrayList);
+                                    }
                                 }
                                 syncWaiting.countDown();
                             }
-
-                            @Override
-                            public void onCalcRouteFailure(CalcRouteResult calcRouteResult) {
-                                syncWaiting.countDown();
-                            }
-                        }
-                );
+                        });
 
                 try {
                     syncWaiting.await();
@@ -312,15 +334,17 @@ public class DriverRelayOrderActivity extends BaseActivity {
 
                 mDriverSync.getRouteManager().useRouteIndex(0);
                 mDriverPanel.print("当前线路：" + routeData.get(0).getRouteId());
+                mDriverPanel.postAction("上报路线");
 
                 try {
-                    mNaviManager.startSimulateNavi(0);
+                    mNaviManager.simulator().setEnable(true);
+                    mNaviManager.startNavigation(mDriverSync.getRouteManager().getRouteId());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                MapUtils.fitsWithRoute(mCarNaviView.getMap(), ConvertUtils.transformLatLngs(mDriverSync.getRouteManager().getPoints()),
+                MapUtils.fitsWithRoute(mCarNaviView.getMapApi(), ConvertUtils.transformLatLngs(mDriverSync.getRouteManager().getPoints()),
                         25, 25, 25, 25);
-                return routeData.size() == 1;
+                return routeData.size() >= 1;
             }
         });
 
@@ -328,38 +352,35 @@ public class DriverRelayOrderActivity extends BaseActivity {
             @Override
             public Boolean run() {
                 final MockOrder orderA = mDriverSyncService.getOrder(mPassengerA);
-                final List<RouteData> routeData = new ArrayList<>();
+                final List<NavDriveRoute> routeData = new ArrayList<>();
                 final MockOrder orderB = mDriverSyncService.getOrder(mPassengerB);
                 final CountDownLatch syncWaiting2 = new CountDownLatch(1);
                 // 接力单路线
-                mDriverSync.searchCarRoutes(
+                mDriverSync.searchCarRoutes(orderB.getId(),
                         ConvertUtils.toNaviPoi(orderA.getEnd()),
                         ConvertUtils.toNaviPoi(orderB.getBegin()),
                         new ArrayList<>(),
-                        OrderRouteSearchOptions.create(orderB.getId()),
+                        DriveRoutePlanOptions.Companion.newBuilder().build(),
                         new DriDataListener.ISearchCallBack() {
                             @Override
-                            public void onParamsInvalid(int errCode, String errMsg) {
-                                syncWaiting2.countDown();
-                            }
+                            public void onResultCallback(NavRoutePlan navRoutePlan, NavError navError) {
+                                if (navRoutePlan != null) {
+                                    List<NavDriveRoute> arrayList = navRoutePlan.getRoutes();
+                                    if (arrayList != null && !arrayList.isEmpty()) {
+                                        NavDriveRoute routeData1 = arrayList.get(0);
+                                        // 司机端核心步骤：
+                                        mDriverSync.getRouteManager()
+                                                .editRelayRoute(routeData1.getRouteId())
+                                                .setRelayOrderRoute(true);
+                                        routeData.add(arrayList.get(0));
 
-                            @Override
-                            public void onCalcRouteSuccess(CalcRouteResult calcRouteResult) {
-                                List<RouteData> arrayList = calcRouteResult.getRoutes();
-                                if (arrayList != null && !arrayList.isEmpty()) {
-                                    RouteData routeData1 = arrayList.get(0);
-                                    // 司机端核心步骤：
-                                    mDriverSync.getRouteManager()
-                                            .editRelayRoute(routeData1.getRouteId())
-                                            .setRelayOrderRoute(true);
-                                    routeData.add(arrayList.get(0));
-
+                                    }
                                 }
                                 syncWaiting2.countDown();
                             }
 
                             @Override
-                            public void onCalcRouteFailure(CalcRouteResult calcRouteResult) {
+                            public void onInternalError(int errCode, String errMsg) {
                                 syncWaiting2.countDown();
                             }
                         }
@@ -381,31 +402,28 @@ public class DriverRelayOrderActivity extends BaseActivity {
             public Boolean run() {
                 final MockOrder orderA = mDriverSyncService.getOrder(mPassengerA);
                 final MockOrder orderB = mDriverSyncService.getOrder(mPassengerB);
-                final List<RouteData> routeData = new ArrayList<>();
+                final List<NavDriveRoute> routeData = new ArrayList<>();
                 final CountDownLatch syncWaiting = new CountDownLatch(1);
                 // 接力单路线
-                mDriverSync.searchCarRoutes(
+                mDriverSync.searchCarRoutes(orderB.getId(),
                         ConvertUtils.toNaviPoi(orderA.getEnd()),
                         ConvertUtils.toNaviPoi(orderB.getBegin()),
                         new ArrayList<>(),
-                        OrderRouteSearchOptions.create(orderB.getId()),
+                        DriveRoutePlanOptions.Companion.newBuilder().build(),
                         new DriDataListener.ISearchCallBack() {
                             @Override
-                            public void onParamsInvalid(int errCode, String errMsg) {
-                                syncWaiting.countDown();
-                            }
-
-                            @Override
-                            public void onCalcRouteSuccess(CalcRouteResult calcRouteResult) {
-                                List<RouteData> arrayList = calcRouteResult.getRoutes();
-                                if (arrayList != null && !arrayList.isEmpty()) {
-                                    routeData.addAll(arrayList);
+                            public void onResultCallback(NavRoutePlan navRoutePlan, NavError navError) {
+                                if (navRoutePlan != null) {
+                                    List<NavDriveRoute> arrayList = navRoutePlan.getRoutes();
+                                    if (arrayList != null && !arrayList.isEmpty()) {
+                                        routeData.addAll(arrayList);
+                                    }
                                 }
                                 syncWaiting.countDown();
                             }
 
                             @Override
-                            public void onCalcRouteFailure(CalcRouteResult calcRouteResult) {
+                            public void onInternalError(int errCode, String errMsg) {
                                 syncWaiting.countDown();
                             }
                         }
@@ -420,11 +438,12 @@ public class DriverRelayOrderActivity extends BaseActivity {
                 mDriverSync.getRouteManager().useRouteIndex(0);
                 mDriverPanel.postAction("上报路线");
                 try {
-                    mNaviManager.startSimulateNavi(0);
+                    mNaviManager.simulator().setEnable(true);
+                    mNaviManager.startNavigation(mDriverSync.getRouteManager().getRouteId());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                MapUtils.fitsWithRoute(mCarNaviView.getMap(), ConvertUtils.transformLatLngs(mDriverSync.getRouteManager().getPoints()),
+                MapUtils.fitsWithRoute(mCarNaviView.getMapApi(), ConvertUtils.transformLatLngs(mDriverSync.getRouteManager().getPoints()),
                         25, 25, 25, 25);
                 return routeData.size() >= 1;
             }
@@ -435,35 +454,32 @@ public class DriverRelayOrderActivity extends BaseActivity {
             public Boolean run() {
                 final MockOrder orderA = mDriverSyncService.getOrder(mPassengerA);
                 final MockOrder orderB = mDriverSyncService.getOrder(mPassengerB);
-                final List<RouteData> routeData = new ArrayList<>();
+                final List<NavDriveRoute> routeData = new ArrayList<>();
                 final CountDownLatch syncWaiting = new CountDownLatch(1);
                 // 接力单路线
-                mDriverSync.searchCarRoutes(
+                mDriverSync.searchCarRoutes(orderB.getId(),
                         ConvertUtils.toNaviPoi(orderA.getEnd()),
                         ConvertUtils.toNaviPoi(orderB.getBegin()),
                         new ArrayList<>(),
-                        OrderRouteSearchOptions.create(orderB.getId()),
+                        DriveRoutePlanOptions.Companion.newBuilder().build(),
                         new DriDataListener.ISearchCallBack() {
                             @Override
-                            public void onParamsInvalid(int errCode, String errMsg) {
-                                syncWaiting.countDown();
-                            }
-
-                            @Override
-                            public void onCalcRouteSuccess(CalcRouteResult calcRouteResult) {
-                                List<RouteData> arrayList = calcRouteResult.getRoutes();
-                                if (arrayList != null && !arrayList.isEmpty()) {
-                                    RouteData routeData1 = arrayList.get(0);
-                                    mDriverSync.getRouteManager()
-                                            .editRelayRoute(routeData1.getRouteId())
-                                            .setRelayOrderRoute(true);
-                                    routeData.add(arrayList.get(0));
+                            public void onResultCallback(NavRoutePlan navRoutePlan, NavError navError) {
+                                if (navRoutePlan != null) {
+                                    List<NavDriveRoute> arrayList = navRoutePlan.getRoutes();
+                                    if (arrayList != null && !arrayList.isEmpty()) {
+                                        NavDriveRoute routeData1 = arrayList.get(0);
+                                        mDriverSync.getRouteManager()
+                                                .editRelayRoute(routeData1.getRouteId())
+                                                .setRelayOrderRoute(true);
+                                        routeData.add(arrayList.get(0));
+                                    }
                                 }
                                 syncWaiting.countDown();
                             }
 
                             @Override
-                            public void onCalcRouteFailure(CalcRouteResult calcRouteResult) {
+                            public void onInternalError(int errCode, String errMsg) {
                                 syncWaiting.countDown();
                             }
                         }
@@ -476,7 +492,7 @@ public class DriverRelayOrderActivity extends BaseActivity {
 
                 mDriverPanel.print("路线总数：" + routeData.size());
                 mDriverPanel.postAction("上报路线");
-                MapUtils.fitsWithRoute(mCarNaviView.getMap(), ConvertUtils.transformLatLngs(mDriverSync.getRouteManager().getPoints()),
+                MapUtils.fitsWithRoute(mCarNaviView.getMapApi(), ConvertUtils.transformLatLngs(mDriverSync.getRouteManager().getPoints()),
                         25, 25, 25, 25);
                 return routeData.size() >= 1;
             }
@@ -546,7 +562,7 @@ public class DriverRelayOrderActivity extends BaseActivity {
                 mDriverSync.removeRelayOrder();
                 mDriverPanel.print("需重新规划接乘客路线");
                 mPassengerSyncA.destroy();
-                mNaviManager.stopSimulateNavi();
+                mNaviManager.stopNavigation();
                 mDriverPanel.postAction("送达乘客重新规划路线");
                 return true;
             }
@@ -556,7 +572,8 @@ public class DriverRelayOrderActivity extends BaseActivity {
     Polyline polylineA = null;
     Marker aMarkerStart = null;
     Marker aMarkerEnd = null;
-    private boolean drawRoutesA(TencentMap map, BaseSyncProtocol manager) {
+
+    private boolean drawRoutesA(MapApi map, BaseSyncProtocol manager) {
         List<TLSLatlng> latlngs = manager.getRouteManager().getPoints();
         if (latlngs == null || latlngs.isEmpty()) {
             return false;
@@ -567,8 +584,14 @@ public class DriverRelayOrderActivity extends BaseActivity {
         if (polylineA != null) {
             polylineA.remove();
         }
+        List<TLSBRouteTrafficItem> trafficItems = manager.getRouteManager().getUsingRoute()
+                .getTrafficItemsWithInternalRoute();
+        int[] colors = new int[trafficItems.size()];
+        int[] indexes = new int[trafficItems.size()];
+        setRouteTraffic(trafficItems, indexes, colors);
         polylineA = map.addPolyline(new PolylineOptions()
                 .width(20)
+                .colors(colors, indexes)
                 .arrow(true)
                 .addAll(mapLatLngs));
         if (aMarkerStart != null) {
@@ -591,7 +614,7 @@ public class DriverRelayOrderActivity extends BaseActivity {
     Polyline polylineB2 = null;
     Marker markerB2 = null;
 
-    private boolean drawRoutesB(TencentMap map, BaseSyncProtocol manager) {
+    private boolean drawRoutesB(MapApi map, BaseSyncProtocol manager) {
         List<TLSLatlng> latlngs = manager.getRouteManager().getPoints();
         if (latlngs == null || latlngs.isEmpty()) {
             return false;
@@ -602,8 +625,14 @@ public class DriverRelayOrderActivity extends BaseActivity {
         if (polylineB1 != null) {
             polylineB1.remove();
         }
+        List<TLSBRouteTrafficItem> trafficItems = manager.getRouteManager().getUsingRoute()
+                .getTrafficItemsWithInternalRoute();
+        int[] colors = new int[trafficItems.size()];
+        int[] indexes = new int[trafficItems.size()];
+        setRouteTraffic(trafficItems, indexes, colors);
         polylineB1 = map.addPolyline(new PolylineOptions()
                 .width(20)
+                .colors(colors, indexes)
                 .arrow(true)
                 .addAll(mapLatLngs));
         if (polylineB2 != null) {
@@ -616,9 +645,13 @@ public class DriverRelayOrderActivity extends BaseActivity {
                 return false;
             }
             all.addAll(others);
+            List<TLSBRouteTrafficItem> trafficItems1 = route.getTrafficItemsWithInternalRoute();
+            int[] colors1 = new int[trafficItems1.size()];
+            int[] indexes1 = new int[trafficItems1.size()];
+            setRouteTraffic(trafficItems1, indexes1, colors1);
             polylineB2 = map.addPolyline(new PolylineOptions()
                     .width(10)
-                    .color(0xFF00FF00)
+                    .colors(colors1, indexes1)
                     .addAll(others));
             if (markerB2 != null) {
                 markerB2.remove();
@@ -677,9 +710,9 @@ public class DriverRelayOrderActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mNaviManager.stopSimulateNavi();
-        mNaviManager.stopNavi();
-        mNaviManager.removeNaviView(mCarNaviView);
+        mNaviManager.stopNavigation();
+        mNaviManager.unbindView(mCarNaviView);
+        mCarNaviView.removeViewLayer(mLayerDriverView);
         mCarNaviView.onDestroy();
         mMapView1.onDestroy();
         mMapView2.onDestroy();

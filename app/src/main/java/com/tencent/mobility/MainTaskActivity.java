@@ -14,9 +14,7 @@ import com.tencent.mobility.synchro_v2.HitchHikeNormalActivity;
 import com.tencent.mobility.synchro_v2.HitchHikeOneVipActivity;
 import com.tencent.mobility.synchro_v2.driver.DriverRelayOrderActivity;
 import com.tencent.mobility.synchro_v2.driver.DriverRelayOrderAsyncActivity;
-import com.tencent.mobility.synchro_v2.driver.FastDriver;
 import com.tencent.mobility.synchro_v2.psg.PassengerSelectRoutesActivity;
-import com.tencent.mobility.synchro_v2.psg.PsgActivity;
 import com.tencent.mobility.util.CommonUtils;
 
 public class MainTaskActivity extends BaseActivity {
@@ -35,16 +33,6 @@ public class MainTaskActivity extends BaseActivity {
     public void OnHitchHikeMulti(View view) {
         // 顺风车-多人
         CommonUtils.toIntent(this, HitchHikeNormalActivity.class);
-    }
-
-    public void onFastDri(View view) {
-        // 快车-司机端
-        CommonUtils.toIntent(this, FastDriver.class);
-    }
-
-    public void onFastPsg(View view) {
-        // 快车-乘客端
-        CommonUtils.toIntent(this, PsgActivity.class);
     }
 
     public void onFastCar(View view) {

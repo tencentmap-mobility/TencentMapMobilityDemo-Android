@@ -2,13 +2,12 @@ package com.tencent.mobility.synchro_v2;
 
 import com.tencent.map.lsdriver.TSLDExtendManager;
 import com.tencent.map.lspassenger.TSLPassengerManager;
-import com.tencent.map.navi.car.CarNaviView;
-import com.tencent.map.navi.car.TencentCarNaviManager;
 import com.tencent.mobility.mock.MockDriver;
 import com.tencent.mobility.mock.MockPassenger;
 import com.tencent.mobility.ui.OneDriverOnePassengerActivity;
 import com.tencent.mobility.ui.PanelView;
-import com.tencent.tencentmap.mapsdk.maps.MapView;
+import com.tencent.navix.api.layer.NavigatorLayerRootDrive;
+import com.tencent.navix.api.navigator.NavigatorDrive;
 
 public class FastCarActivity extends OneDriverOnePassengerActivity {
 
@@ -40,12 +39,12 @@ public class FastCarActivity extends OneDriverOnePassengerActivity {
     }
 
     @Override
-    protected void onCreatePassengerAction(MockPassenger passenger, TSLPassengerManager passengerSync, PanelView passengerPanel, MapView mapView) {
+    protected void onCreatePassengerAction(MockPassenger passenger, TSLPassengerManager passengerSync, PanelView passengerPanel, NavigatorLayerRootDrive mapView) {
 
     }
 
     @Override
-    protected void onCreateDriverAction(MockDriver driver, TSLDExtendManager driverSync, PanelView driverPanel, CarNaviView carNaviView, TencentCarNaviManager manager) {
+    protected void onCreateDriverAction(MockDriver driver, TSLDExtendManager driverSync, PanelView driverPanel, NavigatorLayerRootDrive carNaviView, NavigatorDrive manager) {
 
     }
 }

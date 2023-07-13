@@ -9,14 +9,13 @@ import com.tencent.map.lspassenger.lsp.listener.SimplePsgDataListener;
 import com.tencent.map.lssupport.bean.TLSDFetchedData;
 import com.tencent.map.lssupport.bean.TLSLatlng;
 import com.tencent.map.lssupport.utils.ConvertUtil;
-import com.tencent.map.navi.car.CarNaviView;
-import com.tencent.map.navi.car.TencentCarNaviManager;
 import com.tencent.mobility.mock.MockDriver;
 import com.tencent.mobility.mock.MockPassenger;
 import com.tencent.mobility.mock.MockSyncService;
 import com.tencent.mobility.ui.OneDriverOnePassengerActivity;
 import com.tencent.mobility.ui.PanelView;
-import com.tencent.tencentmap.mapsdk.maps.MapView;
+import com.tencent.navix.api.layer.NavigatorLayerRootDrive;
+import com.tencent.navix.api.navigator.NavigatorDrive;
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
 
 public class ChangeDestinationActivity extends OneDriverOnePassengerActivity {
@@ -66,7 +65,7 @@ public class ChangeDestinationActivity extends OneDriverOnePassengerActivity {
     protected void onCreatePassengerAction(final MockPassenger passenger,
                                            final TSLPassengerManager passengerSync,
                                            final PanelView passengerPanel,
-                                           final MapView mapView) {
+                                           final NavigatorLayerRootDrive mapView) {
 
         passengerSync.addTLSPassengerListener(new SimplePsgDataListener() {
 
@@ -98,7 +97,7 @@ public class ChangeDestinationActivity extends OneDriverOnePassengerActivity {
         passengerPanel.addAction(ACTION_CHANGE_DEST, new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
-                LatLng latLng = MockSyncService.getRandomVisibleLatLng(mapView.getMap());
+                LatLng latLng = MockSyncService.getRandomVisibleLatLng(mapView.getMapApi().getProjection());
                 passengerSync.changeDestination(ConvertUtil.toTLSLatLng(latLng));
                 return true;
             }
@@ -111,8 +110,8 @@ public class ChangeDestinationActivity extends OneDriverOnePassengerActivity {
     protected void onCreateDriverAction(final MockDriver driver,
                                         final TSLDExtendManager driverSync,
                                         final PanelView driverPanel,
-                                        final CarNaviView carNaviView,
-                                        final TencentCarNaviManager manager) {
+                                        final NavigatorLayerRootDrive carNaviView,
+                                        final NavigatorDrive manager) {
 
         driverSync.addTLSDriverListener(new SimpleDriDataListener() {
 
@@ -156,7 +155,7 @@ public class ChangeDestinationActivity extends OneDriverOnePassengerActivity {
         driverPanel.addAction(ACTION_CHANGE_DEST, new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
-                LatLng latLng = MockSyncService.getRandomVisibleLatLng(carNaviView.getMap());
+                LatLng latLng = MockSyncService.getRandomVisibleLatLng(carNaviView.getMapApi().getProjection());
                 driverNewDest = ConvertUtil.toTLSLatLng(latLng);
                 driverSync.changeDestination(driverNewDest);
                 return true;

@@ -4,14 +4,9 @@ import android.text.TextUtils;
 
 import com.tencent.map.lsdriver.TSLDExtendManager;
 import com.tencent.map.lsdriver.lsd.listener.DriDataListener;
-import com.tencent.map.lsdriver.protocol.OrderRouteSearchOptions;
 import com.tencent.map.lspassenger.TSLPassengerManager;
 import com.tencent.map.lssupport.bean.TLSBWayPointType;
 import com.tencent.map.lssupport.bean.TLSDWayPointInfo;
-import com.tencent.map.navi.car.CarNaviView;
-import com.tencent.map.navi.car.TencentCarNaviManager;
-import com.tencent.map.navi.data.CalcRouteResult;
-import com.tencent.map.navi.data.RouteData;
 import com.tencent.mobility.mock.MockCar;
 import com.tencent.mobility.mock.MockDriver;
 import com.tencent.mobility.mock.MockOrder;
@@ -19,7 +14,12 @@ import com.tencent.mobility.mock.MockPassenger;
 import com.tencent.mobility.ui.OneDriverOnePassengerActivity;
 import com.tencent.mobility.ui.PanelView;
 import com.tencent.mobility.util.ConvertUtils;
-import com.tencent.tencentmap.mapsdk.maps.MapView;
+import com.tencent.navix.api.layer.NavigatorLayerRootDrive;
+import com.tencent.navix.api.model.NavDriveRoute;
+import com.tencent.navix.api.model.NavError;
+import com.tencent.navix.api.model.NavRoutePlan;
+import com.tencent.navix.api.navigator.NavigatorDrive;
+import com.tencent.navix.api.plan.DriveRoutePlanOptions;
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
 
 import java.util.ArrayList;
@@ -60,14 +60,14 @@ public class HitchHikeOneVipActivity extends OneDriverOnePassengerActivity {
                 ACTION_NAVI_SIMULATOR_OPEN,
                 ACTION_NAVI_SIMULATOR_CLOSE,
                 ACTION_NAVI_CLOSE,
+
         };
     }
 
     @Override
     protected void onCreatePassengerAction(MockPassenger passenger, TSLPassengerManager passengerSync,
-            PanelView passengerPanel, MapView mapView) {
+                                           PanelView passengerPanel, NavigatorLayerRootDrive mapView) {
 
-        //设置乘客固定起终点
         passenger.setStart(new LatLng(40.042879, 116.270723));
         passenger.setEnd(new LatLng(40.098958, 116.27824));
 
@@ -75,13 +75,11 @@ public class HitchHikeOneVipActivity extends OneDriverOnePassengerActivity {
 
     @Override
     protected void onCreateDriverAction(MockDriver driver, TSLDExtendManager driverSync,
-            PanelView driverPanel, CarNaviView carNaviView,
-            TencentCarNaviManager manager) {
-        //设置司机的类型
+                                        PanelView driverPanel, NavigatorLayerRootDrive carNaviView,
+                                        NavigatorDrive manager) {
         driver.setCarType(MockCar.CarType.All);
         driver.setBizType(MockCar.BizType.HitchHikeDriver);
 
-        //设置司机固定起终点
         driver.setStart(new LatLng(40.002229, 116.323806));
         driver.setEnd(new LatLng(40.103269, 116.269314));
 
@@ -113,30 +111,26 @@ public class HitchHikeOneVipActivity extends OneDriverOnePassengerActivity {
                 }
 
                 final CountDownLatch syncWaiting = new CountDownLatch(1);
-                final List<RouteData> routeData = new ArrayList<>();
-                driverSync.searchCarRoutes(
+                final List<NavDriveRoute> routeData = new ArrayList<>();
+                driverSync.searchCarRoutes(order.getId(),
                         ConvertUtils.toNaviPoi(order.getBegin()),
                         ConvertUtils.toNaviPoi(order.getEnd()),
                         ws,
-                        OrderRouteSearchOptions
-                                .create(order.getId())
-                                .rejectWayPoint(ws.toArray(new TLSDWayPointInfo[0])),
+                        DriveRoutePlanOptions.Companion.newBuilder().build(),
                         new DriDataListener.ISearchCallBack() {
                             @Override
-                            public void onCalcRouteSuccess(CalcRouteResult calcRouteResult) {
-                                if (calcRouteResult.getRoutes() != null && !calcRouteResult.getRoutes().isEmpty()) {
-                                    routeData.addAll(calcRouteResult.getRoutes());
+                            public void onResultCallback(NavRoutePlan navRoutePlan, NavError navError) {
+                                if (navRoutePlan != null ) {
+                                    List<NavDriveRoute> arrayList = navRoutePlan.getRoutes();
+                                    if (arrayList != null && !arrayList.isEmpty()) {
+                                        routeData.addAll(arrayList);
+                                    }
                                 }
                                 syncWaiting.countDown();
                             }
 
                             @Override
-                            public void onCalcRouteFailure(CalcRouteResult calcRouteResult) {
-                                syncWaiting.countDown();
-                            }
-
-                            @Override
-                            public void onParamsInvalid(int errCode, String errMsg) {
+                            public void onInternalError(int errCode, String errMsg) {
                                 syncWaiting.countDown();
                             }
                         }

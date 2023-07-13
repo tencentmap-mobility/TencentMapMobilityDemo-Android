@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
 
     <FrameLayout
@@ -9,10 +10,11 @@
         android:layout_height="wrap_content"
         android:layout_weight="1">
 
-        <com.tencent.map.navi.car.CarNaviView
+        <com.tencent.navix.api.layer.NavigatorViewStub
             android:id="@+id/navi_car_view"
+            android:layout_height="match_parent"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            app:travel_mode="Driving" />
 
         <include
             android:id="@+id/group_panel_driver"
@@ -29,10 +31,11 @@
         android:layout_height="wrap_content"
         android:layout_weight="1">
 
-        <com.tencent.tencentmap.mapsdk.maps.MapView
+        <com.tencent.navix.api.layer.NavigatorViewStub
             android:id="@+id/map_view1"
+            android:layout_height="match_parent"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            app:travel_mode="Driving" />
 
         <include
             android:id="@+id/group_panel_passenger"

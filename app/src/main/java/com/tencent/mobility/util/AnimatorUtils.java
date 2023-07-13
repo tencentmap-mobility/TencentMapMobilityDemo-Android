@@ -16,7 +16,7 @@ import com.tencent.map.lssupport.bean.TLSBRouteTrafficItem;
 import com.tencent.map.lssupport.bean.TLSLatlng;
 import com.tencent.map.lssupport.utils.ConvertUtil;
 import com.tencent.mobility.R;
-import com.tencent.tencentmap.mapsdk.maps.TencentMap;
+import com.tencent.navix.api.map.MapApi;
 import com.tencent.tencentmap.mapsdk.maps.model.BitmapDescriptorFactory;
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
 import com.tencent.tencentmap.mapsdk.maps.model.Marker;
@@ -56,7 +56,7 @@ public class AnimatorUtils {
         eraseInfoMap.clear();
     }
 
-    public static void updateDriverInfo(TencentMap tencentMap, TLSBRoute route, TLSBOrder order, List<TLSBDriverPosition> pos) {
+    public static void updateDriverInfo(MapApi tencentMap, TLSBRoute route, TLSBOrder order, List<TLSBDriverPosition> pos) {
         if (route == null || order == null || pos == null) {
             Log.e(TAG, "pull detailed info null.");
             return;
@@ -127,7 +127,7 @@ public class AnimatorUtils {
         }
     }
 
-    private static void setRouteTraffic(List<TLSBRouteTrafficItem> trafficItems, int[] indexes, int[] colors) {
+    public static void setRouteTraffic(List<TLSBRouteTrafficItem> trafficItems, int[] indexes, int[] colors) {
         for (int i = 0; i < trafficItems.size(); i++) {
             TLSBRouteTrafficItem item = trafficItems.get(i);
             int colorInt = item.getColor();
@@ -222,7 +222,7 @@ public class AnimatorUtils {
 
 
     // 平滑动画只需要使用一个marker即可
-    private static void addDriverCar(TencentMap tencentMap, List<TLSBDriverPosition> points) {
+    private static void addDriverCar(MapApi tencentMap, List<TLSBDriverPosition> points) {
         if (carMarker == null) {
             carMarker = tencentMap.addMarker(
                     new MarkerOptions(new LatLng(points.get(0).getLatitude(), points.get(0).getLongitude()))
