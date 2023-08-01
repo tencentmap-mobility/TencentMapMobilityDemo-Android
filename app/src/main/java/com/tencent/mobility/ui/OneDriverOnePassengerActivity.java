@@ -1260,6 +1260,14 @@ public abstract class OneDriverOnePassengerActivity extends BaseActivity {
                             .setEnable(true);
                     mNaviManager.startNavigation(mDriverSync.getRouteManager().getRouteId());
                     mDriverSync.switchToNetConfig(false);
+                    if (!mDriverLines.isEmpty()) {
+                        for (String routeId : mDriverLines.keySet()) {
+                            Polyline polyline = mDriverLines.get(routeId);
+                            if (polyline != null) {
+                                polyline.remove();
+                            }
+                        }
+                    }
                     return true;
                 } catch (Exception e) {
                     e.printStackTrace();

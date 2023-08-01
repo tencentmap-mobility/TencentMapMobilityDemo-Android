@@ -572,6 +572,7 @@ public class DriverRelayOrderActivity extends BaseActivity {
     Polyline polylineA = null;
     Marker aMarkerStart = null;
     Marker aMarkerEnd = null;
+    String curRouteIdA = null;
 
     private boolean drawRoutesA(MapApi map, BaseSyncProtocol manager) {
         List<TLSLatlng> latlngs = manager.getRouteManager().getPoints();
@@ -581,19 +582,26 @@ public class DriverRelayOrderActivity extends BaseActivity {
 
         List<LatLng> mapLatLngs = ConvertUtil.toLatLngList(latlngs);
         List<LatLng> all = new ArrayList<>(mapLatLngs);
-        if (polylineA != null) {
-            polylineA.remove();
-        }
         List<TLSBRouteTrafficItem> trafficItems = manager.getRouteManager().getUsingRoute()
                 .getTrafficItemsWithInternalRoute();
         int[] colors = new int[trafficItems.size()];
         int[] indexes = new int[trafficItems.size()];
         setRouteTraffic(trafficItems, indexes, colors);
-        polylineA = map.addPolyline(new PolylineOptions()
-                .width(20)
-                .colors(colors, indexes)
-                .arrow(true)
-                .addAll(mapLatLngs));
+        if (polylineA == null) {
+            polylineA = map.addPolyline(new PolylineOptions()
+                    .width(20)
+                    .colors(colors, indexes)
+                    .arrow(true)
+                    .addAll(mapLatLngs));
+            MapUtils.fitsWithRoute(map, all,
+                    25, 25, 25, 25);
+        }
+
+        if (!manager.getRouteManager().getRouteId().equals(curRouteIdA) && curRouteIdA != null) {
+            polylineA.setPoints(mapLatLngs);
+        }
+        curRouteIdA = manager.getRouteManager().getRouteId();
+        polylineA.setColors(colors, indexes);
         if (aMarkerStart != null) {
             aMarkerStart.remove();
         }
@@ -605,14 +613,14 @@ public class DriverRelayOrderActivity extends BaseActivity {
         }
         aMarkerEnd = map.addMarker(new MarkerOptions(mapLatLngs.get(mapLatLngs.size() - 1))
                 .icon(BitmapDescriptorFactory.fromResource(R.mipmap.line_end_point)));
-        MapUtils.fitsWithRoute(map, all,
-                25, 25, 25, 25);
         return true;
     }
 
     Polyline polylineB1 = null;
     Polyline polylineB2 = null;
     Marker markerB2 = null;
+    String curRouteIdB1 = null;
+    String curRouteIdB2 = null;
 
     private boolean drawRoutesB(MapApi map, BaseSyncProtocol manager) {
         List<TLSLatlng> latlngs = manager.getRouteManager().getPoints();
@@ -622,22 +630,26 @@ public class DriverRelayOrderActivity extends BaseActivity {
 
         List<LatLng> mapLatLngs = ConvertUtil.toLatLngList(latlngs);
         List<LatLng> all = new ArrayList<>(mapLatLngs);
-        if (polylineB1 != null) {
-            polylineB1.remove();
-        }
         List<TLSBRouteTrafficItem> trafficItems = manager.getRouteManager().getUsingRoute()
                 .getTrafficItemsWithInternalRoute();
         int[] colors = new int[trafficItems.size()];
         int[] indexes = new int[trafficItems.size()];
         setRouteTraffic(trafficItems, indexes, colors);
-        polylineB1 = map.addPolyline(new PolylineOptions()
-                .width(20)
-                .colors(colors, indexes)
-                .arrow(true)
-                .addAll(mapLatLngs));
-        if (polylineB2 != null) {
-            polylineB2.remove();
+        if (polylineB1 == null) {
+            polylineB1 = map.addPolyline(new PolylineOptions()
+                    .width(20)
+                    .colors(colors, indexes)
+                    .arrow(true)
+                    .addAll(mapLatLngs));
+            MapUtils.fitsWithRoute(map, all,
+                    25, 25, 25, 25);
         }
+        if (!manager.getRouteManager().getRouteId().equals(curRouteIdB1) && curRouteIdB1 != null) {
+            polylineB1.setPoints(mapLatLngs);
+        }
+        curRouteIdB1 = manager.getRouteManager().getRouteId();
+        polylineB1.setColors(colors, indexes);
+
         if (!manager.getRouteManager().getRelayRoutes().isEmpty()) {
             TLSBRoute route = manager.getRouteManager().getRelayRoutes().get(0);
             List<LatLng> others = ConvertUtil.toLatLngList(route.getPoints());
@@ -649,21 +661,28 @@ public class DriverRelayOrderActivity extends BaseActivity {
             int[] colors1 = new int[trafficItems1.size()];
             int[] indexes1 = new int[trafficItems1.size()];
             setRouteTraffic(trafficItems1, indexes1, colors1);
-            polylineB2 = map.addPolyline(new PolylineOptions()
-                    .width(10)
-                    .colors(colors1, indexes1)
-                    .addAll(others));
+            if (polylineB2 == null) {
+                polylineB2 = map.addPolyline(new PolylineOptions()
+                        .width(10)
+                        .colors(colors1, indexes1)
+                        .addAll(others));
+            }
+            if (!route.getRouteId().equals(curRouteIdB2) && curRouteIdB2 != null) {
+                polylineB2.setPoints(others);
+            }
+            curRouteIdB2 = route.getRouteId();
+            polylineB2.setColors(colors, indexes);
             if (markerB2 != null) {
                 markerB2.remove();
             }
             markerB2 = map.addMarker(new MarkerOptions(others.get(others.size() - 1))
                     .icon(BitmapDescriptorFactory.fromResource(R.mipmap.passenger))
                     .anchor(0.5f, 1));
+        } else {
+            if (polylineB2 != null) {
+                polylineB2.remove();
+            }
         }
-
-        MapUtils.fitsWithRoute(map, all,
-                25, 25, 25, 25);
-
         return true;
     }
 

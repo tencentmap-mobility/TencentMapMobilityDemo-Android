@@ -281,14 +281,9 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
                 mPassengerPanel.postPrint("点击地图中的路线标记选择");
                 if (onTrip) {
                     mPassengerSync.getRouteManager().useRouteIndex(0);
-                    return drawRoutes(mMapView.getMapApi(), mPassengerSync.getRouteManager().getRoutes(), selectCallback);
+                    return drawRoutes(mMapView.getMapApi(), mPassengerSync.getRouteManager().getRoutes());
                 } else {
-                    return drawRoutes(mMapView.getMapApi(), mTLSRoutes, integer -> {
-                        mChosenRouteIndex = integer;
-                        mPassengerSync.uploadRoute(mTLSRoutes.get(mChosenRouteIndex));
-                        mPassengerPanel.print("选择第" + integer + "条:" + mTLSRoutes.get(mChosenRouteIndex).getRouteId());
-
-                    });
+                    return drawRoutes(mMapView.getMapApi(), mTLSRoutes);
                 }
             }
         });
@@ -338,13 +333,22 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
         });
     }
 
-    private Streams.Callback selectCallback = new Streams.Callback() {
+    private final Streams.Callback selectCallbackOnTrip = new Streams.Callback() {
         @Override
         public void callback(Object o) {
             int integer = (Integer) o;
             String routeId = mPassengerSync.getRouteManager().getRoutes().get(integer).getRouteId();
             mPassengerSync.routeSelectByRouteId(routeId);
             mPassengerPanel.print("选择第" + integer + "条:" + routeId);
+        }
+    };
+
+    private final Streams.Callback selectCallbackBeforeTrip = new Streams.Callback() {
+        @Override
+        public void callback(Object o) {
+            mChosenRouteIndex = (Integer) o;
+            mPassengerSync.uploadRoute(mTLSRoutes.get(mChosenRouteIndex));
+            mPassengerPanel.print("选择第" + mChosenRouteIndex + "条:" + mTLSRoutes.get(mChosenRouteIndex).getRouteId());
         }
     };
 
@@ -432,7 +436,6 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
                                     mDriverPanel.print("线路发生变更：" + selectedRoute.getRouteId());
                                     mDriverSync.getRouteManager().useRouteId(selectedRoute.getRouteId());
                                     mNaviManager.setMainRoute(selectedRoute.getRouteId());
-                                    mDriverPanel.postAction("绘制路线");
                                 }
 
                                 @Override
@@ -474,9 +477,9 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
                 final CountDownLatch syncWaiting = new CountDownLatch(1);
                 final List<NavDriveRoute> routeData = new ArrayList<>();
 
-                mDriverSync.pullNaviSession((naviSession, usingRouteId) -> {
+                mDriverSync.pullNaviSession((webServiceRequestId, usingRouteId) -> {
 
-                    mDriverPanel.print("导航会话ID[" + naviSession + "]");
+                    mDriverPanel.print("WS算路请求ID[" + webServiceRequestId + "]");
                     mDriverPanel.print("待选中路线ID[" + usingRouteId + "]");
                     // 当前送驾路线
                     mDriverSync.searchCarRoutes(order.getId(),
@@ -484,7 +487,7 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
                             ConvertUtils.toNaviPoi(order.getEnd()),
                             new ArrayList<>(),
                             DriveRoutePlanOptions.Companion.newBuilder()
-                                    .initialNaviSessionID(naviSession)
+                                    .webServiceRequestId(webServiceRequestId)
                                     .initialRouteID(usingRouteId)
                                     .build(),
                             new DriDataListener.ISearchCallBack() {
@@ -539,7 +542,6 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
         mDriverPanel.addAction("绘制路线", new PanelView.Action<Boolean>(false) {
             @Override
             public Boolean run() {
-//                mCarNaviView.getMapApi().clearAllOverlays();
                 return drawRoute(mCarNaviView.getMapApi(), mDriverSync);
             }
         });
@@ -583,15 +585,13 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
         if (latlngs == null || latlngs.isEmpty()) {
             return false;
         }
-
-        List<Polyline> polylines = new ArrayList<>();
         List<LatLng> mapLatLngs = ConvertUtil.toLatLngList(latlngs);
         List<LatLng> all = new ArrayList<>(mapLatLngs);
-        polylines.add(map.addPolyline(new PolylineOptions()
+        map.addPolyline(new PolylineOptions()
                 .width(25)
                 .color(Color.argb(200, 0, 163, 255))
                 .arrow(true)
-                .addAll(mapLatLngs)));
+                .addAll(mapLatLngs));
 
         TLSLatlng startPosition = manager.getRouteManager().getStartPosition();
         TLSLatlng destPosition = manager.getRouteManager().getDestPosition();
@@ -620,7 +620,11 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
             for (int i = 0; i < polylines.size(); i++) {
                 Polyline the = polylines.get(i);
                 if (the.getId().equals(polyline.getId())) {
-                    selectCallback.callback(i);
+                    if (onTrip) {
+                        selectCallbackOnTrip.callback(i);
+                    } else {
+                        selectCallbackBeforeTrip.callback(i);
+                    }
                 } else {
                     the.remove();
                 }
@@ -628,7 +632,7 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
         }
     };
 
-    private boolean drawRoutes(MapApi map, List<TLSBRoute> tlsbRoutes, Streams.Callback<Integer> selectCallback) {
+    private boolean drawRoutes(MapApi map, List<TLSBRoute> tlsbRoutes) {
         map.removeOnPolylineClickListener(listener);
         List<TLSLatlng> latlngs = tlsbRoutes.get(0).getPoints();
         if (latlngs == null || latlngs.isEmpty()) {
