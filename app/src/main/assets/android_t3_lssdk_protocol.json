@@ -1,0 +1,38 @@
+{
+    "sdk_protocol": "1.0",
+    "services": [
+        {
+            "name":"getconfig",
+            "url":"https://tsp.map.tencent.com/api/v1/mkey/config"
+        },
+        {
+            "name":"traceupload",
+            "url":"https://tsp.map.tencent.com/api/v1/trace/upload"
+        },
+        {
+            "name":"getlatest",
+            "url":"https://tsp.map.tencent.com/api/v1/trace/getlatest"
+        },
+        {
+            "name":"routeupload",
+            "url":"https://tsp.map.tencent.com/api/v1/route/upload"
+        },
+        {
+            "name":"bestsorted",
+            "url":"https://tspapi.map.tencent.com/ws/tls/v1/hitch-ride/matrix"
+        },
+        {
+            "name":"ordersync",
+            "url":"https://apis.map.tencent.com/ws/tls/v1/order/sync"
+        },
+        {
+            "name":"orderchange",
+            "url":"https://apis.map.tencent.com/ws/tls/v1/order/change"
+        },
+        {
+            "name":"searchsdk",
+            "url":"https://apis.map.tencent.com"
+        }
+    ]
+
+}

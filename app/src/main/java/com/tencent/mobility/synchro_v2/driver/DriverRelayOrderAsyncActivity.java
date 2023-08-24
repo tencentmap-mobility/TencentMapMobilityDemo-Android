@@ -132,8 +132,12 @@ public class DriverRelayOrderAsyncActivity extends BaseActivity {
     private void initCurrentPassengerPanel() {
         mPassengerA = MockSyncService.newRandomPassenger(mMapView1.getMapApi());
         mPassengerSyncA = TSLPassengerManager.newInstance();
+        mPassengerSyncA.switchToNetConfig(true);
         mPassengerSyncA.init(DriverRelayOrderAsyncActivity.this,
-                TLSConfigPreference.create().setDebuggable(true).setAccountId(mPassengerA.getId()));
+                TLSConfigPreference.create()
+                        .setDebuggable(true)
+                        .setAccountId(mPassengerA.getId())
+                        .setNetConfigFileName("android_t3_lssdk_protocol.json"));
         mPassengerSyncService = new MockSyncService(mPassengerSyncA);
         mPassengerAPanel.init("当前乘客", "创建订单");
         mPassengerSyncA.setPullTimeInterval(3);
@@ -183,8 +187,12 @@ public class DriverRelayOrderAsyncActivity extends BaseActivity {
     private void initRelayPassengerPanel() {
         mPassengerB = MockSyncService.newRandomPassenger(mMapView2.getMapApi());
         mPassengerSyncB = TSLPassengerManager.newInstance();
+        mPassengerSyncB.switchToNetConfig(true);
         mPassengerSyncB.init(DriverRelayOrderAsyncActivity.this,
-                TLSConfigPreference.create().setDebuggable(true).setAccountId(mPassengerB.getId()));
+                TLSConfigPreference.create()
+                        .setDebuggable(true)
+                        .setAccountId(mPassengerB.getId())
+                        .setNetConfigFileName("android_t3_lssdk_protocol.json"));
         mPassengerSyncB.setPullTimeInterval(3);
         mPassengerBPanel.init("接力单乘客", "修改上车点");
         mPassengerBPanel.addAction("创建接力订单", new PanelView.Action<String>("") {
@@ -263,8 +271,12 @@ public class DriverRelayOrderAsyncActivity extends BaseActivity {
         mDriver = MockSyncService.newRandomDriver(mCarNaviView.getMapApi(), car);
         mDriverSync = TSLDExtendManager.newInstance();
         mDriverSyncService = new MockSyncService(mDriverSync);
+        mDriverSync.switchToNetConfig(true);
         mDriverSync.init(DriverRelayOrderAsyncActivity.this,
-                TLSConfigPreference.create().setDebuggable(true).setAccountId(mDriver.getId()));
+                TLSConfigPreference.create()
+                        .setDebuggable(true)
+                        .setAccountId(mDriver.getId())
+                        .setNetConfigFileName("android_t3_lssdk_protocol.json"));
         mDriverSync.setNaviManager(mNaviManager);
         mDriverPanel.init("司机","乘客送达");
         mDriverSync.addTLSDriverListener(new SimpleDriDataListener() {
@@ -344,7 +356,9 @@ public class DriverRelayOrderAsyncActivity extends BaseActivity {
                 }
 
                 mDriverSync.getRouteManager().useRouteIndex(0);
-                mDriverPanel.print("当前线路：" + routeData.get(0).getRouteId());
+                if (routeData.size() > 0) {
+                    mDriverPanel.print("当前线路：" + routeData.get(0).getRouteId());
+                }
                 mDriverSync.uploadUsingRoute();
                 try {
                     mNaviManager.simulator().setEnable(true);
@@ -396,7 +410,9 @@ public class DriverRelayOrderAsyncActivity extends BaseActivity {
                     e.printStackTrace();
                 }
 
-                mDriverPanel.print("接力单线路:" + routeData.get(0).getRouteId());
+                if (routeData.size() > 0) {
+                    mDriverPanel.print("接力单线路:" + routeData.get(0).getRouteId());
+                }
                 mDriverSync.uploadRoutes();
                 return routeData.size() == 1;
             }
@@ -537,6 +553,8 @@ public class DriverRelayOrderAsyncActivity extends BaseActivity {
                 mPassengerSyncA.destroy();
                 mNaviManager.stopNavigation();
                 mDriverPanel.postAction("送达乘客重新规划路线");
+                mDriverSync.switchToNetConfig(false);
+                mPassengerSyncB.switchToNetConfig(false);
                 return true;
             }
         });
@@ -646,7 +664,7 @@ public class DriverRelayOrderAsyncActivity extends BaseActivity {
                 polylineB2.setPoints(others);
             }
             curRouteIdB2 = route.getRouteId();
-            polylineB2.setColors(colors, indexes);
+            polylineB2.setColors(colors1, indexes1);
             if (markerB2 != null) {
                 markerB2.remove();
             }
