@@ -39,6 +39,7 @@
         <activity android:name=".synchro_v2.FastCarNormalActivity"/>
         <activity android:name=".synchro_v2.driver.DriverRelayOrderAsyncActivity" />
         <activity android:name=".synchro_v2.driver.DriverRelayOrderActivity"/>
+        <activity android:name=".synchro_v2.driver.DriverRelayOrderUnrestrictedActivity"/>
     </application>
 
     <!-- 导航 SDK permission start -->

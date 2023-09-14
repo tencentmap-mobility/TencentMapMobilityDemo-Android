@@ -14,6 +14,7 @@ import com.tencent.map.lssupport.bean.TLSBOrderStatus;
 import com.tencent.map.lssupport.bean.TLSConfigPreference;
 import com.tencent.map.lssupport.bean.TLSDFetchedData;
 import com.tencent.map.lssupport.bean.TLSLatlng;
+import com.tencent.map.lssupport.bean.TLSTrafficLightInfo;
 import com.tencent.map.lssupport.protocol.BaseSyncProtocol;
 import com.tencent.map.lssupport.utils.ConvertUtil;
 import com.tencent.mobility.BaseActivity;
@@ -114,7 +115,7 @@ public class FastCarNormalActivity extends BaseActivity {
         initPassengerPanel();
         initDriverPanel();
 
-        AnimatorUtils.init();
+        AnimatorUtils.init(FastCarNormalActivity.this);
     }
 
     private void initPassengerPanel() {
@@ -147,7 +148,6 @@ public class FastCarNormalActivity extends BaseActivity {
                 mPassengerSync.addTLSPassengerListener(new SimplePsgDataListener() {
                     @Override
                     public void onPullLsInfoSuc(TLSDFetchedData fetchedData) {
-                        mPassengerPanel.postPrint("拉取成功: " + fetchedData.getRoutes().size());
                         drawMarker(mMapView.getMapApi(), mPassengerSync);
                         AnimatorUtils.updateDriverInfo(mMapView.getMapApi(), fetchedData.getRoute(), fetchedData.getOrder(), fetchedData.getPositions());
 
@@ -199,6 +199,21 @@ public class FastCarNormalActivity extends BaseActivity {
                     @Override
                     public void onPullLsInfoFail(int errCode, String errMsg) {
                         mPassengerPanel.postPrint("拉取失败：" + errCode);
+                    }
+
+                    @Override
+                    public void onReceiveTrafficLightCountdown(TLSTrafficLightInfo trafficLightInfo) {
+                        mPassengerPanel.postPrint("红绿灯信息：" + trafficLightInfo);
+                        if (trafficLightInfo.getStatus() == TLSTrafficLightInfo.TrafficLightType.LIGHT_RED.getType()) {
+                            int endTimestamp = trafficLightInfo.getEndTimestamp();
+                            int currentTimestamp = (int) (System.currentTimeMillis() / 1000);
+                            if (endTimestamp <= currentTimestamp) {
+                                return;
+                            }
+                            AnimatorUtils.updateWaitingInfo(endTimestamp - currentTimestamp);
+                        } else if (trafficLightInfo.getStatus() == TLSTrafficLightInfo.TrafficLightType.LIGHT_NONE.getType()) {
+                            AnimatorUtils.updateWaitingInfo(0);
+                        }
                     }
                 });
 
@@ -279,8 +294,10 @@ public class FastCarNormalActivity extends BaseActivity {
 
                 // 当前送驾路线
                 mDriverSync.searchCarRoutes(orderA.getId(),
-                        ConvertUtils.toNaviPoi(orderA.getBegin()),
-                        ConvertUtils.toNaviPoi(orderA.getEnd()),
+//                        ConvertUtils.toNaviPoi(orderA.getBegin()),
+//                        ConvertUtils.toNaviPoi(orderA.getEnd()),
+                        ConvertUtils.toNaviPoi(new LatLng(40.007398, 116.390305)),
+                        ConvertUtils.toNaviPoi(new LatLng(39.896938, 116.316483)),
                         new ArrayList<>(),
                         DriveRoutePlanOptions.Companion.newBuilder().build(),
                         new DriDataListener.ISearchCallBack() {
@@ -344,7 +361,7 @@ public class FastCarNormalActivity extends BaseActivity {
                         syncWaiting.countDown();
                     }
                 });
-                mDriverSync.uploadRoutes();
+                mDriverSync.uploadUsingRoute();
                 try {
                     syncWaiting.await();
                 } catch (InterruptedException e) {

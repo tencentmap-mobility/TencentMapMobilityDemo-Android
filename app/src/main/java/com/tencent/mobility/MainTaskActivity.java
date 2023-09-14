@@ -14,6 +14,7 @@ import com.tencent.mobility.synchro_v2.HitchHikeNormalActivity;
 import com.tencent.mobility.synchro_v2.HitchHikeOneVipActivity;
 import com.tencent.mobility.synchro_v2.driver.DriverRelayOrderActivity;
 import com.tencent.mobility.synchro_v2.driver.DriverRelayOrderAsyncActivity;
+import com.tencent.mobility.synchro_v2.driver.DriverRelayOrderUnrestrictedActivity;
 import com.tencent.mobility.synchro_v2.psg.PassengerSelectRoutesActivity;
 import com.tencent.mobility.util.CommonUtils;
 
@@ -71,6 +72,10 @@ public class MainTaskActivity extends BaseActivity {
 
     public void onRelayOrderAsync(View view) {
         CommonUtils.toIntent(this, DriverRelayOrderAsyncActivity.class);
+    }
+
+    public void onRelayOrderUnrestricted(View view) {
+        CommonUtils.toIntent(this, DriverRelayOrderUnrestrictedActivity.class);
     }
 
     public void onSelectRoutes(View view) {

@@ -1,5 +1,7 @@
 package com.tencent.mobility.util;
 
+import android.content.Context;
+import android.graphics.Point;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -16,6 +18,7 @@ import com.tencent.map.lssupport.bean.TLSBRouteTrafficItem;
 import com.tencent.map.lssupport.bean.TLSLatlng;
 import com.tencent.map.lssupport.utils.ConvertUtil;
 import com.tencent.mobility.R;
+import com.tencent.mobility.synchro_v2.view.BubbleView;
 import com.tencent.navix.api.map.MapApi;
 import com.tencent.tencentmap.mapsdk.maps.model.BitmapDescriptorFactory;
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
@@ -24,6 +27,7 @@ import com.tencent.tencentmap.mapsdk.maps.model.MarkerOptions;
 import com.tencent.tencentmap.mapsdk.maps.model.Polyline;
 import com.tencent.tencentmap.mapsdk.maps.model.PolylineOptions;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -38,22 +42,28 @@ public class AnimatorUtils {
 
     private static TLSBDriverPosition lastPoint;
     private static final List<LatLng> points = new ArrayList<>();
-    private static final Map<String, EraseInfo> eraseInfoMap = new HashMap<>();
+    private static Map<String, EraseInfo> eraseInfoMap = new HashMap<>();
     private static String curRouteId;
     private static Polyline polyline;
     private static Marker carMarker;
+    private static Marker bubbleMarker;
 
     private static int animationTime = 5000;   // 动画时间
     private static final HandlerThread eraseThread = new HandlerThread("car_erase_line");
     private static EraseHandler eraseHandler;
     private static MarkerTranslateAnimator mTranslateAnimator;
+    private static BubbleView bubbleView;
+    private static Context mContext;
+    private static DecimalFormat df = new DecimalFormat("0.0");
 
-    public static void init() {
+    public static void init(Context context) {
+        mContext = context;
         if (!eraseThread.isAlive()) {
             eraseThread.start();
         }
         eraseHandler = new EraseHandler(eraseThread.getLooper());
         eraseInfoMap.clear();
+        bubbleView = new BubbleView(mContext);
     }
 
     public static void updateDriverInfo(MapApi tencentMap, TLSBRoute route, TLSBOrder order, List<TLSBDriverPosition> pos) {
@@ -66,8 +76,9 @@ public class AnimatorUtils {
         }
 
         //绘制路线
-        if (points.size() != 0)
+        if (points.size() != 0) {
             points.clear();
+        }
         points.addAll(ConvertUtil.toLatLngList(route.getPoints()));   //路线上的点
 
         List<TLSBRouteTrafficItem> trafficItems = route.getTrafficItemsWithInternalRoute();
@@ -77,12 +88,16 @@ public class AnimatorUtils {
         // 绘制路线
         if (polyline == null) {
             polyline = tencentMap.addPolyline(new PolylineOptions()
+                    .collisionBy(PolylineOptions.PolylineCollision.NONE)
                     .latLngs(points)
                     .colors(colors, indexes)
                     .arrow(true)
                     .eraseColor(0x00000000));
             //可以擦除已走路线
             polyline.setEraseable(true);
+            MapUtils.fitsWithRoute(tencentMap, points, DensityUtil.dip2px(mContext, 20),
+                    DensityUtil.dip2px(mContext, 80), DensityUtil.dip2px(mContext, 20),
+                    DensityUtil.dip2px(mContext, 80));
         }
         // 初始时curRouteId为null，不需要setPoints()，避免polyline闪烁
         if (!route.getRouteId().equals(curRouteId) && curRouteId != null) {
@@ -95,6 +110,12 @@ public class AnimatorUtils {
             eraseInfoMap.put(curRouteId, new EraseInfo(ConvertUtil.toLatLng(route.getPoints().get(0)), 0));
         }
 
+        carMarkerMove(tencentMap, pos, route, eraseInfoMap, polyline);
+    }
+
+    public static void carMarkerMove(MapApi tencentMap, List<TLSBDriverPosition> pos, TLSBRoute route, Map<String, EraseInfo> infoMap, Polyline line) {
+        eraseInfoMap = infoMap;
+        polyline = line;
         //小车平滑移动
         if (pos.size() != 0) {
             LinkedList<TLSBDriverPosition> allPositions = new LinkedList<>(pos);
@@ -122,10 +143,41 @@ public class AnimatorUtils {
             LatLng[] ls = latLngs.toArray(new LatLng[0]);
             // 动画时间根据点数动态调整
             animationTime = (ls.length - 1) * 1000;
-            translateAnima(ls, rotateEnabled, route); // 平滑移动
+            translateAnima(ls, rotateEnabled, route, infoMap); // 平滑移动
             lastPoint = allPositions.get(allPositions.size() - 1);
+            bubbleView.refreshData(df.format(route.getRemainingDistance() / 1000.0f), route.getRemainingTime());
+            bubbleMarker.setIcon(BitmapDescriptorFactory.fromView(bubbleView));
+            bubbleMarker.setPosition(offsetPixelFromLatlng(new LatLng(lastPoint.getLatitude(), lastPoint.getLongitude()), Offset.TOP, DensityUtil.dip2px(mContext, 30), tencentMap));
         }
     }
+
+    public static void updateWaitingInfo(int interval) {
+        if (bubbleView == null) {
+            return;
+        }
+        mMainHandler.removeMessages(100);
+        if (interval == 0) {
+            // 未知灯态
+            bubbleView.refreshWaitingDescTv(false);
+        } else {
+            // 红灯
+            bubbleView.refreshWaitingDescTv(true);
+            Message message = Message.obtain();
+            message.what = 100;
+            mMainHandler.sendMessageDelayed(message, interval * 1000L);
+        }
+    }
+
+    private static Handler mMainHandler = new Handler(Looper.getMainLooper()) {
+
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            super.handleMessage(msg);
+            if (msg.what == 100) {
+                bubbleView.refreshWaitingDescTv(false);
+            }
+        }
+    };
 
     public static void setRouteTraffic(List<TLSBRouteTrafficItem> trafficItems, int[] indexes, int[] colors) {
         for (int i = 0; i < trafficItems.size(); i++) {
@@ -174,6 +226,10 @@ public class AnimatorUtils {
             carMarker.remove();
             carMarker = null;
         }
+        if (bubbleMarker != null) {
+            bubbleMarker.remove();
+            bubbleMarker = null;
+        }
         points.clear();
         lastPoint = null;
         curRouteId = null;
@@ -182,12 +238,14 @@ public class AnimatorUtils {
     /**
      * 平滑移动
      */
-    private static void translateAnima(LatLng[] points, boolean rotateEnabled, TLSBRoute route) {
-        if (points == null || points.length <= 0)
+    private static void translateAnima(LatLng[] points, boolean rotateEnabled, TLSBRoute route, Map<String, EraseInfo> infoMap) {
+        if (points == null || points.length <= 0) {
             return;
+        }
         // 当司机没有新数据上传，防止拉取回上个点串的最后一个点
-        if (points.length == 2 && equalOfLatlng(points[0], points[1]))
+        if (points.length == 2 && equalOfLatlng(points[0], points[1])) {
             return;
+        }
 
         if (mTranslateAnimator != null) {
             mTranslateAnimator.cancelAnimation();
@@ -205,10 +263,10 @@ public class AnimatorUtils {
         mTranslateAnimator.setFloatValuesListener(new MarkerTranslateAnimator.IAnimaFloatValuesListener() {
             @Override
             public void floatValues(LatLng latLng) {
-                if (!reCalcCurrentPointIndex(eraseInfoMap.get(curRouteId), latLng, route)) {
+                if (!reCalcCurrentPointIndex(infoMap.get(route.getRouteId()), latLng, route)) {
                     return;
                 }
-                eraseRoute(curRouteId);
+                eraseRoute(route.getRouteId());
             }
         });
     }
@@ -235,10 +293,50 @@ public class AnimatorUtils {
                             .zIndex(100.0f)
                             //marker 逆时针方向旋转
                             .clockwise(false));
+
+        }
+        if (bubbleMarker == null) {
+            LatLng initLocation = new LatLng(points.get(0).getLatitude(), points.get(0).getLongitude());
+            bubbleMarker = tencentMap.addMarker(
+                    new MarkerOptions(offsetPixelFromLatlng(initLocation, Offset.TOP, DensityUtil.dip2px(mContext, 30), tencentMap))
+                            .anchor(0.5f, 1f)
+                            .icon(BitmapDescriptorFactory.fromView(bubbleView))
+                            .flat(false)
+                            .level(100)
+                            .zIndex(100.0f)
+            );
         }
     }
 
-    private static class EraseInfo {
+    private static LatLng offsetPixelFromLatlng(LatLng original, Offset direction, int pixel, MapApi mapApi) {
+        Point point = mapApi.getProjection().toScreenLocation(original);
+        switch (direction) {
+            case LEFT:
+                point.offset(-pixel, 0);
+                break;
+            case RIGHT:
+                point.offset(pixel, 0);
+                break;
+            case TOP:
+                point.offset(0, -pixel);
+                break;
+            case BOTTOM:
+                point.offset(0, pixel);
+                break;
+            default:
+                break;
+        }
+        return mapApi.getProjection().fromScreenLocation(point);
+    }
+
+    enum Offset {
+        LEFT,
+        RIGHT,
+        TOP,
+        BOTTOM
+    }
+
+    public static class EraseInfo {
 
         private LatLng latLng;
         private int curEraseIndex;
