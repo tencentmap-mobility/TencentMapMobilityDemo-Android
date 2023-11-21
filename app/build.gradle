@@ -6,7 +6,7 @@ android {
     defaultConfig {
         applicationId "com.tencent.mobility"
         minSdkVersion 21
-        targetSdkVersion 29
+        targetSdkVersion 33
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -18,7 +18,9 @@ android {
 
         manifestPlaceholders = [
                 填入地图KEY : mapsdk_key,
-                填入服务KEY : apisdk_key
+                填入司乘服务KEY : tls_sdk_key,
+                填入周边车辆服务KEY: nearby_sdk_ley,
+                填入推荐上车点服务KEY: spot_sdk_key
         ]
 
     }
@@ -63,4 +65,7 @@ dependencies {
     implementation Tencent_LS_Driver
     implementation Tencent_LS_Passenger
     implementation Tencent_LS_Support
+
+    // 使用周边车辆时必须集成
+    implementation Tencent_Support_Verison
 }

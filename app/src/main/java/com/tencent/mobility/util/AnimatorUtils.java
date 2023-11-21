@@ -46,13 +46,11 @@ public class AnimatorUtils {
     private static String curRouteId;
     private static Polyline polyline;
     private static Marker carMarker;
-    private static Marker bubbleMarker;
 
     private static int animationTime = 5000;   // 动画时间
     private static final HandlerThread eraseThread = new HandlerThread("car_erase_line");
     private static EraseHandler eraseHandler;
     private static MarkerTranslateAnimator mTranslateAnimator;
-    private static BubbleView bubbleView;
     private static Context mContext;
     private static DecimalFormat df = new DecimalFormat("0.0");
 
@@ -63,10 +61,9 @@ public class AnimatorUtils {
         }
         eraseHandler = new EraseHandler(eraseThread.getLooper());
         eraseInfoMap.clear();
-        bubbleView = new BubbleView(mContext);
     }
 
-    public static void updateDriverInfo(MapApi tencentMap, TLSBRoute route, TLSBOrder order, List<TLSBDriverPosition> pos) {
+    public static void updateDriverInfo(MapApi tencentMap, BubbleView bubbleView, TLSBRoute route, TLSBOrder order, List<TLSBDriverPosition> pos) {
         if (route == null || order == null || pos == null) {
             Log.e(TAG, "pull detailed info null.");
             return;
@@ -110,10 +107,10 @@ public class AnimatorUtils {
             eraseInfoMap.put(curRouteId, new EraseInfo(ConvertUtil.toLatLng(route.getPoints().get(0)), 0));
         }
 
-        carMarkerMove(tencentMap, pos, route, eraseInfoMap, polyline);
+        carMarkerMove(tencentMap, bubbleView, pos, route, eraseInfoMap, polyline);
     }
 
-    public static void carMarkerMove(MapApi tencentMap, List<TLSBDriverPosition> pos, TLSBRoute route, Map<String, EraseInfo> infoMap, Polyline line) {
+    public static void carMarkerMove(MapApi tencentMap, BubbleView bubbleView, List<TLSBDriverPosition> pos, TLSBRoute route, Map<String, EraseInfo> infoMap, Polyline line) {
         eraseInfoMap = infoMap;
         polyline = line;
         //小车平滑移动
@@ -125,7 +122,7 @@ public class AnimatorUtils {
             }
 
             //添加司机车辆小车
-            addDriverCar(tencentMap, allPositions);
+            addDriverCar(tencentMap, allPositions, bubbleView);
             boolean rotateEnabled = false;
             float currentMatchedCourse = allPositions.get(0).getMatchedCourse();
             for (TLSBDriverPosition position : allPositions) {
@@ -145,13 +142,14 @@ public class AnimatorUtils {
             animationTime = (ls.length - 1) * 1000;
             translateAnima(ls, rotateEnabled, route, infoMap); // 平滑移动
             lastPoint = allPositions.get(allPositions.size() - 1);
-            bubbleView.refreshData(df.format(route.getRemainingDistance() / 1000.0f), route.getRemainingTime());
-            bubbleMarker.setIcon(BitmapDescriptorFactory.fromView(bubbleView));
-            bubbleMarker.setPosition(offsetPixelFromLatlng(new LatLng(lastPoint.getLatitude(), lastPoint.getLongitude()), Offset.TOP, DensityUtil.dip2px(mContext, 30), tencentMap));
+            if (bubbleView != null) {
+                bubbleView.refreshData(df.format(route.getRemainingDistance() / 1000.0f), route.getRemainingTime());
+                carMarker.refreshInfoWindow();
+            }
         }
     }
 
-    public static void updateWaitingInfo(int interval) {
+    public static void updateWaitingInfo(int interval, BubbleView bubbleView) {
         if (bubbleView == null) {
             return;
         }
@@ -164,6 +162,7 @@ public class AnimatorUtils {
             bubbleView.refreshWaitingDescTv(true);
             Message message = Message.obtain();
             message.what = 100;
+            message.obj = bubbleView;
             mMainHandler.sendMessageDelayed(message, interval * 1000L);
         }
     }
@@ -173,8 +172,8 @@ public class AnimatorUtils {
         @Override
         public void handleMessage(@NonNull Message msg) {
             super.handleMessage(msg);
-            if (msg.what == 100) {
-                bubbleView.refreshWaitingDescTv(false);
+            if (msg.what == 100 && msg.obj instanceof BubbleView) {
+                ((BubbleView) msg.obj).refreshWaitingDescTv(false);
             }
         }
     };
@@ -226,10 +225,6 @@ public class AnimatorUtils {
             carMarker.remove();
             carMarker = null;
         }
-        if (bubbleMarker != null) {
-            bubbleMarker.remove();
-            bubbleMarker = null;
-        }
         points.clear();
         lastPoint = null;
         curRouteId = null;
@@ -280,7 +275,7 @@ public class AnimatorUtils {
 
 
     // 平滑动画只需要使用一个marker即可
-    private static void addDriverCar(MapApi tencentMap, List<TLSBDriverPosition> points) {
+    private static void addDriverCar(MapApi tencentMap, List<TLSBDriverPosition> points, BubbleView bubbleView) {
         if (carMarker == null) {
             carMarker = tencentMap.addMarker(
                     new MarkerOptions(new LatLng(points.get(0).getLatitude(), points.get(0).getLongitude()))
@@ -292,19 +287,10 @@ public class AnimatorUtils {
                             .level(100)
                             .zIndex(100.0f)
                             //marker 逆时针方向旋转
-                            .clockwise(false));
+                            .clockwise(false)
+                            .viewInfoWindow(true));
+            carMarker.showInfoWindow();
 
-        }
-        if (bubbleMarker == null) {
-            LatLng initLocation = new LatLng(points.get(0).getLatitude(), points.get(0).getLongitude());
-            bubbleMarker = tencentMap.addMarker(
-                    new MarkerOptions(offsetPixelFromLatlng(initLocation, Offset.TOP, DensityUtil.dip2px(mContext, 30), tencentMap))
-                            .anchor(0.5f, 1f)
-                            .icon(BitmapDescriptorFactory.fromView(bubbleView))
-                            .flat(false)
-                            .level(100)
-                            .zIndex(100.0f)
-            );
         }
     }
 

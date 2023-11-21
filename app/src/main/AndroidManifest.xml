@@ -15,11 +15,21 @@
         <meta-data
             android:name="TencentMapSDK"
             android:value="${填入地图KEY}" />
+
         <meta-data
             android:name="com.tencent.map.api_key"
-            android:value="${填入服务KEY}" />
+            android:value="${填入司乘服务KEY}" />
 
-        <activity android:name=".MainTaskActivity">
+        <meta-data
+            android:name="com.tencent.map.carpreview.api_key"
+            android:value="${填入周边车辆服务KEY}" />
+
+        <meta-data
+            android:name="com.tencent.map.recospot.api_key"
+            android:value="${填入推荐上车点服务KEY}" />
+
+        <activity android:name=".MainTaskActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

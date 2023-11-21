@@ -2,6 +2,7 @@ package com.tencent.mobility.synchro_v2;
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.View;
 
 import androidx.annotation.Nullable;
 
@@ -24,10 +25,10 @@ import com.tencent.mobility.mock.MockDriver;
 import com.tencent.mobility.mock.MockOrder;
 import com.tencent.mobility.mock.MockPassenger;
 import com.tencent.mobility.mock.MockSyncService;
+import com.tencent.mobility.synchro_v2.view.BubbleView;
 import com.tencent.mobility.synchro_v2.view.RouteInfoView;
 import com.tencent.mobility.ui.PanelView;
 import com.tencent.mobility.util.AnimatorUtils;
-import com.tencent.mobility.util.CommonUtils;
 import com.tencent.mobility.util.ConvertUtils;
 import com.tencent.mobility.util.MapUtils;
 import com.tencent.mobility.util.SingleHelper;
@@ -44,7 +45,6 @@ import com.tencent.navix.api.navigator.NavigatorDrive;
 import com.tencent.navix.api.plan.DriveRoutePlanOptions;
 import com.tencent.navix.ui.NavigatorLayerViewDrive;
 import com.tencent.navix.ui.api.config.UIComponentConfig;
-import com.tencent.tencentmap.mapsdk.maps.MapView;
 import com.tencent.tencentmap.mapsdk.maps.TencentMap;
 import com.tencent.tencentmap.mapsdk.maps.model.BitmapDescriptorFactory;
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
@@ -78,6 +78,7 @@ public class FastCarNormalActivity extends BaseActivity {
     private RouteInfoView mRouteOneView;
     private RouteInfoView mRouteTwoView;
     private RouteInfoView mRouteThreeView;
+    private BubbleView bubbleView;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -104,6 +105,8 @@ public class FastCarNormalActivity extends BaseActivity {
         NavigatorViewStub navigatorViewStub1 = findViewById(R.id.psg_map_view);
         navigatorViewStub1.inflate();
         mMapView = navigatorViewStub1.getNavigatorView();
+        bubbleView = new BubbleView(this);
+        mMapView.getMapApi().setInfoWindowAdapter(new BubbleWindow());
 
         mRouteOneView = findViewById(R.id.route_info_one_view);
         mRouteTwoView = findViewById(R.id.route_info_two_view);
@@ -149,7 +152,7 @@ public class FastCarNormalActivity extends BaseActivity {
                     @Override
                     public void onPullLsInfoSuc(TLSDFetchedData fetchedData) {
                         drawMarker(mMapView.getMapApi(), mPassengerSync);
-                        AnimatorUtils.updateDriverInfo(mMapView.getMapApi(), fetchedData.getRoute(), fetchedData.getOrder(), fetchedData.getPositions());
+                        AnimatorUtils.updateDriverInfo(mMapView.getMapApi(), bubbleView, fetchedData.getRoute(), fetchedData.getOrder(), fetchedData.getPositions());
 
                         mRouteOneView.reset();
                         mRouteTwoView.reset();
@@ -210,9 +213,9 @@ public class FastCarNormalActivity extends BaseActivity {
                             if (endTimestamp <= currentTimestamp) {
                                 return;
                             }
-                            AnimatorUtils.updateWaitingInfo(endTimestamp - currentTimestamp);
+                            AnimatorUtils.updateWaitingInfo(endTimestamp - currentTimestamp, bubbleView);
                         } else if (trafficLightInfo.getStatus() == TLSTrafficLightInfo.TrafficLightType.LIGHT_NONE.getType()) {
-                            AnimatorUtils.updateWaitingInfo(0);
+                            AnimatorUtils.updateWaitingInfo(0, bubbleView);
                         }
                     }
                 });
@@ -391,6 +394,19 @@ public class FastCarNormalActivity extends BaseActivity {
         }
         aMarkerEnd = map.addMarker(new MarkerOptions(mapLatLngs.get(mapLatLngs.size() - 1))
                 .icon(BitmapDescriptorFactory.fromResource(R.mipmap.line_end_point)));
+    }
+
+    private class BubbleWindow implements TencentMap.InfoWindowAdapter {
+
+        @Override
+        public View getInfoWindow(Marker marker) {
+            return bubbleView;
+        }
+
+        @Override
+        public View getInfoContents(Marker marker) {
+            return null;
+        }
     }
 
     @Override

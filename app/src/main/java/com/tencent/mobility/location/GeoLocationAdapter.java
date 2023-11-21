@@ -86,12 +86,12 @@ public class GeoLocationAdapter implements IGeoLocation {
      */
     @Override
     public void stopGeoLocationAdapter() {
-        mGeoAdapter.stopCommonLocation();
-        mGeoAdapter.destroyAdapter();
-        mGeoAdapter = null;
-        if (null != geoLists) {
-            geoLists.clear();
+        if (mGeoAdapter != null) {
+            mGeoAdapter.stopCommonLocation();
+            mGeoAdapter.destroyAdapter();
+            mGeoAdapter = null;
         }
+        geoLists.clear();
     }
 
     /**
