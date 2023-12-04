@@ -17,8 +17,10 @@ import com.tencent.map.lssupport.bean.TLSBOrderStatus;
 import com.tencent.map.lssupport.bean.TLSBOrderType;
 import com.tencent.map.lssupport.bean.TLSBRoute;
 import com.tencent.map.lssupport.bean.TLSBRouteTrafficItem;
+import com.tencent.map.lssupport.bean.TLSBWayPointType;
 import com.tencent.map.lssupport.bean.TLSConfigPreference;
 import com.tencent.map.lssupport.bean.TLSDFetchedData;
+import com.tencent.map.lssupport.bean.TLSDWayPointInfo;
 import com.tencent.map.lssupport.bean.TLSLatlng;
 import com.tencent.map.lssupport.protocol.BaseSyncProtocol;
 import com.tencent.map.lssupport.protocol.SyncProtocol;
@@ -86,6 +88,7 @@ public class DriverRelayOrderUnrestrictedActivity extends BaseActivity {
     private MockSyncService mPassengerSyncService;
 
     private NavigatorDrive mNaviManager;
+    private List<TLSDWayPointInfo> ws = new ArrayList<>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -475,7 +478,7 @@ public class DriverRelayOrderUnrestrictedActivity extends BaseActivity {
                 final CountDownLatch syncWaiting2 = new CountDownLatch(1);
                 // 接力单路线
                 mDriverSync.searchRelayRoutes(orderB.getId(), ConvertUtil.toTLSLatLng(orderA.getEnd()),
-                        ConvertUtil.toTLSLatLng(orderB.getBegin()), DrivingParam.Policy.PICKUP,
+                        ConvertUtil.toTLSLatLng(orderB.getBegin()), ws, DrivingParam.Policy.PICKUP,
                         new DrivingParam.Preference[]{
                                 DrivingParam.Preference.REAL_TRAFFIC,
                                 DrivingParam.Preference.NAV_POINT_FIRST,
@@ -521,7 +524,7 @@ public class DriverRelayOrderUnrestrictedActivity extends BaseActivity {
                 mDriverSync.searchCarRoutes(orderB.getId(),
                         ConvertUtils.toNaviPoi(orderA.getEnd()),
                         ConvertUtils.toNaviPoi(orderB.getBegin()),
-                        new ArrayList<>(),
+                        ws,
                         DriveRoutePlanOptions.Companion.newBuilder().build(),
                         new DriDataListener.ISearchCallBack() {
                             @Override
@@ -573,7 +576,7 @@ public class DriverRelayOrderUnrestrictedActivity extends BaseActivity {
                 mDriverSync.searchCarRoutes(orderB.getId(),
                         ConvertUtils.toNaviPoi(orderA.getEnd()),
                         ConvertUtils.toNaviPoi(orderB.getBegin()),
-                        new ArrayList<>(),
+                        ws,
                         DriveRoutePlanOptions.Companion.newBuilder().build(),
                         new DriDataListener.ISearchCallBack() {
                             @Override
@@ -664,6 +667,18 @@ public class DriverRelayOrderUnrestrictedActivity extends BaseActivity {
                     }
                 });
                 mDriverPanel.print("接力单接驾中");
+
+                ws.add(TLSDWayPointInfo.newBuilder()
+                        .order("ws-1")
+                        .latLng(MockSyncService.getRandomVisibleLatLng(mMapView2.getMapApi().getProjection()))
+                        .type(TLSBWayPointType.TLSDWayPointTypeGetIn)
+                        .build());
+                ws.add(TLSDWayPointInfo.newBuilder()
+                        .order("ws-1")
+                        .latLng(MockSyncService.getRandomVisibleLatLng(mMapView2.getMapApi().getProjection()))
+                        .type(TLSBWayPointType.TLSDWayPointTypeGetOff)
+                        .build());
+
                 mDriverPanel.postAction("请求接力单路线");
                 return order.getId();
             }

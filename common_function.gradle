@@ -17,9 +17,9 @@ ext {
     Tencent_NearBy_Car_Version = files('libs/tencentcarpreview_v1.2.3.aar')
 
     // 司乘SDK
-    Tencent_LS_Driver = 'com.tencent.map:tencent-map-lsdriver:3.1.0'
-    Tencent_LS_Passenger = 'com.tencent.map:tencent-map-lspassenger:3.1.0'
-    Tencent_LS_Support = 'com.tencent.map:tencent-map-lssupport:3.1.0'
+    Tencent_LS_Driver = 'com.tencent.map:tencent-map-lsdriver:3.2.0'
+    Tencent_LS_Passenger = 'com.tencent.map:tencent-map-lspassenger:3.2.0'
+    Tencent_LS_Support = 'com.tencent.map:tencent-map-lssupport:3.2.0'
 
     // 导航支持库
     Tencent_Support_Verison = 'com.tencent.map:tencent-map-nav-surport:1.1.0.2'

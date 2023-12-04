@@ -140,6 +140,9 @@ public class AnimatorUtils {
             LatLng[] ls = latLngs.toArray(new LatLng[0]);
             // 动画时间根据点数动态调整
             animationTime = (ls.length - 1) * 1000;
+            for (LatLng latLng : ls) {
+                Log.e(TAG, "lat: " + latLng.getLatitude() + ", lng: " + latLng.getLongitude());
+            }
             translateAnima(ls, rotateEnabled, route, infoMap); // 平滑移动
             lastPoint = allPositions.get(allPositions.size() - 1);
             if (bubbleView != null) {
@@ -277,8 +280,9 @@ public class AnimatorUtils {
     // 平滑动画只需要使用一个marker即可
     private static void addDriverCar(MapApi tencentMap, List<TLSBDriverPosition> points, BubbleView bubbleView) {
         if (carMarker == null) {
+            TLSBDriverPosition position = points.get(0);
             carMarker = tencentMap.addMarker(
-                    new MarkerOptions(new LatLng(points.get(0).getLatitude(), points.get(0).getLongitude()))
+                    new MarkerOptions(new LatLng(position.getLatitude(), position.getLongitude()))
                             .anchor(0.5f, 0.5f)
                             .icon(BitmapDescriptorFactory.fromResource(R.mipmap.map_icon_driver))
                             //设置此属性 marker 会跟随地图旋转
@@ -289,6 +293,16 @@ public class AnimatorUtils {
                             //marker 逆时针方向旋转
                             .clockwise(false)
                             .viewInfoWindow(true));
+            float rotation = -1.0f;
+            if (position.getBearing() > -1.0f) {
+                rotation = position.getBearing();
+            }
+            if (position.getMatchedCourse() > -1.0f) {
+                rotation = position.getMatchedCourse();
+            }
+            if (rotation > -1.0f) {
+                carMarker.setRotation(rotation);
+            }
             carMarker.showInfoWindow();
 
         }

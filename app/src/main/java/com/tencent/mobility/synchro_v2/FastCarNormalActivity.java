@@ -6,12 +6,15 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
+import com.tencent.map.fusionlocation.model.TencentGeoLocation;
+import com.tencent.map.geolocation.TencentLocation;
 import com.tencent.map.lsdriver.TSLDExtendManager;
 import com.tencent.map.lsdriver.lsd.listener.DriDataListener;
 import com.tencent.map.lsdriver.lsd.listener.SimpleDriDataListener;
 import com.tencent.map.lspassenger.TSLPassengerManager;
 import com.tencent.map.lspassenger.lsp.listener.SimplePsgDataListener;
 import com.tencent.map.lssupport.bean.TLSBOrderStatus;
+import com.tencent.map.lssupport.bean.TLSBPosition;
 import com.tencent.map.lssupport.bean.TLSConfigPreference;
 import com.tencent.map.lssupport.bean.TLSDFetchedData;
 import com.tencent.map.lssupport.bean.TLSLatlng;
@@ -32,10 +35,12 @@ import com.tencent.mobility.util.AnimatorUtils;
 import com.tencent.mobility.util.ConvertUtils;
 import com.tencent.mobility.util.MapUtils;
 import com.tencent.mobility.util.SingleHelper;
+import com.tencent.navix.api.NavigatorZygote;
 import com.tencent.navix.api.config.MultiRouteConfig;
 import com.tencent.navix.api.config.RouteElementConfig;
 import com.tencent.navix.api.layer.NavigatorLayerRootDrive;
 import com.tencent.navix.api.layer.NavigatorViewStub;
+import com.tencent.navix.api.location.GeoLocationObserver;
 import com.tencent.navix.api.map.MapApi;
 import com.tencent.navix.api.model.NavDriveRoute;
 import com.tencent.navix.api.model.NavError;
@@ -119,7 +124,34 @@ public class FastCarNormalActivity extends BaseActivity {
         initDriverPanel();
 
         AnimatorUtils.init(FastCarNormalActivity.this);
+        NavigatorZygote.with(this.getApplicationContext()).locationApi().addLocationObserver(mGeoLocationObserver, 1000);
     }
+
+    private final GeoLocationObserver mGeoLocationObserver = new GeoLocationObserver() {
+        @Override
+        public void onGeoLocationChanged(TencentGeoLocation tencentGeoLocation) {
+            super.onGeoLocationChanged(tencentGeoLocation);
+            if (tencentGeoLocation == null) {
+                return;
+            }
+            TencentLocation tencentLocation = tencentGeoLocation.getLocation();
+            if (tencentLocation == null) {
+                return;
+            }
+            tlsbPosition.setAccuracy(tencentLocation.getAccuracy());
+            tlsbPosition.setAltitude(tencentLocation.getAltitude());
+            tlsbPosition.setBearing(tencentLocation.getBearing());
+            tlsbPosition.setCityCode(tencentLocation.getCityCode());
+            tlsbPosition.setLatitude(tencentLocation.getLatitude());
+            tlsbPosition.setLongitude(tencentLocation.getLongitude());
+            tlsbPosition.setProvider(ConvertUtil.providerTypeByProvider(tencentLocation.getProvider()));
+            tlsbPosition.setTime(tencentLocation.getTime());
+            tlsbPosition.setVelocity(tencentLocation.getSpeed());
+            tlsbPosition.setMockGPS(tencentLocation.isMockGps());
+        }
+    };
+
+    private TLSBPosition tlsbPosition = new TLSBPosition();
 
     private void initPassengerPanel() {
         mPassenger = MockSyncService.newRandomPassenger(mMapView.getMapApi());
@@ -364,7 +396,7 @@ public class FastCarNormalActivity extends BaseActivity {
                         syncWaiting.countDown();
                     }
                 });
-                mDriverSync.uploadUsingRoute();
+                mDriverSync.uploadUsingRoute(tlsbPosition);
                 try {
                     syncWaiting.await();
                 } catch (InterruptedException e) {
@@ -455,6 +487,7 @@ public class FastCarNormalActivity extends BaseActivity {
         AnimatorUtils.clearUi();
         mDriverSync.destroy();
         mPassengerSync.destroy();
+        NavigatorZygote.with(this.getApplicationContext()).locationApi().removeLocationObserver(mGeoLocationObserver);
     }
 
     @Override
