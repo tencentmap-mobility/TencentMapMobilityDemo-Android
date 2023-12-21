@@ -13,7 +13,6 @@ import com.tencent.map.lsdriver.lsd.listener.DriDataListener;
 import com.tencent.map.lsdriver.lsd.listener.SimpleDriDataListener;
 import com.tencent.map.lspassenger.TSLPassengerManager;
 import com.tencent.map.lspassenger.lsp.listener.SimplePsgDataListener;
-import com.tencent.map.lspassenger.protocol.SearchProtocol;
 import com.tencent.map.lssupport.bean.TLSBOrderStatus;
 import com.tencent.map.lssupport.bean.TLSBRoute;
 import com.tencent.map.lssupport.bean.TLSConfigPreference;
@@ -30,10 +29,9 @@ import com.tencent.mobility.mock.MockOrder;
 import com.tencent.mobility.mock.MockPassenger;
 import com.tencent.mobility.mock.MockSyncService;
 import com.tencent.mobility.ui.PanelView;
-import com.tencent.mobility.util.CommonUtils;
 import com.tencent.mobility.util.ConvertUtils;
 import com.tencent.mobility.util.MapUtils;
-import com.tencent.mobility.util.SingleHelper;
+import com.tencent.navix.api.NavigatorZygote;
 import com.tencent.navix.api.config.MultiRouteConfig;
 import com.tencent.navix.api.config.RouteElementConfig;
 import com.tencent.navix.api.layer.NavigatorLayerRootDrive;
@@ -47,7 +45,6 @@ import com.tencent.navix.api.navigator.NavigatorDrive;
 import com.tencent.navix.api.plan.DriveRoutePlanOptions;
 import com.tencent.navix.ui.NavigatorLayerViewDrive;
 import com.tencent.navix.ui.api.config.UIComponentConfig;
-import com.tencent.tencentmap.mapsdk.maps.MapView;
 import com.tencent.tencentmap.mapsdk.maps.TencentMap;
 import com.tencent.tencentmap.mapsdk.maps.model.BitmapDescriptorFactory;
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
@@ -353,7 +350,7 @@ public class PassengerSelectRoutesActivity extends BaseActivity {
     };
 
     private void initDriverPanel() {
-        mNaviManager = SingleHelper.getNaviManager(this);
+        mNaviManager = NavigatorZygote.with(getApplicationContext()).navigator(NavigatorDrive.class);
         mNaviManager.setMultiRouteConfig(MultiRouteConfig.builder()
                 .setMultiRouteEnable(true)
                 .setShowMultiRouteOnNavStart(false)

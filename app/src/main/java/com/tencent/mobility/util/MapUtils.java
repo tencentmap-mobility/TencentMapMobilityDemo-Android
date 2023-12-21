@@ -7,7 +7,6 @@ import com.tencent.map.lssupport.bean.TLSBDriverPosition;
 import com.tencent.map.lssupport.bean.TLSBWayPoint;
 import com.tencent.navix.api.map.MapApi;
 import com.tencent.tencentmap.mapsdk.maps.CameraUpdateFactory;
-import com.tencent.tencentmap.mapsdk.maps.TencentMap;
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
 import com.tencent.tencentmap.mapsdk.maps.model.LatLngBounds;
 

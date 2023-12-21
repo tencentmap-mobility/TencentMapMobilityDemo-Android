@@ -28,10 +28,9 @@ import com.tencent.mobility.mock.MockOrder;
 import com.tencent.mobility.mock.MockPassenger;
 import com.tencent.mobility.mock.MockSyncService;
 import com.tencent.mobility.ui.PanelView;
-import com.tencent.mobility.util.CommonUtils;
 import com.tencent.mobility.util.ConvertUtils;
 import com.tencent.mobility.util.MapUtils;
-import com.tencent.mobility.util.SingleHelper;
+import com.tencent.navix.api.NavigatorZygote;
 import com.tencent.navix.api.config.MultiRouteConfig;
 import com.tencent.navix.api.config.RouteElementConfig;
 import com.tencent.navix.api.layer.NavigatorLayerRootDrive;
@@ -45,8 +44,6 @@ import com.tencent.navix.api.navigator.NavigatorDrive;
 import com.tencent.navix.api.plan.DriveRoutePlanOptions;
 import com.tencent.navix.ui.NavigatorLayerViewDrive;
 import com.tencent.navix.ui.api.config.UIComponentConfig;
-import com.tencent.tencentmap.mapsdk.maps.MapView;
-import com.tencent.tencentmap.mapsdk.maps.TencentMap;
 import com.tencent.tencentmap.mapsdk.maps.model.BitmapDescriptorFactory;
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
 import com.tencent.tencentmap.mapsdk.maps.model.Marker;
@@ -233,7 +230,7 @@ public class DriverRelayOrderActivity extends BaseActivity {
     }
 
     private void initDriverPanel() {
-        mNaviManager = SingleHelper.getNaviManager(this);
+        mNaviManager = NavigatorZygote.with(getApplicationContext()).navigator(NavigatorDrive.class);
         mNaviManager.setMultiRouteConfig(MultiRouteConfig.builder()
                 .setMultiRouteEnable(true)
                 .setShowMultiRouteOnNavStart(false)

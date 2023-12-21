@@ -34,7 +34,6 @@ import com.tencent.mobility.ui.PanelView;
 import com.tencent.mobility.util.AnimatorUtils;
 import com.tencent.mobility.util.ConvertUtils;
 import com.tencent.mobility.util.MapUtils;
-import com.tencent.mobility.util.SingleHelper;
 import com.tencent.navix.api.NavigatorZygote;
 import com.tencent.navix.api.config.MultiRouteConfig;
 import com.tencent.navix.api.config.RouteElementConfig;
@@ -259,7 +258,7 @@ public class FastCarNormalActivity extends BaseActivity {
     }
 
     private void initDriverPanel() {
-        mNaviManager = SingleHelper.getNaviManager(this);
+        mNaviManager = NavigatorZygote.with(getApplicationContext()).navigator(NavigatorDrive.class);
         mNaviManager.setMultiRouteConfig(MultiRouteConfig.builder()
                 .setMultiRouteEnable(true)
                 .setShowMultiRouteOnNavStart(false)

@@ -10,7 +10,6 @@ import com.tencent.mobility.mock.MockDriver;
 import com.tencent.mobility.mock.MockPassenger;
 import com.tencent.navix.api.layer.NavigatorLayerRootDrive;
 import com.tencent.navix.api.navigator.NavigatorDrive;
-import com.tencent.tencentmap.mapsdk.maps.MapView;
 
 import java.util.ArrayList;
 import java.util.List;

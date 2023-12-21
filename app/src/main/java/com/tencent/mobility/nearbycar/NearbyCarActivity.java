@@ -16,8 +16,10 @@ import com.tencent.map.carpreview.PreviewMapManager;
 import com.tencent.map.carpreview.nearby.beans.NearbyBean;
 import com.tencent.map.carpreview.nearby.contract.INearbyListener;
 import com.tencent.map.carpreview.ui.TencentCarsMap;
+import com.tencent.map.fusionlocation.model.TencentGeoLocation;
 import com.tencent.map.geolocation.TencentLocation;
-import com.tencent.mobility.location.GeoLocationAdapter;
+import com.tencent.navix.api.NavigatorZygote;
+import com.tencent.navix.api.location.GeoLocationObserver;
 import com.tencent.tencentmap.mapsdk.maps.TencentMap;
 import com.tencent.tencentmap.mapsdk.maps.model.CameraPosition;
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
@@ -31,6 +33,7 @@ public class NearbyCarActivity extends AppCompatActivity {
 
     private TencentCarsMap mTencentCarsMap;
     private PreviewMapManager previewMapManager;
+    private GeoLocationObserver mGeoLocationObserver;
 
     // 默认软件园南街
     private LatLng lastLanlng = new LatLng(40.040959,116.272608);
@@ -47,8 +50,9 @@ public class NearbyCarActivity extends AppCompatActivity {
 
         @Override
         public void onCameraChangeFinished(CameraPosition cameraPosition) {
-            if (previewMapManager != null)
+            if (previewMapManager != null) {
                 previewMapManager.onCameraChangeFinish(cameraPosition);
+            }
         }
     };
 
@@ -99,6 +103,37 @@ public class NearbyCarActivity extends AppCompatActivity {
 
         // 添加地图拖动监听
         mTencentCarsMap.getTencentMap().setOnCameraChangeListener(cameraChangeListener);
+
+        mGeoLocationObserver = new GeoLocationObserver() {
+            @Override
+            public void onGeoLocationChanged(TencentGeoLocation tencentGeoLocation) {
+                super.onGeoLocationChanged(tencentGeoLocation);
+                if (tencentGeoLocation == null) {
+                    return;
+                }
+                TencentLocation tencentLocation = tencentGeoLocation.getLocation();
+                if (tencentLocation == null) {
+                    return;
+                }
+                double start, dest;
+                if (!((start = tencentLocation.getLatitude()) == 0
+                        || (dest = tencentLocation.getLongitude()) == 0)) {
+                    lastLanlng = new LatLng(start, dest);
+                }
+                if (null != lastLanlng) {
+                    // 单次即可
+                    NavigatorZygote.with(getApplicationContext()).locationApi().removeLocationObserver(this);
+                }
+
+                try {
+                    // 周边车辆
+                    previewMapManager.setCurrentLatLng(lastLanlng);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        };
 
     }
 
@@ -166,33 +201,7 @@ public class NearbyCarActivity extends AppCompatActivity {
     }
 
     public void getLocation() {
-        GeoLocationAdapter.singleton.get().startGeoLocationAdapter(getApplicationContext());
-        GeoLocationAdapter.singleton.get().addGeoLocationListener(
-                (geoLocation) ->
-                    onLocationChanged(geoLocation.getLocation()
-                            , geoLocation.getStatus()
-                            , geoLocation.getReason())
-                );
-    }
-
-    public void onLocationChanged(TencentLocation tencentLocation, int i, String s) {
-        double start, dest;
-        if (!((start = tencentLocation.getLatitude()) == 0
-                || (dest = tencentLocation.getLongitude()) == 0)) {
-            lastLanlng = new LatLng(start, dest);
-        }
-        if (null != lastLanlng) {
-            // 单次即可
-            GeoLocationAdapter.singleton.get().stopGeoLocationAdapter();
-        }
-
-        try {
-            // 周边车辆
-            previewMapManager.setCurrentLatLng(lastLanlng);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        NavigatorZygote.with(getApplicationContext()).locationApi().addLocationObserver(mGeoLocationObserver, 1000);
     }
 
     private void initPermission() {
@@ -229,32 +238,36 @@ public class NearbyCarActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (mTencentCarsMap != null)
+        if (mTencentCarsMap != null) {
             mTencentCarsMap.onResume();
+        }
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        if (mTencentCarsMap != null)
+        if (mTencentCarsMap != null) {
             mTencentCarsMap.onStart();
+        }
         previewMapManager.startRefresh(30);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (mTencentCarsMap != null)
+        if (mTencentCarsMap != null) {
             mTencentCarsMap.onPause();
+        }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if (mTencentCarsMap != null)
+        if (mTencentCarsMap != null) {
             mTencentCarsMap.onStop();
+        }
         previewMapManager.stopRefresh();
-        GeoLocationAdapter.singleton.get().stopGeoLocationAdapter();
+        NavigatorZygote.with(getApplicationContext()).locationApi().removeLocationObserver(mGeoLocationObserver);
     }
 
     @Override
