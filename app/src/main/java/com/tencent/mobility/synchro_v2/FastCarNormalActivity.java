@@ -35,6 +35,7 @@ import com.tencent.mobility.util.AnimatorUtils;
 import com.tencent.mobility.util.ConvertUtils;
 import com.tencent.mobility.util.MapUtils;
 import com.tencent.navix.api.NavigatorZygote;
+import com.tencent.navix.api.config.MapAutoScaleConfig;
 import com.tencent.navix.api.config.MultiRouteConfig;
 import com.tencent.navix.api.config.RouteElementConfig;
 import com.tencent.navix.api.layer.NavigatorLayerRootDrive;
@@ -272,13 +273,20 @@ public class FastCarNormalActivity extends BaseActivity {
                 .setCameraDistanceEnable(false)
                 .setCameraMarkerEnable(false)
                 .build());
+        mCarNaviView.setAutoScaleConfig(MapAutoScaleConfig.builder()
+                .setAutoScaleEnable(true)
+                .build());
 
         MockCar car = MockSyncService.newRandomCar();
         mDriver = MockSyncService.newRandomDriver(mCarNaviView.getMapApi(), car);
         mDriverSync = TSLDExtendManager.newInstance();
         mDriverSyncService = new MockSyncService(mDriverSync);
         mDriverSync.init(FastCarNormalActivity.this,
-                TLSConfigPreference.create().setDebuggable(true).setAccountId(mDriver.getId()));
+                TLSConfigPreference.create()
+                        .enableTrafficLightCountDown(true)
+                        .setDebuggable(true)
+                        .setAllTimeLocation(true)
+                        .setAccountId(mDriver.getId()));
         mDriverSync.setNaviManager(mNaviManager);
         mDriverPanel.init("司机");
 
@@ -300,6 +308,7 @@ public class FastCarNormalActivity extends BaseActivity {
                         mDriverSync.getTLSBOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusPickUp);
                         mPassengerSync.getTLSPOrder().setOrderStatus(TLSBOrderStatus.TLSDOrderStatusPickUp);
                         mDriverPanel.print("当前订单接驾中");
+                        mDriverSync.setPushTimeInterval(5);
                         mDriverPanel.postAction("开启同显");
                         return order.getId();
                     } else {

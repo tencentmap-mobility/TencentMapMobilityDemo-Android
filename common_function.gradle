@@ -3,11 +3,11 @@ ext {
     separator = '/'
 
     // 导航sdk
-    Tencent_Navi_Version = "com.tencent.map:tencent-map-nav-sdk-core:6.7.2"
+    Tencent_Navi_Version = "com.tencent.map:tencent-map-nav-sdk-core:6.10.0"
     // 地图sdk
-    Tencent_Map_Version = 'com.tencent.map:tencent-map-vector-sdk:5.3.3-231206.06fbc0c2'
+    Tencent_Map_Version = 'com.tencent.map:tencent-map-vector-sdk:5.3.13.1.240828.145dc55c'
     // 基础库
-    Tencent_Foundation = 'com.tencent.openmap:foundation:0.3.1.a45d56b'
+    Tencent_Foundation = 'com.tencent.openmap:foundation:0.5.3.1eff80f'
 
     // 出行检索
     Tencent_Mobility_Search_Verison = 'com.tencent.map:tencent-navi-search:1.2.3'
@@ -17,9 +17,9 @@ ext {
     Tencent_NearBy_Car_Version = files('libs/tencentcarpreview_v1.2.3.aar')
 
     // 司乘SDK
-    Tencent_LS_Driver = 'com.tencent.map:tencent-map-lsdriver:3.2.0'
-    Tencent_LS_Passenger = 'com.tencent.map:tencent-map-lspassenger:3.2.0'
-    Tencent_LS_Support = 'com.tencent.map:tencent-map-lssupport:3.2.0'
+    Tencent_LS_Driver = 'com.tencent.map:tencent-map-lsdriver:3.3.2'
+    Tencent_LS_Passenger = 'com.tencent.map:tencent-map-lspassenger:3.3.2'
+    Tencent_LS_Support = 'com.tencent.map:tencent-map-lssupport:3.3.2'
 
     // 导航支持库
     Tencent_Support_Verison = 'com.tencent.map:tencent-map-nav-surport:1.1.0.2'
