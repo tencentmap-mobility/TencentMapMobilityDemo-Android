@@ -10,6 +10,7 @@ import com.tencent.mobility.synchro_v2.CarpoolingNormalActivity;
 import com.tencent.mobility.synchro_v2.ChangeDestinationActivity;
 import com.tencent.mobility.synchro_v2.FastCarActivity;
 import com.tencent.mobility.synchro_v2.FastCarNormalActivity;
+import com.tencent.mobility.synchro_v2.FastCarNormalDriverActivity;
 import com.tencent.mobility.synchro_v2.HitchHikeNormalActivity;
 import com.tencent.mobility.synchro_v2.HitchHikeOneVipActivity;
 import com.tencent.mobility.synchro_v2.driver.DriverRelayOrderActivity;
@@ -44,6 +45,11 @@ public class MainTaskActivity extends BaseActivity {
     public void onFastNormalCar(View view) {
         // 快车场景
         CommonUtils.toIntent(this, FastCarNormalActivity.class);
+    }
+
+    public void onFastNormalCarDriver(View view) {
+        // 快车场景-司机
+        CommonUtils.toIntent(this, FastCarNormalDriverActivity.class);
     }
 
     public void OnCarpooling(View view) {

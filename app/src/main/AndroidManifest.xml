@@ -47,6 +47,7 @@
         <activity android:name=".synchro_v2.HitchHikeOneVipActivity"/>
         <activity android:name=".synchro_v2.FastCarActivity"/>
         <activity android:name=".synchro_v2.FastCarNormalActivity"/>
+        <activity android:name=".synchro_v2.FastCarNormalDriverActivity"/>
         <activity android:name=".synchro_v2.driver.DriverRelayOrderAsyncActivity" />
         <activity android:name=".synchro_v2.driver.DriverRelayOrderActivity"/>
         <activity android:name=".synchro_v2.driver.DriverRelayOrderUnrestrictedActivity"/>

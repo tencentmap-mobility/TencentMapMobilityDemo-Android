@@ -155,6 +155,20 @@
             app:itemContent="FastCarNormalActivity"
             app:itemTitle="快车场景-常规" />
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="12dp"
+            android:background="#787878" />
+
+        <com.tencent.mobility.ui.ItemLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onFastNormalCarDriver"
+            app:itemContent="FastCarNormalDriverActivity"
+            app:itemTitle="快车场景-常规-司机" />
+
         <TextView
             android:id="@+id/tv_sync_txt"
             android:layout_width="wrap_content"

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <com.tencent.navix.api.layer.NavigatorViewStub
+            android:id="@+id/driver_navi_car_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:travel_mode="Driving" />
+
+        <include
+            android:id="@+id/group_panel_driver"
+            layout="@layout/panel_layout" />
+
+    </FrameLayout>
+
+</LinearLayout>
