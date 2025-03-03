@@ -114,9 +114,11 @@ public class FastCarNormalDriverActivity extends BaseActivity {
             tlsbPosition.setMockGPS(tencentLocation.isMockGps());
         }
     };
-    private TLSBPosition tlsbPosition = new TLSBPosition();
+    private final TLSBPosition tlsbPosition = new TLSBPosition();
 
     private String fastCarOrderId = "";
+    private LatLng mStartPoint = new LatLng(40.007398, 116.390305);
+    private LatLng mEndPoint = new LatLng(39.896938, 116.316483);
 
     private void initDriverPanel() {
         mNaviManager = NavigatorZygote.with(getApplicationContext()).navigator(NavigatorDrive.class);
@@ -148,7 +150,7 @@ public class FastCarNormalDriverActivity extends BaseActivity {
                         .setAllTimeLocation(true)
                         .setAccountId(mDriver.getId()));
         mDriverSync.setNaviManager(mNaviManager);
-        mDriverPanel.init("司机端","创建订单", "绑定订单", "接驾中", "司机已到达", "乘客已上车", "服务完成");
+        mDriverPanel.init("司机端","创建订单", "绑定订单", "接驾中", "开始导航", "司机已到达", "乘客已上车", "开始导航", "服务完成");
 
         // 注意点1：实际由乘客端创建订单
         mDriverPanel.addAction("创建订单", new PanelView.Action<Boolean>(false) {
@@ -287,12 +289,19 @@ public class FastCarNormalDriverActivity extends BaseActivity {
             public Boolean run() {
                 final CountDownLatch syncWaiting = new CountDownLatch(1);
                 final List<NavDriveRoute> routeData = new ArrayList<>();
+                LatLng startPoint;
+                LatLng endPoint;
+                if (mDriverSync.getOrderManager().getOrderStatus() == TLSBOrderStatus.TLSDOrderStatusPickUp) {
+                    startPoint = new LatLng(tlsbPosition.getLatitude(), tlsbPosition.getLongitude());
+                    endPoint = mStartPoint;
+                } else {
+                    startPoint = mStartPoint;
+                    endPoint = mEndPoint;
+                }
                 // 当前接送驾路线
                 mDriverSync.searchCarRoutes(fastCarOrderId,
-//                        ConvertUtils.toNaviPoi(orderA.getBegin()),
-//                        ConvertUtils.toNaviPoi(orderA.getEnd()),
-                        ConvertUtils.toNaviPoi(new LatLng(40.007398, 116.390305)),
-                        ConvertUtils.toNaviPoi(new LatLng(39.896938, 116.316483)),
+                        ConvertUtils.toNaviPoi(startPoint),
+                        ConvertUtils.toNaviPoi(endPoint),
                         new ArrayList<>(),
                         DriveRoutePlanOptions.Companion.newBuilder().build(),
                         new DriDataListener.ISearchCallBack() {
@@ -323,16 +332,24 @@ public class FastCarNormalDriverActivity extends BaseActivity {
                 mDriverSync.getRouteManager().useRouteIndex(0);
                 mDriverPanel.print("当前线路：" + routeData.get(0).getRouteId());
                 mDriverPanel.postAction("上报路线");
+                return routeData.size() == 1;
+            }
+        });
 
+        mDriverPanel.addAction("开始导航", new PanelView.Action<Boolean>(false) {
+            @Override
+            public Boolean run() {
+                boolean result = false;
                 try {
                     mNaviManager.simulator().setEnable(true);
                     mNaviManager.startNavigation(mDriverSync.getRouteManager().getRouteId());
+                    result = true;
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
                 MapUtils.fitsWithRoute(mCarNaviView.getMapApi(), ConvertUtils.transformLatLngs(mDriverSync.getRouteManager().getPoints()),
                         25, 25, 25, 25);
-                return routeData.size() == 1;
+                return result;
             }
         });
 
@@ -362,6 +379,7 @@ public class FastCarNormalDriverActivity extends BaseActivity {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+                mDriverPanel.print("点击“开始导航”按钮进入导航");
                 return result[0] == 1;
             }
         });
