@@ -3,11 +3,11 @@ ext {
     separator = '/'
 
     // 导航sdk
-    Tencent_Navi_Version = "com.tencent.map:tencent-map-nav-sdk-core:6.10.0"
+    Tencent_Navi_Version = "com.tencent.map:tencent-map-nav-sdk-core:7.1.0"
     // 地图sdk
-    Tencent_Map_Version = 'com.tencent.map:tencent-map-vector-sdk:5.3.13.1.240828.145dc55c'
+    Tencent_Map_Version = 'com.tencent.map:tencent-map-vector-sdk:6.4.0.250610.3d76dfd6.160361269'
     // 基础库
-    Tencent_Foundation = 'com.tencent.openmap:foundation:0.5.3.1eff80f'
+    Tencent_Foundation = 'com.tencent.openmap:foundation:0.7.0.92a115a'
 
     // 出行检索
     Tencent_Mobility_Search_Verison = 'com.tencent.map:tencent-navi-search:1.2.3'

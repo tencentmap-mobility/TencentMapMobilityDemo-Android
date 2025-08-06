@@ -14,6 +14,7 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
         TencentMapInitializer.setAgreePrivacy(this, true);
+        TencentMapInitializer.start(this);
         NavigatorZygote.with(this).init(NavigatorConfig.builder()
                 .setUserAgreedPrivacy(true)
                 .setDeviceId(DeviceUtils.getDeviceId(getApplicationContext()))
@@ -22,6 +23,7 @@ public class MyApplication extends Application {
                 .setMapOptions(NavigatorConfig.MapOptions.builder().build())
                 .experiment().setUseSharedMap(false)
                 .build());
+        NavigatorZygote.with(this).start();
 
         TLSConfigPreference.initGlobal(this);
     }
