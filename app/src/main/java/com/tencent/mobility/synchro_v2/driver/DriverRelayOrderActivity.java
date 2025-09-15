@@ -38,8 +38,11 @@ import com.tencent.navix.api.layer.NavigatorViewStub;
 import com.tencent.navix.api.map.MapApi;
 import com.tencent.navix.api.model.NavDriveRoute;
 import com.tencent.navix.api.model.NavError;
+import com.tencent.navix.api.model.NavGpsLocation;
 import com.tencent.navix.api.model.NavMode;
+import com.tencent.navix.api.model.NavRerouteReqParam;
 import com.tencent.navix.api.model.NavRoutePlan;
+import com.tencent.navix.api.model.NavSearchPoint;
 import com.tencent.navix.api.navigator.NavigatorDrive;
 import com.tencent.navix.api.plan.DriveRoutePlanOptions;
 import com.tencent.navix.ui.NavigatorLayerViewDrive;
@@ -52,6 +55,7 @@ import com.tencent.tencentmap.mapsdk.maps.model.Polyline;
 import com.tencent.tencentmap.mapsdk.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -81,6 +85,7 @@ public class DriverRelayOrderActivity extends BaseActivity {
     private MockSyncService mPassengerSyncService;
 
     private NavigatorDrive mNaviManager;
+    private TLSLatlng driverNewDest;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -185,6 +190,7 @@ public class DriverRelayOrderActivity extends BaseActivity {
                     mPassengerBPanel.postPrint("等待接驾");
                     mPassengerSyncB.getOrderManager().editCurrent().setOrderId(order.getId());
                     mDriverPanel.postAction("绑定接力订单");
+                    mDriverSync.setPushTimeInterval(3);
                     return order.getId();
                 }
                 return "";
@@ -252,7 +258,7 @@ public class DriverRelayOrderActivity extends BaseActivity {
         mDriverSync.init(DriverRelayOrderActivity.this,
                 TLSConfigPreference.create().setDebuggable(true).setAccountId(mDriver.getId()));
         mDriverSync.setNaviManager(mNaviManager);
-        mDriverPanel.init("司机", "乘客送达");
+        mDriverPanel.init("司机", "修改目的地", "乘客送达");
 
         mDriverPanel.addAction("绑定订单", new PanelView.Action<String>("") {
             @Override
@@ -353,11 +359,20 @@ public class DriverRelayOrderActivity extends BaseActivity {
                 final MockOrder orderB = mDriverSyncService.getOrder(mPassengerB);
                 final CountDownLatch syncWaiting2 = new CountDownLatch(1);
                 // 接力单路线
+                LinkedList<NavGpsLocation> gpsLocations = new LinkedList<>();
+                List<TLSLatlng> tlsLatLngs = mDriverSync.getRouteManager().getPoints();
+                int length = Math.min(tlsLatLngs.size(), 60);
+                for (int i = length - 1; i >= 0; i--) {
+                    NavGpsLocation location = new NavGpsLocation();
+                    location.setLatitude(tlsLatLngs.get(i).getLatitude());
+                    location.setLongitude(tlsLatLngs.get(i).getLongitude());
+                    gpsLocations.addFirst(location);
+                }
                 mDriverSync.searchCarRoutes(orderB.getId(),
                         ConvertUtils.toNaviPoi(orderA.getEnd()),
                         ConvertUtils.toNaviPoi(orderB.getBegin()),
                         new ArrayList<>(),
-                        DriveRoutePlanOptions.Companion.newBuilder().build(),
+                        DriveRoutePlanOptions.Companion.newBuilder().preLocations(gpsLocations).build(),
                         new DriDataListener.ISearchCallBack() {
                             @Override
                             public void onResultCallback(NavRoutePlan navRoutePlan, NavError navError) {
@@ -506,13 +521,37 @@ public class DriverRelayOrderActivity extends BaseActivity {
                     public void onPushRouteSuc() {
                         result[0] = 1;
                         syncWaiting.countDown();
-                        mDriverSync.removeTLSDriverListener(this);
+//                        mDriverSync.removeTLSDriverListener(this);
                     }
 
                     @Override
                     public void onPushRouteFail(int errCode, String errStr) {
                         result[0] = 0;
                         syncWaiting.countDown();
+                    }
+
+                    @Override
+                    public void onNewDestinationNotify(TLSLatlng newDest, long changedTime) {
+                        super.onNewDestinationNotify(newDest, changedTime);
+                        mDriverPanel.print("乘客的新目的地[" + newDest + "]:" + changedTime);
+                    }
+
+                    @Override
+                    public void onDestinationChangeResult(int status, String message) {
+                        super.onDestinationChangeResult(status, message);
+                        mDriverPanel.print("更改目的地[" + status + "]:" + message);
+                        if (status == 0) {
+                            //触发偏航
+                            //标记更新
+                            mDriverSync.getRouteManager().editCurrent()
+                                    .setDestPosition(driverNewDest)
+                                    .setDestPositionChanged(true);
+                            NavSearchPoint navSearchPoint = new NavSearchPoint(driverNewDest.getLatitude(), driverNewDest.getLongitude());
+                            navSearchPoint.setPoiId(driverNewDest.getPoiId());
+                            mNaviManager.reroute(NavRerouteReqParam.newBuilder(NavRerouteReqParam.DestinationParamBuilder.class)
+                                    .dest(navSearchPoint).build());
+                            mDriverPanel.postAction("请求接力单路线");
+                        }
                     }
                 });
                 // 司机端核心步骤：
@@ -561,6 +600,22 @@ public class DriverRelayOrderActivity extends BaseActivity {
                 mPassengerSyncA.destroy();
                 mNaviManager.stopNavigation();
                 mDriverPanel.postAction("送达乘客重新规划路线");
+                return true;
+            }
+        });
+
+        mDriverPanel.addAction("修改目的地", new PanelView.Action<Boolean>(false) {
+            @Override
+            public Boolean run() {
+                MockOrder orderB = mDriverSyncService.getOrder(mPassengerA);
+                if (orderB == null) {
+                    return false;
+                }
+                LatLng newLatLng = MockSyncService.getRandomVisibleLatLng(mMapView1.getMapApi().getProjection());
+                orderB.setEnd(newLatLng);
+                mPassengerAPanel.print("修改终点");
+                driverNewDest = ConvertUtil.toTLSLatLng(newLatLng);
+                mDriverSync.changeDestination(driverNewDest);
                 return true;
             }
         });

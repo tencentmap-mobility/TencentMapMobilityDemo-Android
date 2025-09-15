@@ -288,7 +288,7 @@ public class FastCarNormalActivity extends BaseActivity {
                         .setAllTimeLocation(true)
                         .setAccountId(mDriver.getId()));
         mDriverSync.setNaviManager(mNaviManager);
-        mDriverPanel.init("司机");
+        mDriverPanel.init("司机", "上报日志");
 
         mDriverPanel.addAction("绑定订单", new PanelView.Action<String>("") {
             @Override
@@ -316,6 +316,15 @@ public class FastCarNormalActivity extends BaseActivity {
                     }
                 }
                 return order.getId();
+            }
+        });
+
+        mDriverPanel.addAction("上报日志", new PanelView.Action<String>("") {
+            @Override
+            public String run() {
+                mDriverSync.reflux(System
+                        .currentTimeMillis() - 24 * 60 * 60 * 1000, System.currentTimeMillis());
+                return "";
             }
         });
 

@@ -24,6 +24,7 @@ public class MyApplication extends Application {
                 .experiment().setUseSharedMap(false)
                 .build());
         NavigatorZygote.with(this).start();
+        NavigatorZygote.with(this).locationApi();
 
         TLSConfigPreference.initGlobal(this);
     }
